@@ -1,4 +1,6 @@
-FILES = proposal.aux proposal.blg proposal.dvi proposal.log proposal.ps proposal.pdf
+FILES = proposal.toc proposal.bbl proposal.aux proposal.blg proposal.dvi proposal.log proposal.ps proposal.pdf
+
+all:: proposal
 
 proposal: proposal.tex proposal.bib
 	dvipdf proposal.dvi

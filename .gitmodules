@@ -1,0 +1,3 @@
+[submodule "bib"]
+	path = bib
+	url = git@repair.cs.columbia.edu:papers/bib
