@@ -1,6 +1,6 @@
 FILES = proposal.toc proposal.bbl proposal.aux proposal.blg proposal.dvi proposal.log proposal.ps proposal.pdf
 
-all:: bbl proposal
+all:: proposal
 
 proposal: proposal.tex bib/biblio.bib
 	dvipdf proposal.dvi
