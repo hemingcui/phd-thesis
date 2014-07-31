@@ -1,3 +1,47 @@
 \section{Leveraging \smt to Build Transparent Multithreaded State Machine Replication} \label{sec:replication}
 
-TBD.
+Due to the trends of cloud computing and multi-core hardware, building higly-
+available and fast applications have become critical. In order to 
+provide high availability, the state-machine replication approach has become 
+popular. In order to build fast services, people write multithreaded programs 
+for better throughput and response time. Todo: cite related work.
+
+Unfortunately, despite much effort from academia and industry, building state-
+machine replications for general multithreaded programs are still an open 
+problem. Todo: briefly mention related work.
+
+There are at least two major challenges towards building practical state-
+machine replications for multithreaded programs. First, how to reach 
+consensus on general network inputs (including input values and timings) 
+across replicas. This is challenging because, in typical state-machine 
+replications that are formed by primary replicas, some replicas may have 
+faster state transitions than the primary. Second, how to perform read-only 
+optimization for general applications, which is hard, because some 
+semantically read only operations (such as get() in key-value store and GET 
+in http servers) may modify states of server programs. Todo: should we 
+include any other challenges that we have discussed? E.g., recovery, 
+leveraging StableMT, and logical clocks.
+
+Our system is the first system on building practical state-machine 
+replications for general multi-threaded programs. Todo: how it works: reach 
+consensus on general socket operations, LD\_PRELOAD, transparent (do not need 
+to annotate shared states in a program) replications for servers.
+
+Introduce the fault-tolerance and performance features (guarantees) of our 
+system.
+
+Our system made two major research contribution to address the above two 
+challenges. First, we propose a epoch-based algorithm. The key insight is we 
+could leverage the synchronization property in logical clocks among different 
+replicas to perform consensus in a typical asynchronous network setting. Todo
+: briefly mention the epoch-based algorithm. The epoch could solve the 
+problem of replicas runnning ahead of primary. And it also has performance 
+benefit because we no longer need to reach consensus on each socket operation 
+such as recv(). Second, we introduce a new mechanism with probing program 
+state changes (by hashing the schedule of each request) and fast roll back. 
+This mechanism could even enable our system to run significantly faster than 
+the un-replicated single node program.
+
+Practical highlights of our system: evaluated a good range of popular server 
+programs, ranging from web servers, data base servers, key-value stores, and 
+popular utility programs. Todo: performance highlights, recovery highlights.
