@@ -3,7 +3,7 @@ FILES = proposal.toc proposal.bbl proposal.aux proposal.blg proposal.dvi *.log p
 
 all:: bbl proposal
 
-proposal: proposal.tex terminology.tex abstract.tex intro.tex stable-mt.tex app-model-chk.tex app-replication.tex plan.tex bib/biblio.bib
+proposal: proposal.tex terminology.tex abstract.tex intro.tex related.tex stable-mt.tex app-model-chk.tex app-replication.tex plan.tex bib/biblio.bib
 	dvipdf proposal.dvi
 	dvips -o proposal.ps -t letter proposal.dvi
 	test -e p.pdf || ln -s $(SRC).pdf p.pdf
