@@ -1,21 +1,39 @@
 \section{Leveraging \smt to Build Transparent Multithreaded State Machine Replication} \label{sec:replication}
 
-Due to the trends of cloud computing and multi-core hardware, building higly-
+In this section, we first introduce the background of state machine replication 
+and its current limitations on building state machine replications for general 
+multithreaded programs, and then present our design.
+
+\subsection{Background} \label{sec:replication-intro}
+
+Due to the trends of cloud computing, building higly-
 available and fast applications have become critical. In order to 
-provide high availability, the state-machine replication approach has become 
-popular. In order to build fast services, people write multithreaded programs 
-for better throughput and response time. Todo: cite related work.
+provide high availability, the state machine replication (or SMR) approach has become 
+popular. Todo: briefly introduce SMR use Paxos to totally order all requests. In order to
+build fast services, people introduce read-only optimizations for read requests.
 
-Unfortunately, despite much effort from academia and industry, building state-
-machine replications for general multithreaded programs are still an open 
-problem. Todo: briefly mention related work.
+Unfortunately, despite much effort from academia and industry, it is still 
+insufficient for software vendors to provide practical state machine 
+replication service to general applications, because of two challenges. Existing 
+state machine replication techniques typically require developers to replicate 
+a specific subset of program states (with APIs) instead of the whole program 
+states, which requires strong distributed sytems expert knowledge, and error prone 
+(cite the MongoDB exmample). Second, existing SMR infrastructures assume all 
+replicas always run the same schedule for the same input, pracitally restricing 
+the number of running threads to be only 1 and preventing them fully leverage the 
+power of the multi-core hardware.
 
-There are at least two major challenges towards building practical state-
+Addressing the first challenge requires a general design of APIs for SMR. 
+Todo: motivate people that we use design the interface at the socket API level.
+
+Addressing the second challenge requires a systematic way of to ensure the same 
+schedules. Todo: introduce \smt, which can greatly reduce the number of schedules for 
+multithreaded programs.
+
+This article made two major contributions towards building practical state-
 machine replications for multithreaded programs. First, how to reach 
 consensus on general network inputs (including input values and timings) 
-across replicas. This is challenging because, in typical state-machine 
-replications that are formed by primary replicas, some replicas may have 
-faster state transitions than the primary. Second, how to perform read-only 
+across replicas. Second, how to perform read-only 
 optimization for general applications, which is hard, because some 
 semantically read only operations (such as get() in key-value store and GET 
 in http servers) may modify states of server programs. Todo: should we 
@@ -30,18 +48,36 @@ to annotate shared states in a program) replications for servers.
 Introduce the fault-tolerance and performance features (guarantees) of our 
 system.
 
-Our system made two major research contribution to address the above two 
-challenges. First, we propose a epoch-based algorithm. The key insight is we 
-could leverage the synchronization property in logical clocks among different 
-replicas to perform consensus in a typical asynchronous network setting. Todo
-: briefly mention the epoch-based algorithm. The epoch could solve the 
-problem of replicas runnning ahead of primary. And it also has performance 
-benefit because we no longer need to reach consensus on each socket operation 
-such as recv(). Second, we introduce a new mechanism with probing program 
-state changes (by hashing the schedule of each request) and fast roll back. 
-This mechanism could even enable our system to run significantly faster than 
-the un-replicated single node program.
-
 Practical highlights of our system: evaluated a good range of popular server 
 programs, ranging from web servers, data base servers, key-value stores, and 
 popular utility programs. Todo: performance highlights, recovery highlights.
+
+\subsection{\msmr: A Pracitcal SMR sytem for general multithreaded programs} \label{sec:replication-msmr}
+TBD.
+
+\subsubsection{Reaching consensus on socket APIs} \label{sec:replication-msmr-consensus}
+TBD.
+
+\subsubsection{Read-only optimization} \label{sec:replication-msmr-readonly}
+TBD.
+
+\subsection{Implementation} \label{sec:replication-impl}
+TBD.
+
+\subsubsection{Checkpointing and recovery} \label{sec:replication-impl-checkpoint}
+TBD.
+
+\subsubsection{Handling nondeterministic operations} \label{sec:replication-impl-nondet}
+TBD.
+
+\subsection{Evaluation plan} \label{sec:replication-eval}
+Performance overhead with the single node multithreaded version.
+
+Performance breakdown (analysis) of the consensus component and the read-only optimization component.
+
+Race detection results.
+
+Recovery scenarios and performance results.
+
+
+
