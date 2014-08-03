@@ -6,6 +6,26 @@
 \usepackage{amsmath}
 \usepackage{xspace}
 
+\input{terminology}
+
+%% Reference stuff.
+  \usepackage[square,comma,numbers,sort]{natbib}
+  \usepackage{hypernat}
+  \usepackage{hyperref}
+  \hypersetup{%
+  colorlinks=false,
+  pdfborder={0 0 0},
+  pdftitle={\mytitle},
+  pdfkeywords={\mykeywords},
+  bookmarksnumbered,
+  pdfstartview={FitH},
+  urlcolor=cyan,
+  pdfpagelabels=true,
+  pdfdisplaydoctitle=true,
+  }
+
+
+
 % <http://psl.cs.columbia.edu/phdczar/proposal.html>:
 %
 % The standard departmental thesis proposal format is the following:
@@ -25,9 +45,9 @@
 \textheight     9.0in
 \textwidth      6.5in
 
-\title{{\bf Doctoral Thesis Proposal} \\
-\it Stable Multithreading: \\
-A New Paradigm for Reliable and Secure Threads}
+\title{
+%%{\bf Doctoral Thesis Proposal} \\
+\bf \mytitle}
 \author{ {\bf Heming Cui}  \\
 Advisor: Prof. Junfeng Yang \\
 Department of Computer Science \\
@@ -40,8 +60,6 @@ Columbia University\\
 \pagestyle{plain}
 \pagenumbering{roman}
 \maketitle
-
-\input{terminology}
 
 \pagebreak
 \begin{abstract}
