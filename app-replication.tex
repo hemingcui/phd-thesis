@@ -59,7 +59,53 @@ TBD.
 TBD.
 
 \subsubsection{Read-only optimization} \label{sec:replication-msmr-readonly}
-TBD.
+For speed, modern SMR systems introduce read-only optimization: for many applications such as web servers and key-value stores,
+ most of read operations do not modify applcation states, and SMR systems process them rapidly in 
+local replicas without reaching consensus for these operations.
+
+Unfortunately, in the multithreading settings, some read-only requests such as http GET requests may
+modify the application's internal cache, potentially causing divergence of both application states and 
+schedules on processing these requests.
+
+In order to support read-only optimizations in \msmr, we leverage the performance critical 
+section (a.k.a pcs) in \parrot~cite{parrot:sosp13}, so that we could process 
+these read-only operations rapidly without needing consensus. Todo: also 
+mention the client side design for identifying read-only requests.
+
+In order to address the above challenge that read-only reqeusts may modify internal 
+application cache and causing schedule divergence, we leverage a key 
+insight: although the first few of them may modify application's internal states, this 
+sequence tend to make the application finally converge to a stable state. Based 
+on this insight, we could design an approach to soundly detect the application 
+state changes by checking the schedule hash serving current request, and 
+safely roll back to a 'soft' checkpoint if we detect state changes and 
+deliver these first few read requests to the primary. Our approach can soundly 
+detect application state changes (including even application internal cache 
+expiration) that may affect schedules. And this approach enables our system 
+to be very fast: run even faster than the single node un-replicated 
+application.
+
+Although this read-only optimization approach is simple and sound, it has to 
+address a few challenges. First, although the internal cache modified by read-only 
+requests may affect the schedules of write requests. Second, as part of the SMR 
+system, our design has to reach the same fault tolerance level of \paxos.
+
+The root cause of the first challenge can be equally (todo: it 
+this true??? need a proof) redescribed in this way: write requests 
+arrive before read-only requests push the application to converge to a stable 
+state. Our approach is: whenever write request arrive before read requests 
+have reached a stable state, we simply erase the hashes of all read requests 
+in all replicas. (three examples: RRWWR..., RWRWRRR..., RRRRRR(cache timeout)WR.... For 
+the first two examples, we can handle that, how about the last one???)
+
+Todo: there can be two approaches on erashing hashes: first, erase all read hashes 
+whenever a write request has come; second, erase all unstable read hashes 
+whenever a write request has come.
+
+In order to address the second challenges, we've considered these corner cases. 
+Todo: add in Cheng's design after discussing with him. Are these corner cases 
+complete?
+
 
 \subsection{Implementation} \label{sec:replication-impl}
 TBD.

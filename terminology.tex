@@ -1,11 +1,13 @@
 \def\v#1{{\mbox{\fontfamily{cmtt}\fontsize{\f@size}{\f@size}\selectfont #1}}}
 
+%% Title stuff.
 \newcommand{\mytitle}[0]{\textbf {Stable Multithreading: \\
 A New Paradigm for Reliable and Secure Threads}}
 \newcommand{\mykeywords}[0]{Deterministic Multithreading, Stable 
 Multithreading, Reliability, Security, Software Model Checking,
 State Space Reduction, State Machine Replication}
 
+%% Terminology of our own internal techniques.
 \newcommand{\compute}{soft barrier\xspace}
 \newcommand{\vcompute}{\emph{soft barrier}\xspace}
 \newcommand{\computes}{soft barriers\xspace}
@@ -17,6 +19,7 @@ State Space Reduction, State Machine Replication}
 \newcommand{\Nondet}{Performance critical section\xspace}
 \newcommand{\Nondets}{Performance critical sections\xspace}
 
+%% Systems and techniques names.
 \newcommand{\dmt}[0]{DMT\xspace}
 \newcommand{\smt}[0]{StableMT\xspace}
 \newcommand{\racepro}[0]{\textsc{RacePro}\xspace}
@@ -31,7 +34,9 @@ State Space Reduction, State Machine Replication}
 \newcommand{\determinator}[0]{Determinator\xspace}
 \newcommand{\dbug}[0]{\textsc{dbug}\xspace}
 \newcommand{\ecosys}[0]{\xxx-\dbug}
+\newcommand{\paxos}[0]{\textsc{Paxos}\xspace}
 
+%% Application names.
 \newcommand{\apache}{\v{Apache}\xspace}
 \newcommand{\ab}{\v{ApacheBench}\xspace}
 \newcommand{\mysql}{\v{MySQL}\xspace}
@@ -79,6 +84,7 @@ State Space Reduction, State Machine Replication}
 \newcommand{\phoenix}[0]{\mbox{Phoenix}\xspace}
 \newcommand{\pthread}[0]{\mbox{Pthreads}\xspace}
 
+%% Application names (continue).
 \newcommand{\kmeans}[0]{\v{kmeans}\xspace}
 \newcommand{\kmeanspthread}[0]{\v{kmeans-pthread}\xspace}
 \newcommand{\linearregre}[0]{\v{linear-regression}\xspace}
@@ -94,6 +100,7 @@ State Space Reduction, State Machine Replication}
 \newcommand{\pca}[0]{\v{pca}\xspace}
 \newcommand{\pcapthread}[0]{\v{pca-pthread}\xspace}
 
+%% Application names (continue).
 \newcommand{\partition}[0]{\mbox{\v{partition}}\xspace}
 \newcommand{\nthelement}[0]{\mbox{\v{nth\_element}}\xspace}
 \newcommand{\partialsort}[0]{\mbox{\v{partial\_sort}}\xspace}
