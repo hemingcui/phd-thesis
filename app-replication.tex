@@ -139,6 +139,12 @@ read/write conflicts and roll back; if the network never gets back, this node
 can not reach any consensus with other nodes and then won't execute any write 
 requests.
 
+%% One may ask, can we just maintain the schedule hash for the write requests 
+%% only, and then just simply roll back when we see a divergence of the schedule 
+%% hash? Yes, this is a correct design, but it may trigger lots of roll backs, 
+%% because the first few read only requests may cause the logical clock  ??? Not 
+%% really.
+
 
 \subsection{Implementation} \label{sec:replication-impl}
 TBD.
