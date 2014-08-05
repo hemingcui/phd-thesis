@@ -87,24 +87,57 @@ application.
 
 Although this read-only optimization approach is simple and sound, it has to 
 address a few challenges. First, although the internal cache modified by read-only 
-requests may affect the schedules of write requests. Second, as part of the SMR 
-system, our design has to reach the same fault tolerance level of \paxos.
+requests may affect the schedules of read or write requests. Second, the 
+soundness of this approach should not be weakened by corner case events in the 
+distributed systems.
 
-The root cause of the first challenge can be equally (todo: it 
-this true??? need a proof) redescribed in this way: write requests 
-arrive before read-only requests push the application to converge to a stable 
-state. Our approach is: whenever write request arrive before read requests 
-have reached a stable state, we simply erase the hashes of all read requests 
-in all replicas. (three examples: RRWWR..., RWRWRRR..., RRRRRR(cache timeout)WR.... For 
-the first two examples, we can handle that, how about the last one???)
+In order to address the first challenge (\ie, read-only requests may affect 
+other read or write requests), our key approach is: maintain schedule hash for write 
+requests. We consider all these three cases:
 
-Todo: there can be two approaches on erashing hashes: first, erase all read hashes 
-whenever a write request has come; second, erase all unstable read hashes 
-whenever a write request has come.
+(1) The same (input) read requests affecting themselves. This is avoided by 
+having the schedule hash for read-only requests, as mentioned above.
 
-In order to address the second challenges, we've considered these corner cases. 
-Todo: add in Cheng's design after discussing with him. Are these corner cases 
-complete?
+(2) Read requests affecting write requests. For each ``accept" message of a 
+write request sent by the \paxos primary node, we attach the schedule hash (for 
+the first operation, it is empty, and this has no conflict) of 
+the last executed operation in the this ``accept" message with the ``committed" 
+view stamp, so that all the replicas can compare this schedule hash with its 
+own ones after executing each request. This carefuly design does not require 
+the primary to execute the current request first, get the schedule hash, and 
+then start consenses, because we attach the previous schedule hash. Once a 
+replica executes a write request, and founds that the current schedule hash is 
+different from the ones sent from the primary, current replica just rolls back 
+to a soft checkpoint and then replays only requests that require consenses (the 
+replica can safely ignore read-only requests). We expect this roll back is 
+rare, because the application internal cache tends to be a per-input property 
+and should rarely affect other inputs.
+
+(3) Read requests affecting other read requests. This can also be detected by 
+the schedule hash for each read request, because schedule hash is the unique ``stable" 
+signature of each read request, and once some read requests are affected by 
+other read requests, their schedule hash becomes different.
+
+To address the second challenges, we discuss our approach on three (Todo: more?) popular 
+corner cases:
+
+(1) Packet loss causing schedule hash to get lost. This won't occur, because 
+for each node in \msmr, the consensus proxy and the application shares the same 
+physical machine, and the schedule hash executed by the application is recorded 
+persistently by us.
+
+(2) Node crash. For this case, in the restart phase, we simply erase all 
+schedule hash, because current in memory application state does not match the 
+application memmory states implied in schedule hash any more. Note that 
+schedule hash is just our hints, and it can be safely erased in any case 
+without affecting soundness or correctness of our system.
+
+(3) Network partition or \paxos message lost. In this case, we can do nothing 
+special (but we can still serve requests, \eg, read-only requests), because 
+later if the network gets back, our above schedule hash can detect all types of 
+read/write conflicts and roll back; if the network never gets back, this node 
+can not reach any consensus with other nodes and then won't execute any write 
+requests.
 
 
 \subsection{Implementation} \label{sec:replication-impl}
