@@ -58,6 +58,14 @@ TBD.
 \subsubsection{Reaching consensus on socket APIs} \label{sec:replication-msmr-consensus}
 TBD.
 
+Operations we support.
+
+Data format of our operations. Operation ID, arguments, logical clocks, etc.
+
+Tricky things in supporting socket operations. \eg select.
+
+The logical clock prediction algorithm.
+
 \subsubsection{Read-only optimization} \label{sec:replication-msmr-readonly}
 For speed, modern SMR systems introduce read-only optimization: for many applications such as web servers and key-value stores,
  most of read operations do not modify applcation states, and SMR systems process them rapidly in 
@@ -166,7 +174,7 @@ requests.
 \subsection{Implementation} \label{sec:replication-impl}
 TBD.
 
-\subsubsection{Checkpointing and recovery} \label{sec:replication-impl-checkpoint}
+\subsubsection{Checkpointing and failure recovery} \label{sec:replication-impl-checkpoint}
 In order to recover a replica from failure or application conflicts caused by 
 read only requests, we need to have a systematic checkpoint mechanisms for the applications.
 
@@ -205,7 +213,23 @@ us internally. CPU registers can also be saved.
 
 
 \subsubsection{Handling nondeterministic operations} \label{sec:replication-impl-nondet}
-TBD.
+In reality, applications may call nondetermnistic operations, including 
+``rand()" and ``gettimeofday()", and the return value of these functions may 
+affect control flow and schedules of applications (\eg, the \apache uses 
+``gettimeofday()" to check cache expiration). We use the same approach as that 
+in PMP (todo: add citation) to address this problem: for each request, a \msmr roxy executes
+this function multiple times (long enough) in advance and send the result list to all the replicas,
+replicas just take the result from the list to serve the request from the application.
+
+\subsubsection{Maintaining systems resources} \label{sec:replication-impl-resource}
+Systems resources such as file descriptors may need to be maintained by 
+\msmr and we maintain their own mappings and return a consistent value to the 
+return value of IO functions.
+
+\subsubsection{Maintaining systems resources} \label{sec:replication-impl-race}
+We have a dedicated client to invoke a race detector on a replica node within our system, 
+and we don't forward read-only requests for this replica. This detector is to 
+practically remind develpers to fix and diagnose races.
 
 \subsection{Evaluation plan} \label{sec:replication-eval}
 Performance overhead with the single node multithreaded version.
@@ -216,5 +240,19 @@ Race detection results.
 
 Recovery scenarios and performance results.
 
+Systems parameter sensitivity evaluation, including the periods of hard and soft checkpoints, etc.
 
+
+\subsection{\msmr has broad applications} \label{sec:replication-apps}
+
+This section describes several potential applications of \msmr.
+
+\subsubsection{Fast and effective concurrency error detection} \label{sec:replication-apps-reliability} 
+TBD.
+
+\subsubsection{Fast information flow tracking} \label{sec:replication-apps-security}
+TBD.
+
+\subsubsection{TBD} \label{sec:replication-apps-tbd}
+TBD.
 
