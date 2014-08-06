@@ -61,7 +61,9 @@ TBD.
 \subsubsection{Read-only optimization} \label{sec:replication-msmr-readonly}
 For speed, modern SMR systems introduce read-only optimization: for many applications such as web servers and key-value stores,
  most of read operations do not modify applcation states, and SMR systems process them rapidly in 
-local replicas without reaching consensus for these operations.
+local replicas without reaching consensus for these operations. Todo: needs a 
+carefuly definition of read-only requests, because we only have schedule hash 
+and we can not monitor shared memory variables.
 
 Unfortunately, in the multithreading settings, some read-only requests such as http GET requests may
 modify the application's internal cache, potentially causing divergence of both application states and 
@@ -93,7 +95,7 @@ distributed systems.
 
 In order to address the first challenge (\ie, read-only requests may affect 
 other read or write requests), our key approach is: maintain schedule hash for write 
-requests. We consider all these three cases:
+requests. We consider all these four cases:
 
 (1) The same (input) read requests affecting themselves. This is avoided by 
 having the schedule hash for read-only requests, as mentioned above.
@@ -117,6 +119,21 @@ and should rarely affect other inputs.
 the schedule hash for each read request, because schedule hash is the unique ``stable" 
 signature of each read request, and once some read requests are affected by 
 other read requests, their schedule hash becomes different.
+
+(4) Write affect read. For this case, we may need more than two read-only 
+operations to be involved in consensus, but this is fine, as read-only requests 
+are majority of requests and they tend to push the system to converge to a 
+stable state.
+
+One may ask, can we just simply maintain schedule hash for write requests and 
+simply roll back when we see a divergence of schedule hash for each write 
+request? This naive approach could work, if and only if our marking of read 
+only requests are completely precise (\ie, it would never mark write request as 
+read-only requests). Unfortunately, this case could not be completely avoided 
+because human may make mistakes, and the self comparisons of read-only requests 
+are the key to detect whether they are actually read-only requests (\eg, some 
+requests marked as read-only may actually modify systems states everytime and 
+their schedule hash may never converge).
 
 To address the second challenges, we discuss our approach on three (Todo: more?) popular 
 corner cases:
@@ -150,7 +167,42 @@ requests.
 TBD.
 
 \subsubsection{Checkpointing and recovery} \label{sec:replication-impl-checkpoint}
-TBD.
+In order to recover a replica from failure or application conflicts caused by 
+read only requests, we need to have a systematic checkpoint mechanisms for the applications.
+
+In order to ensure both robustness against failures and speed over conflicts, 
+\msmr designs two kinds of checkpoints: to handle node failures, a hard checkpoint saves current application 
+state permanently to 
+disk; to handle conflicts, a soft checkpoint saves current application state by 
+simply forking a process (issue: can this fork clone all child threads?), and 
+rolling back to a soft checkpoint just simply changes the forked process as 
+current working process.
+
+A hard checkpoint is expensive because of disk IO. In order to minimize its 
+impact, we have a replica (instead of a primary that needs to serve requests 
+and get back to client as soon as possible) to do a periodical (minutes or hours) checkpiont. This 
+hard checkpoint operation is first handled as a \paxos consensus operation (the 
+ID of this checkpoint is the last executed \paxos operation in current 
+replica, and the location of the checkpoint is the replica's ID), and then performs a hard checkpoint.
+Once any node in the distributed 
+system is restarted, it simply checks the last checkpoint in the \paxos 
+operation log and asks for a network transformation of the checkpoint, and 
+then replays the following operations. Since node failures are rare, we expect 
+this mechanism won't affect performance much. In the implementation level, We can have a dedicated
+client in the system to periodical asks for hard checkpoints.
+
+A soft checkpoint is invoked more frequently (\eg, in seconds) than a hard 
+checkpoint, and it is just a local property for resolving conflicts (\ie, it will never 
+be transmitted across nodes).
+
+Currently our checkpoint for application involves four things: file systems, memory state,
+network sockets, and CPU registers. For file systems, we use Dockers.
+For memory state, we use virtual machine or hardware virtualization 
+techniques. Network sockets can also easily checkpointed because the network 
+sockets between the applications (\eg, servers) and our proxy are controled by 
+us internally. CPU registers can also be saved.
+
+
 
 \subsubsection{Handling nondeterministic operations} \label{sec:replication-impl-nondet}
 TBD.
