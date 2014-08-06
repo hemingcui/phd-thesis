@@ -219,7 +219,9 @@ affect control flow and schedules of applications (\eg, the \apache uses
 ``gettimeofday()" to check cache expiration). We use the same approach as that 
 in PMP (todo: add citation) to address this problem: for each request, a \msmr roxy executes
 this function multiple times (long enough) in advance and send the result list to all the replicas,
-replicas just take the result from the list to serve the request from the application.
+replicas just take the result from the list to serve the request from the 
+application. For ``rand()", we acutally execute the ``srand()" and enforce the 
+same seeds on all replicas.
 
 \subsubsection{Maintaining systems resources} \label{sec:replication-impl-resource}
 Systems resources such as file descriptors may need to be maintained by 
