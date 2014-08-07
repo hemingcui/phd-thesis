@@ -4,7 +4,7 @@ In this section, we first introduce the background of state machine replication
 and its current limitations on building state machine replications for general 
 multithreaded programs, and then present our design.
 
-\subsection{Background} \label{sec:replication-intro}
+\subsection{Background} \label{sec:rep-intro}
 
 Due to the trends of cloud computing, building higly-
 available and fast applications have become critical. In order to 
@@ -52,21 +52,52 @@ Practical highlights of our system: evaluated a good range of popular server
 programs, ranging from web servers, data base servers, key-value stores, and 
 popular utility programs. Todo: performance highlights, recovery highlights.
 
-\subsection{\msmr: A Pracitcal SMR sytem for general multithreaded programs} \label{sec:replication-msmr}
-TBD.
+\subsection{\msmr: A Pracitcal SMR sytem for general multithreaded programs} \label{sec:rep-msmr}
+This section first introduces the \msmr architecture, and then describes how it 
+ensure consensus on socket APIs, and then presents our design on read-only 
+optimization.
 
-\subsubsection{Reaching consensus on socket APIs} \label{sec:replication-msmr-consensus}
-TBD.
+\subsubsection{\msmr architecture} \label{sec:rep-arch}
 
-Operations we support.
+Figure XXX shows the \msmr architecture in each node. Each node starts with a proxy, 
+which is a \paxos daemon (\S\ref{sec:rep-consensus}), and each proxy forks a child to execute an 
+application (\eg, a web server) running with a \smt tool. The proxy has a logger module to 
+persistently manage executed operations, and it also has a read optimizer (\S\ref{sec:rep-readonly})
+module to perform read optimization. A checkpoint (\S\ref{sec:rep-checkpoint}) module sits on both 
+application site and kernel site in order to checkpoint execution states of each application.
 
-Data format of our operations. Operation ID, arguments, logical clocks, etc.
+\subsubsection{Reaching consensus on socket APIs} \label{sec:rep-consensus}
+The key goal of our consensus module is: ensure all replicas execute the same 
+sequence of socket operations in the same total order, and each operation must 
+be executed (or returned) at the same logical time. To achieve this goal, we 
+leverage \paxos to performance the consensus on socket operations, and 
+logical clocks are carried as value of each consensus instance. Therefore, our 
+consensus module is transparent to \paxos logic and enjoy the same fault tolerance 
+benefits as \paxos.
+
+Todo: data format of our operations. Operation ID, arguments, logical clocks, etc.
+
+We only need to support blocking socket operations at server side that depend on external 
+network inputs. Below are the operations we hook and how we handle them:
+
+\begin{itemize}
+\item listen(). TBD.
+  
+\item accept(). TBD.
+
+\item recv(), read(), and recvfrom(). TBD.
+
+\item select(). TBD.
+
+\item poll(). TBD.
+
+\end{itemize}
 
 Tricky things in supporting socket operations. \eg select.
 
 The logical clock prediction algorithm.
 
-\subsubsection{Read-only optimization} \label{sec:replication-msmr-readonly}
+\subsubsection{Read-only optimization} \label{sec:rep-readonly}
 For speed, modern SMR systems introduce read-only optimization: for many applications such as web servers and key-value stores,
  most of read operations do not modify applcation states, and SMR systems process them rapidly in 
 local replicas without reaching consensus for these operations. Todo: needs a 
@@ -171,10 +202,10 @@ requests.
 %% really.
 
 
-\subsection{Implementation} \label{sec:replication-impl}
+\subsection{Implementation} \label{sec:rep-impl}
 TBD.
 
-\subsubsection{Checkpointing and failure recovery} \label{sec:replication-impl-checkpoint}
+\subsubsection{Checkpointing and failure recovery} \label{sec:rep-checkpoint}
 In order to recover a replica from failure or application conflicts caused by 
 read only requests, we need to have a systematic checkpoint mechanisms for the applications.
 
@@ -212,7 +243,7 @@ us internally. CPU registers can also be saved.
 
 
 
-\subsubsection{Handling nondeterministic operations} \label{sec:replication-impl-nondet}
+\subsubsection{Handling nondeterministic operations} \label{sec:rep-nondet}
 In reality, applications may call nondetermnistic operations, including 
 ``rand()" and ``gettimeofday()", and the return value of these functions may 
 affect control flow and schedules of applications (\eg, the \apache uses 
@@ -223,17 +254,17 @@ replicas just take the result from the list to serve the request from the
 application. For ``rand()", we acutally execute the ``srand()" and enforce the 
 same seeds on all replicas.
 
-\subsubsection{Maintaining systems resources} \label{sec:replication-impl-resource}
+\subsubsection{Maintaining systems resources} \label{sec:re-resource}
 Systems resources such as file descriptors may need to be maintained by 
 \msmr and we maintain their own mappings and return a consistent value to the 
 return value of IO functions.
 
-\subsubsection{Maintaining systems resources} \label{sec:replication-impl-race}
+\subsubsection{Maintaining systems resources} \label{sec:rep-race}
 We have a dedicated client to invoke a race detector on a replica node within our system, 
 and we don't forward read-only requests for this replica. This detector is to 
 practically remind develpers to fix and diagnose races.
 
-\subsection{Evaluation plan} \label{sec:replication-eval}
+\subsection{Evaluation plan} \label{sec:rep-eval}
 Performance overhead with the single node multithreaded version.
 
 Performance breakdown (analysis) of the consensus component and the read-only optimization component.
@@ -245,16 +276,16 @@ Recovery scenarios and performance results.
 Systems parameter sensitivity evaluation, including the periods of hard and soft checkpoints, etc.
 
 
-\subsection{\msmr has broad applications} \label{sec:replication-apps}
+\subsection{\msmr has broad applications} \label{sec:rep-apps}
 
 This section describes several potential applications of \msmr.
 
-\subsubsection{Fast and effective concurrency error detection} \label{sec:replication-apps-reliability} 
+\subsubsection{Fast and effective concurrency error detection} \label{sec:rep-races} 
 TBD.
 
-\subsubsection{Fast information flow tracking} \label{sec:replication-apps-security}
+\subsubsection{Fast information flow tracking} \label{sec:rep-ift}
 TBD.
 
-\subsubsection{TBD} \label{sec:replication-apps-tbd}
+\subsubsection{TBD} \label{sec:rep-apps-tbd}
 TBD.
 
