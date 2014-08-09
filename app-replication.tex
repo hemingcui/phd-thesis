@@ -14,13 +14,14 @@ build fast services, people introduce read-only optimizations for read requests.
 
 Unfortunately, despite much effort from academia and industry, it is still 
 insufficient for software vendors to provide practical state machine 
-replication service to general applications, because of two challenges. Existing 
+replication service to general applications, because of two challenges. First, existing 
 state machine replication techniques typically require developers to replicate 
 a specific subset of program states (with APIs) instead of the whole program 
-states, which requires strong distributed sytems expert knowledge, and error prone 
-(cite the MongoDB exmample). Second, existing SMR infrastructures assume all 
+states, which requires strong distributed sytems expert knowledge, hard to 
+maintain with the rest of the applications, and error prone 
+(Todo: cite the MongoDB exmample). Second, existing SMR infrastructures assume all 
 replicas always run the same schedule for the same input, pracitally restricing 
-the number of running threads to be only 1 and preventing them fully leverage the 
+the number of running threads to be only one and preventing them fully leverage the 
 power of the multi-core hardware.
 
 Addressing the first challenge requires a general design of APIs for SMR. 
@@ -36,9 +37,7 @@ consensus on general network inputs (including input values and timings)
 across replicas. Second, how to perform read-only 
 optimization for general applications, which is hard, because some 
 semantically read only operations (such as get() in key-value store and GET 
-in http servers) may modify states of server programs. Todo: should we 
-include any other challenges that we have discussed? E.g., recovery, 
-leveraging StableMT, and logical clocks.
+in http servers) may modify states of server programs.
 
 Our system is the first system on building practical state-machine 
 replications for general multi-threaded programs. Todo: how it works: reach 
@@ -81,21 +80,23 @@ We only need to support blocking socket operations at server side that depend on
 network inputs. Below are the operations we hook and how we handle them:
 
 \begin{itemize}
-\item listen(). TBD.
+\item listen(). All replicas return from this call at the same logical clock.
   
-\item accept(). TBD.
+\item accept(). All replicas return from this call at the same logical clock.
 
-\item recv(), read(), and recvfrom(). TBD.
+\item recv(), read(), and recvfrom(). All replicas return from this call at the same logical clock.
 
-\item select(). TBD.
-
-\item poll(). TBD.
+ \item select() and poll(). Make sure all replicas have the available set of file 
+ descriptors. We ensure this invariant by keeping the start of select() at the same logical
+ clock and end at the same logical clock, and bind all the recv() request with their select()
+ function. (Todo: need better wording).
 
 \end{itemize}
 
-Tricky things in supporting socket operations. \eg select.
-
-The logical clock prediction algorithm.
+Todo: the logical clock prediction algorithm. One challenge: what if new requests 
+come while the primay is still running existing requests, ho do we predict a 
+feasible logical clocks? And how do we predict (and update/subtract) logical clocks for group 
+operations such as select()?
 
 \subsubsection{Read-only optimization} \label{sec:rep-readonly}
 For speed, modern SMR systems introduce read-only optimization: for many applications such as web servers and key-value stores,
