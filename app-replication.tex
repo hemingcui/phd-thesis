@@ -65,6 +65,12 @@ persistently manage executed operations, and it also has a read optimizer (\S\re
 module to perform read optimization. A checkpoint (\S\ref{sec:rep-checkpoint}) module sits on both 
 application site and kernel site in order to checkpoint execution states of each application.
 
+\subsubsection{Systems configuration} \label{sec:rep-config}
+
+Two key things: nodes, and the pattern of servrers. We support two modes, 
+point-to-point (or P2P) mode (pairwised send() and recv()) and group mode (a number of send() 
+and one select()).
+
 \subsubsection{Reaching consensus on socket APIs} \label{sec:rep-consensus}
 The key goal of our consensus module is: ensure all replicas execute the same 
 sequence of socket operations in the same total order, and each operation must 
@@ -74,31 +80,77 @@ logical clocks are carried as value of each consensus instance. Therefore, our
 consensus module is transparent to \paxos logic and enjoy the same fault tolerance 
 benefits as \paxos.
 
-Todo: data format of our operations. Operation ID, arguments, logical clocks, etc.
+Because we focus on replicating application states on the server side, not the 
+whole client-server system, we only need to support blocking socket operations at server side
+that depend on external network inputs. Here are a rich set of popular 
+blocking socket operations we support: recv()/read(), accept(), select(), poll(), and 
+epoll().
 
-We only need to support blocking socket operations at server side that depend on external 
-network inputs. Below are the operations we hook and how we handle them:
+One challenge for reaching consensus for blocking socket operations is: neither the proxy nor 
+the \smt module can know what operations a server is going to execute (we can 
+not passively block all blocking operations on the server side and then ask for 
+consensus, because this may be too slow; we want to perform consensus upfront 
+and concurrently). Fortunately, each of these blocking operations must 
+correspond to an event at the ``client" side (in \msmr, the proxy is the client 
+that sends requests to the server). At the proxy side, there are only three 
+operations interacting with the servers: send(), connect(), and close(). 
+Depending on the pattern in the configuration file (\S\ref{sec:rep-config}), we 
+handle the blocking operations in server side with these two patterns:
 
-\begin{itemize}
-\item listen(). All replicas return from this call at the same logical clock.
-  
-\item accept(). All replicas return from this call at the same logical clock.
+(1) P2P mode. When the proxy sees a connect() operation from the client, it invokes a 
+consensus instance with accept(). When the proxy sees a send() operation from the client, it 
+invokes a consensus instance with recv(). The logical clock in these consensus 
+are just value and won't affect \paxos logic. We will discuss how to calculate 
+the logical clock in (\S\ref{sec:rep-interface}).
 
-\item recv(), read(), and recvfrom(). All replicas return from this call at the same logical clock.
+(2) Group mode. This mode involves select() and a set of send()/connect() 
+operations. Let's take select() as example, and handling poll() and epoll() are 
+similar. Handling this mode is challenging, because we we need to make sure 
+all replicas execute the same sequence (including timing) of 
+select() operations with mixed use of recv() and accetp(), with each call 
+the same set of send()/connect() operations. And we need to handle select() 
+timeouts. In order to address this challenge, we come up with a really simple 
+and clean design: in this mode, we actually only need to handle select(), 
+because in this mode both recv() and accetp() become non-blocking (so they do 
+not need any consensus and do not consume any logical clocks). In the 
+proxy of the primay, we batch the send()/connect() operations with a fixed 
+number N (usually this is the number of CPU cores) or an adaptable timeout (a 
+configurable value, and we currently make it an order of magnitude smaller than the 
+average response time of the server), and for each batch of these operations, 
+we invoke a \paxos instance with select(). And for these batch of requests, we 
+also invoke them on other replicas (as \paxos value). Timeout of select() is 
+not a problem, because our \smt wrappers change the timeout to be forever.
 
- \item select() and poll(). Make sure all replicas have the available set of file 
- descriptors. We ensure this invariant by keeping the start of select() at the same logical
- clock and end at the same logical clock, and bind all the recv() request with their select()
- function. (Todo: need better wording).
+Todo: data format of our operations. Operation ID, arguments, logical clocks, 
+etc. This is not critical because all these are just \paxos consensus value.
 
-\end{itemize}
+\subsubsection{Interaction of Consensus and \smt} \label{sec:rep-interface}
 
-Todo: the logical clock prediction algorithm. One challenge: what if new requests 
+The key of making sure all replicas execute blocking socket operations at the 
+same timing is ensuring the same logical clocks for each of these operations. 
+There are a few challenges we face: first, what if new requests 
 come while the primay is still running existing requests, ho do we predict a 
-feasible logical clocks? And how do we predict (and update/subtract) logical clocks for group 
-operations such as select()?
+feasible logical clocks? second, TBD.
 
-\subsubsection{Read-only optimization} \label{sec:rep-readonly}
+Actually, for a sequence of operations that requre \paxos, we only need to make 
+sure the (n+1)th event has a logical clock larger than the nth event by 2. 
+Larger is sufficient because event current server is serving requests, as long 
+as we reach a consensus for the (n+1)th operation, the \smt runtime will just 
+simply schedule this operation by blocking the threads serving requests (or 
+worker threads), which 
+does not affect runtime correctness (despite some perfomrance impact). It has 
+to be larger than 2, because larger than 1 will prevent the worker threads from 
+making any progress if there are an infinite number of network inputs.
+
+As a demonstration of the above point, let's consider this extreme case: there are an
+infinite number of network inputs, and each worker thread serving exiting 
+request must do a very large number of requests (let's say one billion locks, 
+but it must be finite). As long as each of the \paxos operations has a logical 
+clock gap (\ie, larger than 2), then as the input sequence comes, the worker 
+thread should have enough chance to finish (although it may be very slot), 
+guaranteeing forward progress.
+
+\subsection{Read-only optimization} \label{sec:rep-readonly}
 For speed, modern SMR systems introduce read-only optimization: for many applications such as web servers and key-value stores,
  most of read operations do not modify applcation states, and SMR systems process them rapidly in 
 local replicas without reaching consensus for these operations. Todo: needs a 
