@@ -163,7 +163,8 @@ queue. When there is a matcing \paxos operation at the head of the \paxos
 queue, this thread will be put back from the wait queue to the run queue.
 
 (2) Wait rule: when ever an operation is scheduled (and executed) at the \smt run queue 
-head, current thread does busy wait until this condition is true: the \paxos queue is not empty, 
+head, if the wait que has threads waiting for \paxos operations, current thread does busy wait until
+this condition is true: the \paxos queue is not empty, 
 or the number of connection from client to proxy is 0; and then, if the \paxos 
 queue is not empty, it dequeues the head \paxos operation and find a 
 corresponding server thread in the wait queue, put this thread into the head of the run 
