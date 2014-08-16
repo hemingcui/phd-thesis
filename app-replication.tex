@@ -189,7 +189,17 @@ we decrement n\_conn by 1. Also, if
 the proxy can not ping to the client within a timeout limit, the proxy also 
 marks the client as dead and sends a close() to the server.
 
-%% (3) Hint rule: task\_start() and tast\_end() are treated as normal non-blocking and 
+%% This is an optimization (not for correctness), because waiting for the 
+%% \paxos queue to be not empty can still slow down the whole system if there is 
+%% only one thread listening on new connections but all incoming requests are from 
+%% existing connections. In this scenario, each lock/unlock while serving 
+%% requests must wait for the \paxos queue to be not empty, which may be very slot.
+%% This performance problem can be mitigated by: if currently no all worker 
+%% threads are serving requests (n\_idle is 0), even if \paxos queue is not empty, 
+%% we still do not serve this \paxos operation (and this is still a feasible 
+%% execution because the server can ``pretend" that the requests do not come).
+
+%% (4) Hint rule: task\_start() and tast\_end() are treated as normal non-blocking and 
 %% totally ordered \smt operations, and we decrease and increase n\_idle when 
 %% these functions are called respectively. These two hints are easy to add to 
 %% mark the working region of worker threads, and they are very critical to 
