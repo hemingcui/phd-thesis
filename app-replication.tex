@@ -163,7 +163,7 @@ queue. When there is a matcing \paxos operation at the head of the \paxos
 queue, this thread will be put back from the wait queue to the run queue.
 
 (2) Wait rule: when ever an operation is scheduled (and executed) at the \smt run queue 
-head, if the wait que has threads waiting for \paxos operations, current thread does busy wait until
+head, current thread does busy wait until
 this condition is true: the \paxos queue is not empty, 
 or the number of connection from client to proxy is 0; and then, if the \paxos 
 queue is not empty, if it finds a 
@@ -174,8 +174,12 @@ queue, and then let the thread execute the \paxos operation.
 Analysis on the wait rule: First, checking the \paxos queue is not 
 empty is critical, because sometimes some operatios arrive at some replicas 
 faster than that at some other replicas, but whenever the \paxos queue is not 
-empty, we safely ensure the same order for these \paxos operations. Second, the 
-``corresponding" above is easy to maintain because we see the socket pair mapping from 
+empty, we safely ensure the same order for these \paxos operations.
+Even if the wait queue has no thread waiting for \paxos operations, the run 
+queue head thread must wait until the \paxos queue is not empty, because the 
+arrival of \paxos requests can be random and may cause the blocking operation 
+to be scheduled in the run queue in different ``rounds" in different replicas.
+Second, the``corresponding" above is easy to maintain because we see the socket pair mapping from 
 both proxy and server side, and this mapping is initially established by seeing 
 a connect() operation from a thread in the proxy side and find a server thread blocking at accept() 
 operation in the wait queue, and then increment n\_conn by 1. Also, waiting for the 
