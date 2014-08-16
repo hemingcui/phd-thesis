@@ -139,7 +139,7 @@ etc. This is not critical because all these are just \paxos consensus value.
 
 The key of making sure all replicas execute blocking socket operations at the 
 same timing is ensuring the same logical clocks for each of these operations. 
-One key challenge is how to ensure a predicted a feasible logical clock is 
+One key challenge is how to ensure a predicted logical clock is 
 feasible (\ie after a predicted logical clock has reach consensus, it must be 
 still feasible in the primary as well as the replicas). For example, we must 
 consider at least these scenario: a network thread that executes 
@@ -149,6 +149,53 @@ worker threads to make progress. Also, the logical clock gap bewteen two \paxos
 operations have performance impact: if the gap is too small, the could be lots 
 requests got received but few are served; if the gap is too big, there may be 
 more requests served but few are received.
+
+We introduce our runtime algorithm that address this challenge. The key idea is 
+combining both our \smt run queue/wait queue and the \paxos operation queue to 
+ensure each \paxos operation is scheduled at the same logical timing at each 
+replica. Specifically, we need to maintain %% introduce two hints: task\_start(), tast\_end() the number of idle worker thread (or n\_idle) and
+the number of socket connections (or n\_conn). Below is the 
+algorithm rules:
+
+(1) Core rule: all recv() or select() operations are treated as blocking calls and the 
+threads calling these functions will wait for a global \smt turn, and be put into wait 
+queue. When there is a matcing \paxos operation at the head of the \paxos 
+queue, this thread will be put back from the wait queue to the run queue.
+
+(2) Wait rule: when ever an operation is scheduled (and executed) at the \smt run queue 
+head, current thread does busy wait until this condition is true: the \paxos queue is not empty, 
+or the number of connection from client to proxy is 0; and then, if the \paxos 
+queue is not empty, it dequeues the head \paxos operation and find a 
+corresponding server thread in the wait queue, put this thread into the head of the run 
+queue, and then let the thread execute the \paxos operation. 
+
+Analysis on the wait rule: First, checking the \paxos queue is not 
+empty is critical, because sometimes some operatios arrive at some replicas 
+faster than that at some other replicas, but whenever the \paxos queue is not 
+empty, we safely ensure the same order for these \paxos operations. Second, the 
+``corresponding" above is easy to maintain because we see the socket pair mapping from 
+both proxy and server side, and this mapping is initially established by seeing 
+a connect() operation from a thread in the proxy side and find a server thread blocking at accept() 
+operation in the wait queue, and then increment n\_conn by 1. Also, waiting for the 
+condition guarantee to move forward because we have the termination rule below.
+
+(3) Connection termination rule: if current \paxos operation is close(), then 
+we decrement n\_conn by 1. Also, if 
+the proxy can not ping to the client within a timeout limit, the proxy also 
+marks the client as dead and sends a close() to the server.
+
+%% (3) Hint rule: task\_start() and tast\_end() are treated as normal non-blocking and 
+%% totally ordered \smt operations, and we decrease and increase n\_idle when 
+%% these functions are called respectively. These two hints are easy to add to 
+%% mark the working region of worker threads, and they are very critical to 
+%% performance: for each operation at the run queue head, if n\_idle is greater 
+%% than 0, and the \paxos queue is not empty, then just dequeues the \paxos 
+%% operation from \paxos queue head, and then picks the corresponding server thread 
+%% to the run queue head. This is an optimization: otherwise (\ie, we serve recv() 
+%% and sync operations in a RR fashion), if serving a request 
+%% requres lots of sync operations within each worker thread, we may have many 
+%% more accumulated received requests before the worker threads can finish serving one batch 
+%% of requests.
 
 %% Actually, for a sequence of operations that requre \paxos, we only need to make 
 %% sure the (n+1)th event has a logical clock larger than the nth event by 2. 
@@ -305,14 +352,14 @@ A soft checkpoint is invoked more frequently (\eg, in seconds) than a hard
 checkpoint, and it is just a local property for resolving conflicts (\ie, it will never 
 be transmitted across nodes).
 
+Todo: for short checkpoints, how can we implement a fork with child threads?
+
 Currently our checkpoint for application involves four things: file systems, memory state,
 network sockets, and CPU registers. For file systems, we use Dockers.
 For memory state, we use virtual machine or hardware virtualization 
 techniques. Network sockets can also easily checkpointed because the network 
 sockets between the applications (\eg, servers) and our proxy are controled by 
 us internally. CPU registers can also be saved.
-
-
 
 \subsubsection{Handling nondeterministic operations} \label{sec:rep-nondet}
 In reality, applications may call nondetermnistic operations, including 
