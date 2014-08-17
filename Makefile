@@ -10,7 +10,7 @@ proposal: proposal.tex terminology.tex abstract.tex intro.tex related.tex stable
 
 bbl:
 	rm -rf proposal.bbl
-	latex  $(SRC) 2>&1 >> $(SRC).build.log
+	latex  $(SRC) 2>&1 > $(SRC).build.log
 	bibtex  $(SRC) 2>&1 >> $(SRC).build.log
 	latex  $(SRC) 2>&1 >> $(SRC).build.log
 	latex  $(SRC) 2>&1 >> $(SRC).build.log

@@ -76,6 +76,15 @@ persistently manage executed operations, and it also has a read optimizer (\S\re
 module to perform read optimization. A checkpoint (\S\ref{sec:rep-checkpoint}) module sits on both 
 application site and kernel site in order to checkpoint execution states of each application.
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.4\textwidth]{figures/architecture}
+\vspace{-.05in}
+\caption{{\em \msmr architecture.}} \label{fig:arch}
+\vspace{-.05in}
+\end{figure}
+
+
 \subsubsection{Systems configuration} \label{sec:rep-config}
 
 Two key things: nodes, and the pattern of servrers. We support two modes, 
