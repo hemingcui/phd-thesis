@@ -6,30 +6,42 @@ multithreaded programs, and then present our design.
 
 \subsection{Background} \label{sec:rep-intro}
 
-Due to the trends of cloud computing, building higly-
-available and fast applications have become critical. In order to 
-provide high availability, the state machine replication (or SMR) approach has become 
-popular. Todo: briefly introduce SMR use Paxos to totally order all requests. In order to
-build fast services, people introduce read-only optimizations for read requests.
+  
+The cloud computing trend requires services on the web to be highly available. In order to 
+provide high availability, the state machine replication (or SMR) approach has 
+become popular. In this approach, a state machine, which runs a single threaded 
+service that always produce the same output on the same input request, 
+is invoked on a number of nodes, and a \paxos protocal enforces the same 
+sequence (total order) of requests for each state machine. \paxos can safely ensure
+the whole system consistently execute the same sequence of requests as long as 
+no more than half of nodes are down, providing high robustness and availability.
 
-Unfortunately, despite much effort from academia and industry, it is still 
-insufficient for software vendors to provide practical state machine 
-replication service to general applications, because of two challenges. First, existing 
-state machine replication techniques typically require developers to replicate 
-a specific subset of program states (with APIs) instead of the whole program 
-states, which requires strong distributed sytems expert knowledge, hard to 
-maintain with the rest of the applications, and error prone 
-(Todo: cite the MongoDB exmample). Second, existing SMR infrastructures assume all 
-replicas always run the same schedule for the same input, pracitally restricing 
-the number of running threads to be only one and preventing them fully leverage the 
-power of the multi-core hardware.
 
-Addressing the first challenge requires a general design of APIs for SMR. 
-Todo: motivate people that we use design the interface at the socket API level.
+Unfortunately, despite much efforts, the benefit of this SMR approach still can 
+be enjoyed by general web services (\eg, server programs) because of two 
+reasons. First, only work with some specific components of an application with 
+specific interface, require expert knowledge on 
+distributed systems, has no a systematic checkpiont and recovery techniques for 
+the state machines. Second, due to the ``single threaded" requirement on each 
+state machine, even existing applicaions with SMR components can not 
+benefit from the performance of the rising multi-core trend.
 
-Addressing the second challenge requires a systematic way of to ensure the same 
-schedules. Todo: introduce \smt, which can greatly reduce the number of schedules for 
-multithreaded programs.
+%% Unfortunately, despite much effort from academia and industry, it is still 
+%% insufficient for software vendors to provide practical state machine 
+%% replication service to general applications, because of two challenges. First, existing 
+%% state machine replication techniques typically require developers to replicate 
+%% a specific subset of program states (with APIs) instead of the whole program 
+%% states, which requires strong distributed sytems expert knowledge, hard to 
+%% maintain with the rest of the applications, and error prone 
+%% (Todo: cite the MongoDB exmample). Second, existing SMR infrastructures assume all 
+%% replicas always run the same schedule for the same input, pracitally restricing 
+%% the number of running threads to be only one and preventing them fully leverage the 
+%% power of the multi-core hardware.
+
+Why is this problem hard? Two parts: research challenge (limitations of 
+existing approaches) and practical 
+challenges (performance, read-only optimization).
+
 
 This article made two major contributions towards building practical state-
 machine replications for multithreaded programs. First, how to reach 
