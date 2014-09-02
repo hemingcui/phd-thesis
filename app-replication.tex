@@ -81,17 +81,26 @@ replica without hurting the primary to server requests much, greatly benefiting
 these tools for deployment and adoption.
 
 %% P7
-By integrating with a pracitcal \smr runtime system \parrot and 
-performing consensus on the socket interface, \msmr is easy to use and deploy,
+\msmr is easy to deploy.
+By integrating with a pracitcal \msmr runtime system \parrot and 
+performing consensus on the socket interface, ,
 and the server applications running with \msmr 
 only requires to be Pthreads compatible, x86 binary, and uses socket operations 
 to accept requests (\ie, we currently do not support libevent based servers). 
 Although \parrot ignores memory level schedule divergence, by leveraging the replication architecture,
-\smr can also practically capture  this kind of divergence (\eg, caused by data races) by running a 
+\msmr can also practically capture  this kind of divergence (\eg, caused by data races) by running a 
 race detector on a dedicated replica.
 
 %% P8
-Evaluation plan.
+In evaluation, we will focus on these questions. First, can \msmr support a diverse 
+set of popular multi-threaded server programs and have reasonable runtime overhead? we plan to evaluate \msmr with 
+over 10 server programs, ranging from web servers, to database servers, and to 
+key value store servers, and measure their performance running with and without \msmr.
+Second, can \msmr practically capture memory level divergence with a dedicated 
+replica running data race detectors? We plan to collect results on this track. 
+Third, what is the performance benefit and breakdown of our read-only 
+optimization approach? Fourth, what is the performance and functionality impact 
+by injecting realisitic replica failures and network partitions?
 
   
 %% The cloud computing trend requires services on the web to be highly available. In order to 
