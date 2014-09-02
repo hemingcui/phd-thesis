@@ -1,30 +1,82 @@
 \section{Leveraging \smt to Build Transparent Multithreaded State Machine Replication} \label{sec:replication}
 
-In this section, we first introduce the background of state machine replication 
-and its current limitations on building state machine replications for general 
-multithreaded programs, and then present our design.
+This section proposes \msmr, a new system that provides 
+state-machine replication service to multi-threaded server programs 
+transparently without modifying or annotating these programs.
+   
+\subsection{Introduction} \label{sec:rep-intro}
 
-\subsection{Background} \label{sec:rep-intro}
+
+%% P1
+Stable-machine replication (or SMR) has become a popular and critical fault-tolerance 
+technique [cite], because the cloud computing trend requires server programs to be 
+highly available. Typically, a SMR system leverages \paxos to ensure 
+consensus on the same totally ordered sequence on inputs among replicas, so that 
+active replicas (with each runs one thread) perform the same sequence of state 
+transitions and produce the same sequence of outputs.
+
+%% P2
+Unfortunately, despite much efforts from academia and industry, it is still 
+insurfficient to build SMR for multi-threaded server programs on multi-core 
+hardware transparently, and a key reason is even all replicas are working 
+correctly, the thread interleavings (or schedules) in different replicas may 
+artificially diverge at runtime and leading to diverged states. To address this 
+problem, existing SMR systems either restrict the number of threads running in each 
+replica to be only one [cite], or require developers to manually annotate all shared states 
+among threads [cite], which may be time consuming and error prone.
+
+%% P3
+One may consider that recent advances on stable and deterministic multithreading 
+[cite] or deterministic replay [cite, Rex] can simply address the above state 
+divergence problem, because these systems can a fixed logical clock rather than in 
+a physical clock for each inter-thread communication (\eg, mutex\_lock).
+However, although these techniques are promising, as we will discuss further in the following sections, 
+these techniques face two fundamental challenges. First, network delay may 
+causes input request to arrive at different replicas at various physical 
+clocks, and deterministic/stable multithreading systems have to 
+convert these clocks to a consistent logical clocks of these requests in their own schedules. Second, 
+to achieve good performance, moden SMR systems allow read-only request to 
+bypass the consensus and be processed in local replicas fastly. However, this read-only 
+requests may change the internal logical clocks or states of a program, 
+fundamentally breaking all these threading systems (\eg, replay may fail 
+because different replicas have served different read-only requests [cite Rex]).
+
+%% P4
+\msmr is the first system for transparently replicating multi-threaded server 
+programs with XXX. TBD. First, TBD. Second, TBD. Third, TBD.
+
+%% P5
+Extra pracitcal challenge of \msmr: systematic checkpoint and recovery.
+
+%% P6
+\msmr has broad applications: it enables heavyweight concurrency analysis at 
+deployment. race detections. DFT.
+
+%% P7
+Discussion on \msmr's fundamental limitations/assumptions.
+
+%% P8
+Evaluation plan.
 
   
-The cloud computing trend requires services on the web to be highly available. In order to 
-provide high availability, the state machine replication (or SMR) approach has 
-become popular. In this approach, a state machine, which runs a single threaded 
-service that always produce the same output on the same input request, 
-is invoked on a number of nodes, and a \paxos protocal enforces the same 
-sequence (total order) of requests for each state machine. \paxos can safely ensure
-the whole system consistently execute the same sequence of requests as long as 
-no more than half of nodes are down, providing high robustness and availability.
+%% The cloud computing trend requires services on the web to be highly available. In order to 
+%% provide high availability, the state machine replication (or SMR) approach has 
+%% become popular. In this approach, a state machine, which runs a single threaded 
+%% service that always produce the same output on the same input request, 
+%% is invoked on a number of nodes, and a \paxos protocal enforces the same 
+%% sequence (total order) of requests for each state machine. \paxos can safely ensure
+%% the whole system consistently execute the same sequence of requests as long as 
+%% no more than half of nodes are down, providing high robustness and availability.
 
 
-Unfortunately, despite much efforts, the benefit of this SMR approach still can 
-be enjoyed by general web services (\eg, server programs) because of two 
-reasons. First, only work with some specific components of an application with 
-specific interface, require expert knowledge on 
-distributed systems, has no a systematic checkpiont and recovery techniques for 
-the state machines. Second, due to the ``single threaded" requirement on each 
-state machine, even existing applicaions with SMR components can not 
-benefit from the performance of the rising multi-core trend.
+%% Unfortunately, despite much efforts, the benefit of this SMR approach still can 
+%% be enjoyed by general web services (\eg, server programs) because of two 
+%% reasons. First, only work with some specific components of an application with 
+%% specific interface, require expert knowledge on 
+%% distributed systems, has no a systematic checkpiont and recovery techniques for 
+%% the state machines. Second, due to the ``single threaded" requirement on each 
+%% state machine, even existing applicaions with SMR components can not 
+%% benefit from the performance of the rising multi-core trend.
 
 %% Unfortunately, despite much effort from academia and industry, it is still 
 %% insufficient for software vendors to provide practical state machine 
@@ -38,41 +90,41 @@ benefit from the performance of the rising multi-core trend.
 %% the number of running threads to be only one and preventing them fully leverage the 
 %% power of the multi-core hardware.
 
-Why is this problem hard? Two parts: research challenge (limitations of 
-existing approaches) and practical 
-challenges (performance, read-only optimization).
+%% Why is this problem hard? Two parts: research challenge (limitations of 
+%% existing approaches) and practical 
+%% challenges (performance, read-only optimization).
 
 
-This article made two major contributions towards building practical state-
-machine replications for multithreaded programs. First, how to reach 
-consensus on general network inputs (including input values and timings) 
-across replicas. Second, how to perform read-only 
-optimization for general applications, which is hard, because some 
-semantically read only operations (such as get() in key-value store and GET 
-in http servers) may modify states of server programs.
+%% This article made two major contributions towards building practical state-
+%% machine replications for multithreaded programs. First, how to reach 
+%% consensus on general network inputs (including input values and timings) 
+%% across replicas. Second, how to perform read-only 
+%% optimization for general applications, which is hard, because some 
+%% semantically read only operations (such as get() in key-value store and GET 
+%% in http servers) may modify states of server programs.
 
-Our system is the first system on building practical state-machine 
-replications for general multi-threaded programs. Todo: how it works: reach 
-consensus on general socket operations, LD\_PRELOAD, transparent (do not need 
-to annotate shared states in a program) replications for servers.
+%% Our system is the first system on building practical state-machine 
+%% replications for general multi-threaded programs. Todo: how it works: reach 
+%% consensus on general socket operations, LD\_PRELOAD, transparent (do not need 
+%% to annotate shared states in a program) replications for servers.
 
-Introduce the fault-tolerance and performance features (guarantees) of our 
-system.
+%% Introduce the fault-tolerance and performance features (guarantees) of our 
+%% system.
 
-Todo: usage scenarios (what kinds of applications can benefit from \msmr) and
-fundamental assumptions (what assumptions to make: \eg, race free) of \msmr. 
-Overall, all applications that can benefit from replicated fault tolerence (or 
-high availability) and 
-multi-core performance can benefit from our system, and we mainly focus on 
-server programs. Regarding assumptions, currently we don't need this, because 
-even for data races, we can simply run a stock race detector at one replica 
-(with little performance impact) and 
-flags warnings whenever we detect races (benign or harmful), and developers can 
-diagnose and fix that.
+%% Todo: usage scenarios (what kinds of applications can benefit from \msmr) and
+%% fundamental assumptions (what assumptions to make: \eg, race free) of \msmr. 
+%% Overall, all applications that can benefit from replicated fault tolerence (or 
+%% high availability) and 
+%% multi-core performance can benefit from our system, and we mainly focus on 
+%% server programs. Regarding assumptions, currently we don't need this, because 
+%% even for data races, we can simply run a stock race detector at one replica 
+%% (with little performance impact) and 
+%% flags warnings whenever we detect races (benign or harmful), and developers can 
+%% diagnose and fix that.
 
-Practical highlights of our system: evaluated a good range of popular server 
-programs, ranging from web servers, data base servers, key-value stores, and 
-popular utility programs. Todo: performance highlights, recovery highlights.
+%% Practical highlights of our system: evaluated a good range of popular server 
+%% programs, ranging from web servers, data base servers, key-value stores, and 
+%% popular utility programs. Todo: performance highlights, recovery highlights.
 
 \subsection{\msmr: A Pracitcal SMR sytem for general multithreaded programs} \label{sec:rep-msmr}
 This section first introduces the \msmr architecture, and then describes how it 
