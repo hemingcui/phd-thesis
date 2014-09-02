@@ -42,8 +42,18 @@ fundamentally breaking all these threading systems (\eg, replay may fail
 because different replicas have served different read-only requests [cite Rex]).
 
 %% P4
-\msmr is the first system for transparently replicating multi-threaded server 
-programs with XXX. TBD. First, TBD. Second, TBD. Third, TBD.
+To address these two challenges and let stable and deterministic 
+multithreading enable transparent SMR for multi-core servers, we propose \msmr.
+In order to support general multi-threaded server programs, \msmr chooses the 
+POXIS socket operations (\eg, connect(), accept(), send(), and recv()) as the 
+requests for consensus, and chooses a pracitcal \smt runtime system called 
+\parrot to reduce the number of schedules in multi-threaded programs. The key 
+novelty of \msmr is a novel algorithm called XXX on addressing the timing 
+challenge: this algorithm works seamlessly with general \smt or \dmt runtime systems, 
+and convert the timing problem into a input generation problem, greatly simplifying the consensus on 
+request timings and have fast performance. To support read-only optimization 
+in modern SMR applications, we proposes our new approach that can soundly 
+detect internal state divergences in the server programs and safely rollback.
 
 %% P5
 Extra pracitcal challenge of \msmr: systematic checkpoint and recovery.
