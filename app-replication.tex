@@ -56,11 +56,29 @@ in modern SMR applications, we proposes our new approach that can soundly
 detect internal state divergences in the server programs and safely rollback.
 
 %% P5
-Extra pracitcal challenge of \msmr: systematic checkpoint and recovery.
+An critical challenge for the practicalness of transparent SMR is: \msmr must 
+support systematic checkpoint and recovery. One major limitation of existing SMR 
+frameworks [cite Rex] is: they often require developers to write their own 
+customized checkpointing and recovery logic for each application, adding lots 
+of burdens to the developers and making SMR deployments tedious and 
+error prone [cite MongoDB]. To address this pracitcal challenge, \msmr builds a 
+systematic checkpoint mechanism that supports systematic and transparent 
+checkpointing applications, including the application states of file systems, memory, and CPU registers.
 
 %% P6
-\msmr has broad applications: it enables heavyweight concurrency analysis at 
-deployment. race detections. DFT.
+In addition to enabling transparent SMR on multi-core servers, \msmr have other 
+broad applications. First, by carefully designing the consensue interface on 
+the socket operation level, \msmr can also benefit transparent replication of 
+single-threaded server applications. Second, \msmr enables heavyweight concurrency analysis at 
+deployment, which was impossible before. In order to improve reliability and 
+security of multi-threaded programs, both academia and industry have built 
+sophisticate analysis tools to detect runtime misbehavior (\eg, data race detections, 
+data flow tracking). However, these tools often perform heavyweight 
+analysis and introduce prohibitive slow down (\eg, running a Googld dynamic data race detector 
+TSan carried with gcc-4.8 typically have 30x to 100x slowdown). Fortunately, by 
+levegaring the transparent SMR in \msmr, these tools can now run on a dedicated 
+replica without hurting the primary to server requests much, greatly benefiting 
+these tools for deployment and adoption.
 
 %% P7
 Discussion on \msmr's fundamental limitations/assumptions.
