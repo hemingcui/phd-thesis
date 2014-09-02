@@ -81,7 +81,14 @@ replica without hurting the primary to server requests much, greatly benefiting
 these tools for deployment and adoption.
 
 %% P7
-Discussion on \msmr's fundamental limitations/assumptions.
+By integrating with a pracitcal \smr runtime system \parrot and 
+performing consensus on the socket interface, \msmr is easy to use and deploy,
+and the server applications running with \msmr 
+only requires to be Pthreads compatible, x86 binary, and uses socket operations 
+to accept requests (\ie, we currently do not support libevent based servers). 
+Although \parrot ignores memory level schedule divergence, by leveraging the replication architecture,
+\smr can also practically capture  this kind of divergence (\eg, caused by data races) by running a 
+race detector on a dedicated replica.
 
 %% P8
 Evaluation plan.
