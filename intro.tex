@@ -1,28 +1,69 @@
 \section{Introduction} \label{ch:intro}
 
-Multithreading has become one main stream of computer software due to the rise 
-of the multicore and the trend of big data.
+%% P1: Multi-threading is critical and popular.
+Multi-threading has become increasing pervasive and critical because of two 
+trends. First, due to physical constraints on circuit speed, computers are having
+more and more cores rather than faster and faster single-core. In order to 
+harness the power of multi-core, more and more software are multi-threaded. 
+Second, the emerging cloud computing trend requires web services, ranging from 
+web servers to databases, to process more and more requests at the same time, which also 
+pushes developers to write more and more multi-threaded programs in order to 
+process a large amount of requests concucurrenlty. These trends continue and 
+then multit-threading are becoming increaingly pervasive and critical.
 
-Unfortunately, despite much effort, multithreading is still extremely hard to 
-get right, and a key reason is programs may run into too many possible thread 
-interleavings (or schedules) at runtime. This excessive number of schedules 
-greatly aggravate understanding, testing, analyzing of software. Refer to XXX: 
-one grand challenge.
+%% P2: However, it is hard to get right.
+Unfortunately, despite much efforts from both academia and industry, 
+multi-threaded programs are still notoriously difficult to get right. A key 
+reason is: even running on the same input, the concurrently running threads of 
+a program may interleave in \v{too many} different ways, and we call these interleavings 
+\v{schedules}. Considering all inputs, this number is even larger. 
+It is extremely hard to test, analyze, and verify all these huge 
+amount of possible schedules and make sure these programs are reliable to 
+concurrency bugs. As a result, a concurency bug hidden in one schedule can 
+simply bypass these reliability techniques and show up in the field, 
+potentially causing program crashes, wrong outputs, security breaches, and so on.
 
-In order to mitage this problem, researchers have proposed a great idea call 
-\dmt. However, these systems aim at reducing the number of possible schedules 
-on each input. And these sytems may map similar inputs into very different 
-schedules, artificially reducing programs' robustness. Conserding all inputs, 
-the number of possible schedules can still be too many, and the resultant 
-programs are still hard to understand, test, analyze, and so on.
+%% P3: DMT: one possible approach. And its limitations.
+In order to reduce the number possible schedules on each input, researchers 
+have proposed a great idea called deterministic multithreading (or \dmt) that 
+always enforces the same schedule on the same input. By mapping each input to onely 
+one schedule, \dmt greatly improved reliability for multithreaded programs on each input.
 
-In order to reduce the number of possible schedules for all inputs, my collaborators and I have 
-proposed a new idea called Stable Multithreading (or \smt) that can greatly 
-reduce the number of possible schedules for all inputs, greatly benefitting 
-understanding of multithreaded programs as well as almost all reliability tools.
+%% P4: StableMT: our new approach and thesis.
+However, although \dmt is useful, it is not as useful as commonly perceived, 
+because as we have shown in our previous research~cite{tern:osdi10},
+a typical \dmt system can map slightly different inputs to 
+very different schedules, artificially reducing programs' robustness on input 
+perturbation, and the number of possible schedules on all inputs are still too 
+many.
 
-Our previous reserach, three softare systems, with each addressing different 
-challenges.
+%% P5: StableMT's applications.
+
+%% P6: Structures of this proposal.
+
+%% Multithreading has become one main stream of computer software due to the rise 
+%% of the multicore and the trend of big data.
+
+%% Unfortunately, despite much effort, multithreading is still extremely hard to 
+%% get right, and a key reason is programs may run into too many possible thread 
+%% interleavings (or schedules) at runtime. This excessive number of schedules 
+%% greatly aggravate understanding, testing, analyzing of software. Refer to XXX: 
+%% one grand challenge.
+
+%% In order to mitage this problem, researchers have proposed a great idea call 
+%% \dmt. However, these systems aim at reducing the number of possible schedules 
+%% on each input. And these sytems may map similar inputs into very different 
+%% schedules, artificially reducing programs' robustness. Conserding all inputs, 
+%% the number of possible schedules can still be too many, and the resultant 
+%% programs are still hard to understand, test, analyze, and so on.
+
+%% In order to reduce the number of possible schedules for all inputs, my collaborators and I have 
+%% proposed a new idea called Stable Multithreading (or \smt) that can greatly 
+%% reduce the number of possible schedules for all inputs, greatly benefitting 
+%% understanding of multithreaded programs as well as almost all reliability tools.
+
+%% Our previous reserach, three softare systems, with each addressing different 
+%% challenges.
 
 \tern TBD.
 
