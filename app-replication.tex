@@ -11,9 +11,10 @@ transparently without modifying or annotating these programs.
 Stable-machine replication (or SMR) has been an increasingly popular and critical fault-tolerance 
 technique, because server programs in today's clouds are expected to be 
 highly available. Typically, a SMR system contains a set of replicas with each 
-running a server program, and SMR ensures 
+running the same single-threaded program, and SMR ensures 
 consensus on the same totally ordered sequence on inputs among replicas, then
-active replicas performs the same sequence of state transitions and produce the same sequence of outputs.
+active replicas processe requests in the sequence one by one and produce the same
+sequence of outputs~\cite{paxos, pbft:osdi99, mencius:osdi08, saebft:sosp03}.
 
 %% P2
 Unfortunately, despite much efforts from academia and industry, existing SMR systems 
@@ -21,22 +22,23 @@ still can not run multi-threaded server programs transparently without
 modifying these programs, and a key reason is even all replicas are working 
 correctly, the thread interleavings (or schedules) in different replicas may 
 artificially diverge at runtime and leading to diverged states. To address this 
-problem, existing SMR systems either restrict the number of threads running in each 
-replica to be only one~\cite{paxos, pbft:osdi99, mencius:osdi08, saebft:sosp03},
-or require developers to manually annotate all shared states 
-among threads~\cite{eve:osdi12}, which may be time consuming and error prone.
+problem, existing SMR systems either require tedious manual annotation of
+all shared states for tracking divergence~\cite{eve:osdi12}, or sacrifice 
+execution independence via record-and-replay executions~\cite{rex:eurosys14, 
+vft:sosp95}.
 
 %% P3
-To address the above state divergence chllange, one may consider recent
+One may consider recent
 advances on stable and deterministic multithreading 
 ~\cite{dmp:asplos09, coredet:asplos10, dos:osdi10, kendo:asplos09, 
 determinator:osdi10, cui:tern:osdi10, dthreads:sosp11, peregrine:sosp11, parrot:sosp13}
-or deterministic replay~\cite{rex:eurosys14} can be simply applied to SMR,
+can be simply applied to SMR to address the above state divergence chllange,
 because these systems use deterministic logical clock rather than in 
-a physical clock for each inter-thread communication (\eg, mutex\_lock), 
-guaranteeing that different runs on the same or even simplar inputs (enabled by 
+ a physical clock for each inter-thread communication (\eg, mutex\_lock), 
+ and enforce the same schedule on on the same inputs (enabled by 
 \smt) are running the same schedules.
-However, although these multi-threading techniques are promising, as we will discuss further in the following sections, 
+However, although these multi-threading techniques are promising,
+as we will discuss further in the following sections, 
 these techniques face two fundamental challenges. First, network delay may 
 causes input request to arrive at different replicas at different timings,
 and deterministic/stable multithreading systems need to 
@@ -45,14 +47,12 @@ to achieve good performance, moden SMR systems allow read-only request to
 bypass the consensus and be processed in local replicas fastly. However, this read-only 
 requests may change the internal logical states of a program (\eg, whether a 
 web page is in the \apache internal cache), 
-fundamentally preventing these threading systems being applied to SMR (\eg, 
-deterministic replay may fail because different replicas may serve very different read-only 
-requests~\cite{rex:eurosys14, vft:sosp95}).
+fundamentally preventing these threading systems being applied to SMR.
 
 %% P4
 To address these two challenges and let stable and deterministic 
 multithreading techniques benefit SMR, we propose \msmr, a system that can 
-transparently replicated multi-threaded servers with two novel techniques.
+transparently replicated multi-threaded servers.
 In order to support general multi-threaded server programs, \msmr chooses the 
 POXIS socket operations (\eg, connect(), accept(), send(), and recv()) as the 
 requests for consensus, and chooses a pracitcal \smt runtime system called 
@@ -68,9 +68,9 @@ detect internal state divergences in the server programs and safely rollback.
 An critical challenge for the practicalness of transparent SMR is: \msmr must 
 support systematic checkpoint and recovery. One major limitation of existing SMR 
 frameworks~\cite{rex:eurosys14} is: they often require developers to write their own 
-customized checkpointing and recovery logic for each application, adding lots 
-of burdens to the developers and making SMR deployments tedious and 
-error prone [cite MongoDB]. To address this pracitcal challenge, \msmr builds a 
+customized checkpointing and recovery logic for each application, which 
+requires lots of knowledge on distributed systems, heavyweight, and error prone [cite MongoDB].
+To address this pracitcal challenge, \msmr builds a 
 systematic checkpoint mechanism that supports systematic and transparent 
 checkpointing applications, including the application states of file systems, memory, and CPU 
 registers, greatly reducing devlopers' efforts and making SMR transparent to 
@@ -93,7 +93,7 @@ these tools for deployment and adoption. TBD: can \msmr also benefit byzantine f
 tolerence systems?
 
 %% P7
-\msmr is easy to deploy and has no fundamental assumptions on concurrency.
+\msmr is easy to deploy and requires no fundamental assumptions on multi-threading concurrency.
 By integrating with a pracitcal \msmr runtime system \parrot and 
 performing consensus on the socket interface, ,
 and the server applications running with \msmr 
@@ -113,74 +113,6 @@ replica running data race detectors? We plan to collect results on this track.
 Third, what is the performance benefit and breakdown of our read-only 
 optimization approach? Fourth, what is the performance and functionality impact 
 by injecting realisitic replica failures and network partitions?
-
-  
-%% The cloud computing trend requires services on the web to be highly available. In order to 
-%% provide high availability, the state machine replication (or SMR) approach has 
-%% become popular. In this approach, a state machine, which runs a single threaded 
-%% service that always produce the same output on the same input request, 
-%% is invoked on a number of nodes, and a \paxos protocal enforces the same 
-%% sequence (total order) of requests for each state machine. \paxos can safely ensure
-%% the whole system consistently execute the same sequence of requests as long as 
-%% no more than half of nodes are down, providing high robustness and availability.
-
-
-%% Unfortunately, despite much efforts, the benefit of this SMR approach still can 
-%% be enjoyed by general web services (\eg, server programs) because of two 
-%% reasons. First, only work with some specific components of an application with 
-%% specific interface, require expert knowledge on 
-%% distributed systems, has no a systematic checkpiont and recovery techniques for 
-%% the state machines. Second, due to the ``single threaded" requirement on each 
-%% state machine, even existing applicaions with SMR components can not 
-%% benefit from the performance of the rising multi-core trend.
-
-%% Unfortunately, despite much effort from academia and industry, it is still 
-%% insufficient for software vendors to provide practical state machine 
-%% replication service to general applications, because of two challenges. First, existing 
-%% state machine replication techniques typically require developers to replicate 
-%% a specific subset of program states (with APIs) instead of the whole program 
-%% states, which requires strong distributed sytems expert knowledge, hard to 
-%% maintain with the rest of the applications, and error prone 
-%% (Todo: cite the MongoDB exmample). Second, existing SMR infrastructures assume all 
-%% replicas always run the same schedule for the same input, pracitally restricing 
-%% the number of running threads to be only one and preventing them fully leverage the 
-%% power of the multi-core hardware.
-
-%% Why is this problem hard? Two parts: research challenge (limitations of 
-%% existing approaches) and practical 
-%% challenges (performance, read-only optimization).
-
-
-%% This article made two major contributions towards building practical state-
-%% machine replications for multithreaded programs. First, how to reach 
-%% consensus on general network inputs (including input values and timings) 
-%% across replicas. Second, how to perform read-only 
-%% optimization for general applications, which is hard, because some 
-%% semantically read only operations (such as get() in key-value store and GET 
-%% in http servers) may modify states of server programs.
-
-%% Our system is the first system on building practical state-machine 
-%% replications for general multi-threaded programs. Todo: how it works: reach 
-%% consensus on general socket operations, LD\_PRELOAD, transparent (do not need 
-%% to annotate shared states in a program) replications for servers.
-
-%% Introduce the fault-tolerance and performance features (guarantees) of our 
-%% system.
-
-%% Todo: usage scenarios (what kinds of applications can benefit from \msmr) and
-%% fundamental assumptions (what assumptions to make: \eg, race free) of \msmr. 
-%% Overall, all applications that can benefit from replicated fault tolerence (or 
-%% high availability) and 
-%% multi-core performance can benefit from our system, and we mainly focus on 
-%% server programs. Regarding assumptions, currently we don't need this, because 
-%% even for data races, we can simply run a stock race detector at one replica 
-%% (with little performance impact) and 
-%% flags warnings whenever we detect races (benign or harmful), and developers can 
-%% diagnose and fix that.
-
-%% Practical highlights of our system: evaluated a good range of popular server 
-%% programs, ranging from web servers, data base servers, key-value stores, and 
-%% popular utility programs. Todo: performance highlights, recovery highlights.
 
 \subsection{\msmr: A Pracitcal SMR sytem for general multithreaded programs} \label{sec:rep-msmr}
 This section first introduces the \msmr architecture, and then describes how it 
