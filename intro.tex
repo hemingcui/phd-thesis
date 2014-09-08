@@ -31,39 +31,27 @@ one schedule, \dmt greatly improved reliability for multithreaded programs on ea
 
 %% P4: StableMT: our new approach and thesis.
 However, although \dmt is useful, it is not as useful as commonly perceived, 
-because as we have shown in our previous research~cite{tern:osdi10},
+because as we have shown in our previous research~\cite{cui:tern:osdi10},
 a typical \dmt system can map slightly different inputs to 
 very different schedules, artificially reducing programs' robustness on input 
 perturbation, and the number of possible schedules on all inputs are still too 
 many.
 
 %% P5: StableMT's applications.
+By greatly reducing the number of possible schedules for all inputs, \smt can benefit many reliability 
+techniques and make it much easier to find the schedules that cause concurrency 
+bugs. For example, my collaborators and I have quantitatively shown that \smt can 
+increase the coverage of tools that systematically testing schedules for 
+bugs~\cite{parrot:sosp13, dbug:spin11, modist:nsdi09}, and improve the precision 
+of program analysis~\cite{wu:pldi12}, verification~\cite{wu:pldi12}, and 
+debugging concurrency bugs~\cite{cui:tern:osdi10}. Some of our \smt techniques have 
+also been used by other researchers to compute schedules for covering all 
+inputs~cite{bergan:oopsla13}. We also plan to leverage \smt to enable transparent 
+state-machine replication~\cite{paxos} for multi-threaded prograsms.
 
 %% P6: Structures of this proposal.
+The rest of this thesis is orgnized as follows. 
 
-%% Multithreading has become one main stream of computer software due to the rise 
-%% of the multicore and the trend of big data.
-
-%% Unfortunately, despite much effort, multithreading is still extremely hard to 
-%% get right, and a key reason is programs may run into too many possible thread 
-%% interleavings (or schedules) at runtime. This excessive number of schedules 
-%% greatly aggravate understanding, testing, analyzing of software. Refer to XXX: 
-%% one grand challenge.
-
-%% In order to mitage this problem, researchers have proposed a great idea call 
-%% \dmt. However, these systems aim at reducing the number of possible schedules 
-%% on each input. And these sytems may map similar inputs into very different 
-%% schedules, artificially reducing programs' robustness. Conserding all inputs, 
-%% the number of possible schedules can still be too many, and the resultant 
-%% programs are still hard to understand, test, analyze, and so on.
-
-%% In order to reduce the number of possible schedules for all inputs, my collaborators and I have 
-%% proposed a new idea called Stable Multithreading (or \smt) that can greatly 
-%% reduce the number of possible schedules for all inputs, greatly benefitting 
-%% understanding of multithreaded programs as well as almost all reliability tools.
-
-%% Our previous reserach, three softare systems, with each addressing different 
-%% challenges.
 
 \tern TBD.
 
