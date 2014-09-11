@@ -1,5 +1,35 @@
-\section{Stable Multithreading} \label{sec:stablemt}
+\section{Previous Research} \label{sec:done}
 
-This section describes detailed design of Parrot, a practical stable 
-multithreading runtime system.
+Although the vision of stable multithreading is appealing, realizing it
+faces numerous challenges.  Three main challenges are:
+
+\begin{enumerate}
+
+\item[$\bullet$] How can we compute the schedules to map inputs to?  The 
+schedules
+  must be feasible so executions reusing them do not get stuck.
+  They should also be highly reusable.
+
+\item[$\bullet$] How can we enforce schedules deterministically and
+  efficiently?  ``Deterministically'' so executions that reuse a schedule
+  cannot deviate even if there are data races, and ``efficiently'' so
+  overhead does not offset reliability benefits.
+  This challenge is also a decades-long challenge in the area of
+  deterministic execution and replay.
+
+\item[$\bullet$] How can we handle multithreaded server programs?  They often 
+run for a
+  long time and react to each client request as it arrives, making their
+  schedules very specific to a stream of requests and difficult to reuse.
+
+\end{enumerate}
+
+
+\input{tern/tern}
+
+\input{peregrine/peregrine}
+
+\input{parrot/parrot}
+
+\input{mc/mc}
 

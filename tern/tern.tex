@@ -1,1 +1,152 @@
-\section{Tern} \label{ch:tern}
+\subsubsection{Computing Schedules} \label{sec:memoize}
+
+Crucial to implementing \smt is how to compute the set of schedules for
+processing inputs.  At the bare minimum, a schedule must be feasible when
+enforced on an input, so the execution does not get stuck or deviate from
+the schedule.  Ideally, the set of schedules should also be small for
+reliability.  One possible idea is to pre-compute schedules using static
+source code analysis, but the halting problem makes it undecidable to
+statically compute schedules guaranteed to work dynamically.  Another
+possibility is to compute schedules on the fly while a program is running,
+but the computations may be complex and their overhead high.
+
+Instead, we compute schedules by recording them from past executions; the
+recorded schedules can then be reused on future inputs to stabilize
+program behaviors.  \tern, our system implementing this idea, works as
+follows.  At runtime, it maintains a persistent cache of schedules
+recorded from past executions.  When an input arrives, \tern searches the
+cache for a schedule compatible with the input.  If it finds one, it
+simply runs the program while enforcing the schedule.  Otherwise, it runs
+the program as is while recording a new schedule from the execution, and
+saves the schedule into the cache for future reuse.
+
+The \tern approach to computing schedules has several benefits. First, by
+reusing schedules shown to work, \tern may avoid potential errors in
+unknown schedules, improving reliability.  A real-world analogy is the
+natural tendencies in humans and animals to follow familiar routes to
+avoid possible hazards along unknown routes.  Migrant birds, for example,
+often migrate along fixed flyways.  Why don't our multithreading systems
+learn from them and reuse familiar schedules?  (The name \tern comes from
+the Arctic Tern, a bird species that migrates the farthest among all
+animals%~\cite{artic-tern-wiki}
+.)
+
+Second, \tern explicitly stores schedules, so developers and users can
+flexibly choose what schedules to record and when.  For instance,
+developers can populate a cache of correct schedules during testing and
+then deploy the cache together with their program, improving testing
+effectiveness and avoiding the overhead to record schedules on user
+machines.  Moreover, they can run their favorite checking tools on the
+schedules to detect a variety of errors, and choose to keep only the
+correct schedules in the cache.
+
+Lastly, \tern is efficient because it can amortize the cost of computing
+schedules.
+%recording and checking one schedule over many executions that reuse the
+%schedule.
+Specifically, recording and checking a schedule is more expensive than
+reusing a schedule,
+% because \tern has to track more things.  Fortunately, 
+but, fortunately, \tern does it only once for each schedule and then
+reuses the schedule on many inputs, amortizing the cost.
+
+A key challenge facing \tern is to check that an input is compatible with
+a schedule before executing the input under the schedule.  Otherwise, if
+\tern tries to enforce a schedule, for instance, of two threads on an input
+that requires four, the execution would not follow the schedule.  This
+challenge turns out to be the most difficult one we must solve in building
+\tern.  Our final solution leverages several advanced program
+analysis techniques, including two new ones we
+invent.  We refer interested readers to our
+papers~\cite{cui:tern:osdi10,peregrine:sosp11} for details, and only
+describe the high level idea here.
+
+When recording a schedule, \tern tracks how the synchronizations in the
+schedule depend on the input.  It captures these dependencies into 
+a relaxed, quickly checkable set of
+constraints called the \emph{precondition} of the
+schedule.  It then reuses the schedule on all inputs satisfying the 
+precondition,
+avoiding the runtime cost of recomputing schedules.
+
+A na\"ive way to compute the precondition is to collect constraints from
+all input-dependent branches in an execution.  For instance, if a branch
+instruction inspects input variable \v{X} and goes down the true branch,
+we add a constraint that \v{X} must be nonzero to the precondition.  A
+precondition computed this way is sufficient, but it contains many
+unnecessary constraints concerning only thread-local computations.  Since
+an over-constraining precondition decreases schedule-reuse rates, \tern
+removes these unnecessary constraints from the precondition.
+
+\begin{figure}[t]
+\centering \tiny \lgrindfile{tern/code/pbzip2.cpp.lineno}
+\caption{{\it An example program based on parallel compression utility
+  \pbzip.}  It spawns \v{nthread} worker threads, splits a file among the
+  threads, and compresses the file blocks in parallel.} \label{fig:pbzip2}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\begin{minipage}[c]{.9\linewidth}
+\tiny \lgrindfile{tern/code/pbzip2-sync-order.cpp}
+%\includegraphics[width=.4\textwidth]{figures/pbzip2-sync-order.eps}
+\end{minipage}
+\caption{{\it A synchronization schedule of the example program.}  Each
+  synchronization is labeled with its line number in
+  Figure~\ref{fig:pbzip2}.} \label{fig:pbzip2-sync-order}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\begin{minipage}[c]{0.6\linewidth}
+\tiny \lgrindfile{tern/code/pbzip2-constraints.cpp}
+\end{minipage}
+\caption{{\it All input constraints collected for the schedule.}  Each
+  constraint is labeled with its line number in
+  Figure~\ref{fig:pbzip2}. Constraints collected from function
+  \v{compress} are later removed by \tern because they have no effects on
+  the schedule.  The remaining constraints simplify to
+  $nthread=2$.} \label{fig:pbzip2-constraints}
+\end{figure}
+
+We illustrate how \tern works using a simple program based on the
+aforementioned parallel compression utility \pbzip.
+Figure~\ref{fig:pbzip2} shows this example. Its input includes all command
+line arguments in \v{argv} and the input file data.
+To compress a file, it spawns \v{nthread} worker threads,
+splits the file accordingly, and compresses the file blocks in parallel by
+calling function \v{compress}. To coordinate the worker threads, it uses a
+synchronized work list. (Here we use work-list synchronization for
+clarity; in practice, \tern handles Pthread synchronizations.) The example
+actually has a bug: it is missing \v{pthread\_join} operations at line 7,
+so the work list may be used by function \v{worker} after it is cleared at
+line 8, causing potential program crashes. This bug is based on a real
+bug in \pbzip.
+
+We first illustrate how \tern records a schedule and its precondition.
+Suppose we run this example with two threads, and \tern records a schedule
+as shown in Figure~\ref{fig:pbzip2-sync-order}, which avoids the
+use-after-free bug.  (Other schedules are also possible.)
+% To record this schedule, \tern controls and records the synchronizations
+% at lines 4, 6, 8, and 11.
+To compute the precondition of the schedule, \tern first records the
+outcomes of all executed branch statements that depend on input data.
+Figure~\ref{fig:pbzip2-constraints} shows the set of constraints
+collected.  It then applies advanced program analyses to remove the
+constraints that concern only local computations and have no effects on
+the schedule, including all constraints collected from function
+\v{compress}.  The remaining ones simplify to $nthread=2$, which forms the
+precondition of the schedule.  \tern stores the schedule and precondition
+into the schedule cache.
+
+We now illustrate how \tern reuses a schedule.  Suppose we want to
+compress a completely different file also with two threads.  \tern will
+detect that \v{nthread} satisfies $nthread=2$, so it will reuse the
+schedule in Figure~\ref{fig:pbzip2-sync-order} to compress the file,
+regardless of the file data.  This execution is reliable because the
+schedule avoids the use-after-free bug.  It is also efficient because the
+schedule orders only synchronizations and allows the \v{compress}
+operations to run in parallel.  Suppose we run this program again with
+four threads.  \tern will detect that the input does not satisfy the
+precondition $nthread=2$, so it will record a new schedule and
+precondition.

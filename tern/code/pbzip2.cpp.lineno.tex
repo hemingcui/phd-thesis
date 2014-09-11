@@ -1,0 +1,22 @@
+% Remember to use the lgrind style
+
+\Head{}
+\File{pbzip2.cpp.lineno}{2014}{9}{11}{18:56}{646}
+\index{main}\Proc{main}\L{\LB{\N{1}_\V{:}}\Tab{6}{\V{main}(\K{int}_\V{argc},_\K{char}_*\V{argv}[\,])_\{}}
+\L{\LB{\N{2}_\V{:}}\Tab{8}{\K{int}_\V{i},_\V{nthread}_=_\V{atoi}(\V{argv}[\N{1}]);}}
+\L{\LB{\N{3}_\V{:}}\Tab{8}{\K{for}(\V{i}=\N{0};_\V{i}\<\V{nthread};_++\V{i})}}
+\L{\LB{\N{4}_\V{:}}\Tab{10}{\V{pthread\_create}(\V{worker});_\C{}//_create_worker_threads\CE{}}}
+\L{\LB{\N{5}_\V{:}}\Tab{8}{\K{for}(\V{i}=\N{0};_\V{i}\<\V{nthread};_++\V{i})}}
+\L{\LB{\N{6}_\V{:}}\Tab{10}{\V{worklist}.\V{add}(\V{read\_block}(\V{i}));_\C{}//_add_block_to_work_list\CE{}}}
+\L{\LB{\N{7}_\V{:}}\Tab{8}{\C{}//_Error:_missing_\CE{}\V{pthread\_join}()\C{}_operations\CE{}}}
+\L{\LB{\N{8}_\V{:}}\Tab{8}{\V{worklist}.\V{clear}();_\C{}//_clear_work_list\CE{}}}
+\L{\LB{\N{9}_\V{:}}\Tab{8}{.\,.\,.}}
+\L{\LB{\N{10}\V{:}}\Tab{6}{\}}}
+\index{worker}\Proc{worker}\L{\LB{\N{11}\V{:}}\Tab{6}{\V{worker}()_\{_\C{}//_worker_threads_for_compressing_file_blocks\CE{}}}
+\L{\LB{\N{12}\V{:}}\Tab{8}{\V{block}_=_\V{worklist}.\V{get}();_\C{}//_get_a_file_block_from_work_list\CE{}}}
+\L{\LB{\N{13}\V{:}}\Tab{8}{\V{compress}(\V{block});}}
+\L{\LB{\N{14}\V{:}}\Tab{6}{\}}}
+\index{compress}\Proc{compress}\L{\LB{\N{15}\V{:}}\Tab{6}{\V{compress}(\V{block\_t}_\V{block})_\{}}
+\L{\LB{\N{16}\V{:}}\Tab{8}{\K{if}(\V{block}.\V{data}[\N{0}]_==_\V{block}.\V{data}[\N{1}])}}
+\L{\LB{\N{17}\V{:}}\Tab{10}{.\,.\,.}}
+\L{\LB{\N{18}\V{:}}\Tab{6}{\}}}
