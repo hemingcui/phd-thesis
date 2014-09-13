@@ -1,5 +1,13 @@
 \subsubsection{Computing Schedules} \label{sec:memoize}
 
+%% how to collect schedules?
+%% from dynamic executions
+%% schedule memoization idea and advantages
+%%
+%% why precondition
+%% example of pbzip:
+%% results: frequently reuse schedules
+
 Crucial to implementing \smt is how to compute the set of schedules for
 processing inputs.  At the bare minimum, a schedule must be feasible when
 enforced on an input, so the execution does not get stuck or deviate from
@@ -150,3 +158,4 @@ operations to run in parallel.  Suppose we run this program again with
 four threads.  \tern will detect that the input does not satisfy the
 precondition $nthread=2$, so it will record a new schedule and
 precondition.
+
