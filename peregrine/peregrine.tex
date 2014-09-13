@@ -1,4 +1,4 @@
-\subsubsection{Efficiently Enforcing Schedules} \label{sec:relax}
+\subsection{Efficiently Enforcing Schedules} \label{sec:relax}
 
 %% challenge 1: dmt race \vs overhead
 %% challenge 2: manual annotation
@@ -76,3 +76,40 @@ computation algorithms to guarantee that executions reusing the schedule
 will not run into any new data races. To enforce an order on memory
 accesses, \peregrine modifies a live program at runtime using
 a safe, efficient instrumentation framework we built~\cite{wu:loom:osdi10}.
+
+Server programs present three challenges for \smt. First, they may run
+continuously, making their schedules effectively infinite and too specific
+to reuse.  Second, they often process inputs, \ie, client requests, as
+soon as the requests arrive. Each request may arrive at a random moment,
+causing a different schedule. Third, since requests do not arrive at the
+same time, \peregrine cannot check them against the precondition of a
+schedule upfront.
+
+\begin{figure}[t]
+\includegraphics[width=\linewidth]{peregrine/figures/window-idea}
+\vspace{-.3in}
+\caption{{\em Recording and reusing schedules for a server program with
+    three threads.}  The continuous execution stream is broken down into
+  windows of requests, and \peregrine records and reuses schedules across
+  windows.} \label{fig:window}
+\end{figure}
+
+Our observation is that server programs tend to return to the same
+quiescent states, so \peregrine can use these states to split a continuous
+request stream down to \emph{windows} of requests, as illustrated in
+Figure~\ref{fig:window}.  Specifically, \peregrine buffers requests as they
+arrive until it gathers enough requests to keep all worker threads busy.
+It then runs the worker threads to process the requests, while buffering
+newly arrived requests to avoid interference between windows.  If \peregrine
+cannot gather enough requests before a predefined timeout, it proceeds
+with the partial window to reduce response time.  By breaking a request
+stream into windows, \peregrine can record and reuse schedules across
+windows, stabilizing server programs.  
+Server quiescent states may evolve.  For instance, a web server may cache
+requests in memory.  Developers can annotate the functions that query
+cache, and \peregrine treats the return values as inputs and selects proper
+schedules.
+Windowing reduces concurrency, but the cost is moderate based on our 
+experiments.
+
+
