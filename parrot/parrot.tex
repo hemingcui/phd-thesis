@@ -1,2 +1,37 @@
 \subsection{Parrot} \label{sec:parrot}
-TBD
+
+Although the latest advances on building stable
+multi-threading systems are promising, whether \smt systems can be 
+made simple and deployable stills remains an open challenges. Existing systems 
+either incur high performance overhead~cite{dthreads:sosp11} (For instance, 
+we observed
+that a prior system, \dthreads, had 5$\times$ to 100$\times$ slowdown on
+some programs), or require sophiscated
+program analysis~cite{peregreine:sosp11, bergan:oopsla13} and fairly hard to 
+deploy.
+These limitations make evaluation in existing systems limited: they often 
+used (1) synthetic benchmarks,
+not real-world programs, from incomplete benchmark suites; (2) one workload
+per program; and (3) at most 8 cores (with three exceptions; see \S\ref{sec:
+related}).
+
+These limitations are intermingled.  Reducing schedules improves correctness
+but trades performance because the schedules left may not balance each
+thread's load well, causing some threads to idle unnecessarily.  Our
+experiments show that ignoring load imbalance as in \dthreads
+can lead to pathological
+slowdown if the order of operations enforced by a schedule
+\emph{serializes} the intended parallel computations
+(\S\ref{sec:comparison}).  To recover performance, one method is to count
+the instructions executed by each thread and select schedules that balance
+the instruction counts~\cite{kendo:asplos09, coredet:asplos10,
+  dmp:asplos09}, but this method is not stable because input or program
+perturbations easily change the instruction counts.  The other method (we 
+proposed)
+lets the nondeterministic OS scheduler select
+a reasonably fast schedule and reuses the schedule on
+compatible inputs~\cite{cui:tern:osdi10,peregrine:sosp11}, but it
+requires sophisticated program analysis, complicating deployment.
+
+
+

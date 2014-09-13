@@ -1,4 +1,4 @@
-\section{Previous Research} \label{sec:done}
+\section{Building \smt Systems} \label{sec:done}
 
 Although the vision of stable multithreading is appealing, realizing it
 faces numerous challenges.  Three main challenges are:
@@ -24,6 +24,13 @@ run for a
 
 \end{enumerate}
 
+Over the past four years, we have been tackling these challenges and
+building \smt systems, which resulted in two \smt prototypes,
+\tern~\cite{cui:tern:osdi10} and \peregrine~\cite{peregrine:sosp11}, that
+frequently reuse schedules with low overhead.  This section describes our
+solutions to these challenges.  Our solutions are by no means the only
+ones; subsequent to \tern, others have also built a system that
+stabilizes schedules for general multithreaded programs~\cite{dthreads:sosp11}.
 
 \input{tern/tern}
 
