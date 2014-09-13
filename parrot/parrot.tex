@@ -33,5 +33,108 @@ a reasonably fast schedule and reuses the schedule on
 compatible inputs~\cite{cui:tern:osdi10,peregrine:sosp11}, but it
 requires sophisticated program analysis, complicating deployment.
 
+We present \parrot,\footnote{We name our system after one of the most
+  trainable birds.} a simple, deployable runtime that efficiently makes
+threads deterministic and stable by offering a new contract to developers.
+By default, it schedules synchronizations in each thread using
+round-robin, vastly reducing schedules and providing broad repeatability.
+When default schedules are slow, it allows advanced developers to add
+intuitive \emph{performance hints} to their code for speed.  Developers 
+discover
+where to add hints through profiling as usual, and \parrot simplifies
+performance debugging by deterministically reproducing the bottlenecks.
+The hints are robust to developer mistakes as they can be safely ignored
+without affecting correctness.
 
+Like prior systems, \parrot's contract reduces schedules to favor correctness 
+over performance.  Unlike prior systems, it allows advanced developers
+to optimize performance.  We believe this practical ``meet in the
+middle'' contract eases writing correct, efficient programs.
+
+% based on several years of lessons.
+
+%% Like prior systems, \parrot's contract favors correctness over performance
+%% by vastly reducing schedules.  Unlike prior systems, it provides
+%% advanced developers the flexibility for better performance.
+
+\parrot provides two performance hint abstractions.  A \emph{soft
+  barrier} encourages the scheduler to coschedule a group of threads at
+given program points.  It is for performance only, and operates as a
+barrier with deterministic timeouts in \parrot.  Developers use it to switch
+to faster schedules without compromising determinism
+when the default schedules serialize parallel
+computations (\S\ref{sec:example}).  A \emph{performance critical section}
+informs the scheduler that a code region is a potential
+bottleneck, encouraging the scheduler to get through the region fast.
+When a thread enters a performance critical section, \parrot delegates 
+scheduling to the
+nondeterministic OS scheduler for speed.  
+Performance critical sections may trade some determinism for
+performance, so they should be applied only when the schedules they add
+are thoroughly checked by tools or advanced developers.
+These simple abstractions
+let \parrot run fast on all programs evaluated, and
+may benefit other DMT or \smt systems and classic nondeterministic
+schedulers~\cite{coschedule:sigmetrics96, coschedule, partial-barrier:atc06}.
+
+Our \parrot implementation is \pthread-compatible, simplifying deployment.
+It handles many diverse constructs real-world programs depend upon such as
+network operations and timeouts.  \parrot makes synchronizations outside
+performance critical sections deterministic but allows nondeterministic
+data races.  Although it is
+straightforward to make data races deterministic in \parrot,
+% with a memory commit protocol we designed, 
+we deemed it not worthwhile because the cost of doing so outweighs the
+benefits (\S\ref{sec:discussion}).  \parrot's determinism is similar to
+\kendo's weak determinism~\cite{kendo:asplos09}, but \parrot offers stability
+which Kendo lacks.
+
+Third, we quantitatively show that \parrot achieves good performance and high
+model checking coverage on a diverse set of \nprog programs.  The programs
+include \nrealprog real-world programs, such as \bdb~\cite{berkeleydb},
+\openldap~\cite{openldap}, \redis~\cite{redis}, \mplayer~\cite{mplayer},
+all \nstl parallel C++ STL algorithm 
+implementations~\cite{parallel-stl} which use \openmp, and all \nimagick
+parallel image processing utilities (also \openmp) in the \imagick~\cite{
+imagick}
+software suite.  Further, they
+include \emph{all} \nbenchmarks programs in four widely used benchmark suites:
+\parsec~\cite{parsec}, \phoenix~\cite{phoenix-benchmarks}, \splashx~\cite{
+splashx},
+and \npb~\cite{npb}.  We used complete software or benchmark suites to
+avoid biasing our results. The programs together cover many different
+parallel programming models and idioms such as threads,
+\openmp~\cite{openmp}, fork-join, map-reduce, pipeline, and workpile.  To
+our knowledge, our
+evaluation uses roughly \overeach more programs than any prior
+DMT or \smt evaluation, and \overcombined more than all
+prior evaluations combined.
+% We used at least three different scales/types of workloads per program
+% and a 24-core machine to make our results robust.
+Our experiments show:
+
+\begin{enumerate}
+
+\item[$\bullet$] \parrot is easy to use. It averages only \hintsperprog lines of hints
+  per program to get good performance, and adding hints is fast.  Of all
+  \nprog programs, \nprognohints need no hints, \nproglineuphints need
+  \computes which do not affect determinism, and only \nprognondethints
+  programs need \nondets to trade some determinism for speed.
+
+\item[$\bullet$] \parrot has low overhead.  At the maximum allowed (16--24) cores, \parrot's
+  geometric mean overhead is \meanrealoverhead for \nrealprog real-world 
+programs,
+  \meanbenchoverhead for the other \nbenchmarks programs, and \meanoverhead 
+for all.
+
+\item[$\bullet$] On \nprogcompared programs that two prior systems \dthreads~\cite{
+dthreads:sosp11}
+  and \coredet~\cite{coredet:asplos10} can both handle, \parrot's overhead is \
+xxxcompoverhead whereas \dthreads's
+  is \dthreadssyncoverhead and \coredet's \coredetoverhead.
+
+\item[$\bullet$] \parrot scales well to the maximum allowed cores on our 24-core server and
+  to at least three different scales/types of workloads per program.
+
+\end{enumerate}
 
