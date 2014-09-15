@@ -1,9 +1,16 @@
 %% The abstract section.
 
 Multithreaded programs are notoriously hard to get right, and a key reason is: 
-these programs may run into too many possible thread interleavings at runtime. 
-This article introduces Stable multithreading (\smt), a new paradigm that can greatly 
- reduce the number of possible thread interleavings and improve software 
- reliability and security. This article also presents three \smt software 
- systems, with each addressing different research challenges. In addition, this 
- article describes two promissing applications enabled by our software systems.
+these programs have \emph{too many} possible thread interleavings (or 
+schedules) at runtime. It is extremely challenging for existing techniques to
+test, analyze, or verify all these schedules, making multithreaded programs 
+prone to various reliability and security bugs. This article introduces
+ Stable multithreading (\smt), a new idea that can greatly 
+ reduce the number of possible schedules for multi-threaded programs on all  
+ inputs with reasonable performance overhead, making 
+ these programs much easier to get right. This article also presents three
+ \smt software systems, \tern, \peregrine, and \parrot, with each addressing 
+ distinct research challenges. To show that \smt can greatly improve software 
+ reliability and security, this article describes two promising applications of \smt: 
+ (1) greatly improving schedule coverage of a popular systematic testing technique 
+ called model checking, and  (2) enabling transparent state-machine replication for multi-threaded programs.
