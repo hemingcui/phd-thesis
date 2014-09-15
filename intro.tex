@@ -36,19 +36,6 @@ very different schedules, artificially reducing programs' robustness on input
 perturbation, and the number of possible schedules on all inputs are still 
 enorous, and the resultant programs are still very hard to test, analyze, verify, etc.
 
-%% P4: StableMT: our new approach and thesis.
-We attacked this root cause by asking: are \emph{all} the enormously
-many schedules necessary?  Our study reveals that \emph{many real-world
-  programs can use a small set of schedules to efficiently process a wide
-  range of inputs}~\cite{cui:tern:osdi10}.  Leveraging this insight, we
-envision a new approach we call \emph{stable multithreading (\smt)}
-that reuses each schedule on a wide range of inputs, mapping all inputs to a dramatically
-reduced set of schedules. By vastly shrinking the haystack, it makes the
-needles much easier to find.  By mapping many inputs to the same schedule (Figure~\ref{fig:smt}),
-it stabilizes program behaviors against small input perturbations. 
-\smt and \dmt are not mutually exclusive: a system can be both
-deterministic and stable.
-
 \begin{figure*}[t]
 \begin{center}
 \subfloat[{\em Traditional.}]{\includegraphics[width=.23\linewidth]{figures/nondet}\label{fig:nondet}}
@@ -74,6 +61,18 @@ represented by the shrunk ellipses),
 \end{center}
 \end{figure*}
 
+%% P4: StableMT: our new approach and thesis.
+We attacked this root cause by asking: are \emph{all} the enormously
+many schedules necessary?  Our study reveals that \emph{many real-world
+  programs can use a small set of schedules to efficiently process a wide
+  range of inputs}~\cite{cui:tern:osdi10}.  Leveraging this insight, we
+envision a new approach we call \emph{stable multithreading (\smt)}
+that reuses each schedule on a wide range of inputs, mapping all inputs to a dramatically
+reduced set of schedules. By vastly shrinking the haystack, it makes the
+needles much easier to find.  By mapping many inputs to the same schedule (Figure~\ref{fig:smt}),
+it stabilizes program behaviors against small input perturbations. 
+\smt and \dmt are not mutually exclusive: a system can be both
+deterministic and stable.
 
 %% P5: StableMT's applications.
 By greatly reducing the number of possible schedules for all inputs, \smt can benefit many reliability 
@@ -105,24 +104,27 @@ schedules
   This challenge is also a decades-long challenge in the area of
   deterministic execution and replay.
 
-\item[$\bullet$] How can we handle multithreaded server programs?  They often 
-run for a
-  long time and react to each client request as it arrives, making their
-  schedules very specific to a stream of requests and difficult to reuse.
+\item[$\bullet$] How can we make \smt simple and deployable? To make sure 
+  the schedules we checked are the schedules we run, \smt must be 
+ deployed in the field as well as in the testing lab, then ``simplicity" and 
+ ``deployability" are critical for adoption.
 
 \end{enumerate}
 
 Over the past four years, we have been tackling these challenges and
-building \smt systems, which resulted in two \smt prototypes,
-\tern~\cite{cui:tern:osdi10} and \peregrine~\cite{peregrine:sosp11}, that
-frequently reuse schedules with low overhead.  This section describes our
-solutions to these challenges.  Our solutions are by no means the only
-ones; subsequent to \tern, others have also built a system that
-stabilizes schedules for general multithreaded programs~\cite{dthreads:sosp11}.
+building \smt systems, which resulted in three \smt systems,
+\tern~\cite{cui:tern:osdi10}, \peregrine~\cite{peregrine:sosp11}, and
+ \peregrine~\cite{peregrine:sosp11}, with each system addressing each above challenge.
+ Our solutions to these challenges will be described in the following sections.
+ Our solutions are by no means the only
+ ones; subsequent to \tern, others have also built a system that
+ stabilizes schedules for general multithreaded programs~\cite{dthreads:sosp11}.
 
 %% P7: Structures of this proposal.
-The rest of this thesis is orgnized as follows. \S\ref{ch:related} introduces 
-related work, \S\ref{ch:tern} introduces \tern, \S\ref{ch:peregrine} introduces 
-\peregrine, \S\ref{ch:parrot} introduces \parrot, \S\ref{ch:mc} introduces our 
-application on improving schedule coverage for model checking, \S\ref{ch:rep} introduces replication system \msmr.
+The rest of this article is orgnized as follows. \S\ref{sec:tern} introduces \tern, 
+\S\ref{sec:peregrine} introduces 
+\peregrine, \S\ref{sec:parrot} introduces \parrot, \S\ref{sec:mc} introduces our 
+application on improving schedule coverage for model checking,
+\S\ref{sec:rep} introduces replication system \msmr, \S\ref{sec:related} introduces 
+related work, and \S\ref{sec:plan} describes my research plan.
 
