@@ -113,6 +113,78 @@ Windowing reduces concurrency, but the cost is moderate based on our
 experiments.
 
 \subsubsection{Evaluation} \label{sec:peregrine-eval}
-TBD.
+We evaluated our \peregrine implementation on a diverse set of \nprog programs,
+including \apache, a popular web server; \pbzip, a parallel compression
+utility; \aget, a parallel \v{wget}-like utility; \pfscan, a parallel
+\v{grep}-like utility; parallel implementations of 13
+computation-intensive algorithms, 10 in \splash and 3 in \parsec; and
+\racey, a benchmark specifically designed to exercise deterministic
+execution and replay systems~\cite{racy-stress}.  All \splash benchmarks
+were included except one that we cannot compile, one that our current prototype
+cannot handle due to an implementation bug, and one that does not run
+correctly in 64-bit environment.  The chosen \parsec benchmarks
+(\blackscholes, \swaptions and \streamcluster) include the ones that (1)
+we can compile, (2) use threads, and (3) use no x86 inline assemblies.
+These programs were widely used in previous studies
+(\eg,~\cite{lu:concurrency-bugs,syncfinder:osdi10,grace:oopsla09}).
 
+We evaluated \peregrine's determinism by checking whether \peregrine could
+deterministically resolve races.  Table~\ref{table:races} lists the seven
+racy programs used in this experiment.  We selected the first five because
+they were frequently used in previous
+studies~\cite{avio:asplos06,ctrigger:asplos09,lu:concurrency-bugs,pres:sosp09}
+and we could reproduce their races on our evaluation machine.  We selected the
+integer flag race in \parsec to test whether \peregrine can handle ad hoc
+synchronization~\cite{syncfinder:osdi10}.  We selected \racey to stress
+test \peregrine: each run of \racey may have thousands of races, and if any of
+these races is resolved differently, \racey's final output changes
+with high probability~\cite{racy-stress}.
+
+\begin{table}[t]
+\small
+\centering
+\begin{tabular}{ccc}
+{\bf Program} & {\bf Races} & {\bf Order Constraints} \\
+\hline
+\apache  & 0 & 0 \\
+\pbzip   & 4 & 3 \\
+\barnes  & 5 & 1 \\
+\fft     & 10 & 4 \\
+\lun      & 10 & 7 \\
+\streamcluster & 0 & 0 \\
+\racey   & 167974 & 9963 \\
+\end{tabular}
+\caption{{\em Hybrid schedule statistics.} Column {\bf Races} shows the
+  number of races detected according the corresponding
+  sync-schedule, and Column {\bf Order Constraints} shows the number of 
+execution
+  order constraints \peregrine adds to the final hybrid schedule.  The latter
+  can be smaller than the former because \peregrine prunes subsumed execution
+  order constraints (\S\ref{sec:schedule}).  \peregrine detected no races for
+  \apache and \streamcluster because the corresponding sync-schedules are
+  sufficient to resolve the races deterministically; it thus adds no order
+  constraints for these programs.} \label{tab:racy-edges}
+\end{table}
+
+For each program with races, we recorded an execution trace and computed a
+hybrid schedule from the trace.  Table~\ref{tab:racy-edges} shows for each
+program (1) the number of dynamic races detected according to the
+sync-schedule and (2) the number of execution order constraints in the
+hybrid schedule.  The reduction from the former to the latter shows how
+effectively \peregrine can prune redundant order constraints
+(\S\ref{sec:schedule}).  In particular, \peregrine prunes 94\% of the constraints
+for \racey.  For \apache and
+\streamcluster, their races are already resolved deterministically by
+their sync-schedules, so \peregrine adds no execution order
+constraints.
+
+To verify that the hybrid schedules \peregrine computed are deterministic, we
+first manually inspected the order constraints \peregrine added for each program
+except \racey (because it has too many races for manual verification).  Our
+inspection results show that these constraints are sufficient to resolve
+the corresponding races.  We then re-ran each program including \racey 1000
+times while enforcing the hybrid schedule and injecting delays; 
+and verified that each run reused the schedule and computed equivalent results.
+(We determined result equivalence by checking either the output or whether
+the program crashed.)
 
