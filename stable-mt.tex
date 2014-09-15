@@ -1,45 +1,9 @@
-\section{Building \smt Systems} \label{sec:done}
-
-Although the vision of stable multithreading is appealing, realizing it
-faces numerous challenges.  Three main challenges are:
-
-\begin{enumerate}
-
-\item[$\bullet$] How can we compute the schedules to map inputs to?  The 
-schedules
-  must be feasible so executions reusing them do not get stuck.
-  They should also be highly reusable.
-
-\item[$\bullet$] How can we enforce schedules deterministically and
-  efficiently?  ``Deterministically'' so executions that reuse a schedule
-  cannot deviate even if there are data races, and ``efficiently'' so
-  overhead does not offset reliability benefits.
-  This challenge is also a decades-long challenge in the area of
-  deterministic execution and replay.
-
-\item[$\bullet$] How can we handle multithreaded server programs?  They often 
-run for a
-  long time and react to each client request as it arrives, making their
-  schedules very specific to a stream of requests and difficult to reuse.
-
-\end{enumerate}
-
-Over the past four years, we have been tackling these challenges and
-building \smt systems, which resulted in two \smt prototypes,
-\tern~\cite{cui:tern:osdi10} and \peregrine~\cite{peregrine:sosp11}, that
-frequently reuse schedules with low overhead.  This section describes our
-solutions to these challenges.  Our solutions are by no means the only
-ones; subsequent to \tern, others have also built a system that
-stabilizes schedules for general multithreaded programs~\cite{dthreads:sosp11}.
+%%\section{Building \smt Systems} \label{sec:done}
 
 \input{tern/tern}
 
 \input{peregrine/peregrine}
 
 \input{parrot/parrot}
-
-%%\input{eval/eval}
-
-%%\input{mc/mc}
 
 

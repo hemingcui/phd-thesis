@@ -1,4 +1,4 @@
-\subsection{Computing Schedules} \label{sec:tern}
+\section{Computing Schedules} \label{sec:tern}
 
 %% how to collect schedules?
 %% from dynamic executions
@@ -159,7 +159,7 @@ four threads.  \tern will detect that the input does not satisfy the
 precondition $nthread=2$, so it will record a new schedule and
 precondition.
 
-\subsubsection{Evaluation} \label{sec:tern-eval}
+\subsection{Evaluation} \label{sec:tern-eval}
 In this section, we describe the main results of \tern, our first \smt
 system.  We focus on two evaluation questions:
 
@@ -193,7 +193,7 @@ as \apache and \pbzip, or parallel
 implementations of computation-intensive algorithms in standard benchmark
 suites.
 
-\subsubsection{Stability} \label{sec:stable}
+\subsection{Stability} \label{sec:tern-stable}
 
 To evaluate \tern's stability, \ie, how frequently it can reuse schedules,
 we compare the preconditions it computes to the best possible
@@ -237,7 +237,7 @@ largely because the workload is too random to reuse schedules.
 %% we could measure \tern's performance in an adversarial setting
 Nonetheless, it still processes 44.2\% of the workload.
 
-\subsubsection{Efficiency} \label{sec:efficient}
+\subsection{Efficiency} \label{sec:tern-efficient}
 
 The overhead of enforcing schedules is crucial for programs that
 frequently reuse schedules.  Figure~\ref{fig:overhead} shows this overhead
