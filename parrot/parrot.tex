@@ -206,7 +206,17 @@ bring the overhead down to a reasonable level.  Aligning more stages did not hel
 
 
 
-
+\begin{figure*}[tb]
+%%\centering
+\includegraphics[width=0.6\columnwidth]{parrot/figures/overhead}
+\caption{{\em \parrot's performance normalized over nondeterministic
+    execution.}  The patterns of the bars show the types of the hints the 
+programs
+  need: no hints, generic \computes in \libgomp, program-specific
+  \computes, or \nondets.  The mean overhead is
+  \meanoverhead (indicated by the horizontal line).} \label{fig:overhead}
+\vspace{-.05in}
+\end{figure*}
 
 
 
@@ -279,19 +289,6 @@ bring the overhead down to a reasonable level.  Aligning more stages did not hel
 \end{table}
 
 \subsection{Performance} \label{sec:parrot-performance}
-
-\begin{figure*}[tb]
-\centering
-\includegraphics[width=\textwidth]{parrot/figures/overhead}
-\vspace{-.20in}
-\caption{{\em \parrot's performance normalized over nondeterministic
-    execution.}  The patterns of the bars show the types of the hints the 
-programs
-  need: no hints, generic \computes in \libgomp, program-specific
-  \computes, or \nondets.  The mean overhead is
-  \meanoverhead (indicated by the horizontal line).} \label{fig:overhead}
-\vspace{-.05in}
-\end{figure*}
 
 Figure~\ref{fig:overhead} compares \parrot's performance to nondeterministic
 execution.  Even with the maximum number of threads (16--24), the mean

@@ -1,4 +1,4 @@
-\section{Leveraging \smt to Build Transparent Multithreaded State Machine Replication} 
+\section{Transparent State-machine Replication for Multi-threading} 
 \label{sec:rep}
 
 This section proposes \msmr, a new system that provides 
@@ -58,7 +58,7 @@ In order to support general multi-threaded server programs, \msmr chooses the
 POXIS socket operations (\eg, connect(), accept(), send(), and recv()) as the 
 requests for consensus, and chooses a pracitcal \smt runtime system called 
 \parrot to reduce the number of schedules in multi-threaded programs. The key 
-novelty of \msmr is a novel algorithm called XXX on addressing the timing 
+novelty of \msmr is a novel algorithm on addressing the timing 
 challenge: this algorithm works seamlessly with general \smt or \dmt runtime systems, 
 and convert the timing problem into a input generation problem, greatly simplifying the consensus on 
 request timings and have fast performance. To support read-only optimization 
@@ -122,7 +122,7 @@ optimization.
 
 \subsubsection{\msmr architecture} \label{sec:rep-arch}
 
-Figure XXX shows the \msmr architecture in each node. Each node starts with a proxy, 
+Figure~\ref{fig:arch} shows the \msmr architecture in each node. Each node starts with a proxy, 
 which is a \paxos daemon (\S\ref{sec:rep-consensus}), and each proxy forks a child to execute an 
 application (\eg, a web server) running with a \smt tool. The proxy has a logger module to 
 persistently manage executed operations, and it also has a read optimizer (\S\ref{sec:rep-readonly})
@@ -131,7 +131,7 @@ application site and kernel site in order to checkpoint execution states of each
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.4\textwidth]{figures/architecture}
+\includegraphics[width=0.8\columnwidth]{figures/architecture}
 \vspace{-.05in}
 \caption{{\em \msmr architecture.}} \label{fig:arch}
 \vspace{-.05in}
@@ -225,7 +225,7 @@ queue. When there is a matcing \paxos operation at the head of the \paxos
 queue, this thread will be put back from the wait queue to the run queue.
 
 \begin{figure}[t]
-\centering
+%%\centering
 \begin{minipage}{.5\textwidth}
 \lgrindfile{code/msmr-wait-rule.cpp.lineno}
 \end{minipage}
@@ -410,7 +410,7 @@ requests.
 
 
 \subsection{Implementation} \label{sec:rep-impl}
-TBD.
+%%TBD.
 
 \subsubsection{Checkpointing and failure recovery} \label{sec:rep-checkpoint}
 In order to recover a replica from failure or application conflicts caused by 
@@ -472,27 +472,22 @@ and we don't forward read-only requests for this replica. This detector is to
 practically remind develpers to fix and diagnose races.
 
 \subsection{Evaluation plan} \label{sec:rep-eval}
-Performance overhead with the single node multithreaded version.
-
-Performance breakdown (analysis) of the consensus component and the read-only optimization component.
-
-Race detection results.
-
-Recovery scenarios and performance results.
-
-Systems parameter sensitivity evaluation, including the periods of hard and soft checkpoints, etc.
+Our evaluation focus on these five aspects of \msmr: (1) performance overhead with the single node multithreaded 
+version; (2) performance breakdown (analysis) of the consensus component and the read-only optimization 
+component; (3) race detection results; (4) recovery scenarios and performance 
+results; (5) systems parameter sensitivity evaluation, including the periods of hard and soft checkpoints, etc.
 
 
-\subsection{\msmr has broad applications} \label{sec:rep-apps}
+%%\subsection{\msmr has broad applications} \label{sec:rep-apps}
 
-This section describes several potential applications of \msmr.
+%%This section describes several potential applications of \msmr.
 
-\subsubsection{Fast and effective concurrency error detection} \label{sec:rep-races} 
-TBD.
+%%\subsubsection{Fast and effective concurrency error detection} \label{sec:rep-races} 
+%%TBD.
 
-\subsubsection{Fast information flow tracking} \label{sec:rep-ift}
-TBD.
+%%\subsubsection{Fast information flow tracking} \label{sec:rep-ift}
+%%TBD.
 
-\subsubsection{TBD} \label{sec:rep-apps-tbd}
-TBD.
+%%\subsubsection{TBD} \label{sec:rep-apps-tbd}
+%%TBD.
 

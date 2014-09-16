@@ -176,6 +176,16 @@ execution
   constraints for these programs.} \label{tab:racy-edges}
 \end{table}
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.7\columnwidth]{peregrine/figures/overhead}
+\caption{{\em Normalized execution time when reusing sync-schedules
+    v.s. hybrid schedules.}  A time value greater than 1
+  indicates a slowdown compared to a nondeterministic execution without
+  \peregrine.  We did not include \racey because it was not designed for
+  performance benchmarking. } \label{fig:peregrine-overhead}
+\end{figure}
+
 For each program with races, we recorded an execution trace and computed a
 hybrid schedule from the trace.  Table~\ref{tab:racy-edges} shows for each
 program (1) the number of dynamic races detected according to the
@@ -197,16 +207,6 @@ times while enforcing the hybrid schedule and injecting delays;
 and verified that each run reused the schedule and computed equivalent results.
 (We determined result equivalence by checking either the output or whether
 the program crashed.)
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.7\columnwidth]{peregrine/figures/overhead}
-\caption{{\em Normalized execution time when reusing sync-schedules
-    v.s. hybrid schedules.}  A time value greater than 1
-  indicates a slowdown compared to a nondeterministic execution without
-  \peregrine.  We did not include \racey because it was not designed for
-  performance benchmarking. } \label{fig:peregrine-overhead}
-\end{figure}
 
 Figure~\ref{fig:peregrine-overhead} shows the execution times when reusing hybrid
 schedules; these times are normalized to the nondeterministic
