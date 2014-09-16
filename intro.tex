@@ -2,11 +2,12 @@
 
 %% P1: Multi-threading is critical and popular.
 Multi-threading becomes increasing pervasive and critical because of two 
-computing trends. First, due to the physical constraints on circuit speed, computers are having
+computing trends. First, due to the physical constraints on circuit speed, 
+computing platforms, ranging from laptops, desktops, smart phones, to servers, are having
 more and more cores rather than faster and faster single-core. In order to 
-harness the power of multi-core, developers write more and more multi-threaded programs . 
+harness the power of multi-core, developers write more and more multi-threaded programs. 
 Second, the emerging cloud computing trend requires Internet services, ranging from 
-web servers to storage engines, to process more and more requests at the same time, which also 
+web servers to storage engines, to process more and more requests concurrently, which also 
 pushes developers to write more and more multi-threaded programs. These two trends continue and 
 multit-threading becomes increaingly pervasive and critical.
 
@@ -15,26 +16,26 @@ Unfortunately, despite decades of effort from both academia and industry,
 multi-threaded programs are still notoriously difficult to get right. A key 
 reason is: even running on the same input, the concurrently running threads of 
 a program may interleave in \emph{too many} different ways, and we call these interleavings 
-\v{schedules}. Considering all inputs, the number of possible schedules is even greater. 
+\emph{schedules}. Considering all inputs, the number of possible schedules is even greater. 
 In this traditional multit-threading manner, each input may run into too many 
 thread interleavings, and each interleaving may process many different inputs.
-This messy many-to-many mapping (Figure~\ref{fig:nondet}) makes existing techniques extremely
+This messy many-to-many mapping (Figure~\ref{fig:nondet}) makes multi-threaded programs extremely
 hard to test, analyze, and verify. As a result, a concurency bug hidden in one schedule can 
-simply bypass existing reliability and security techniques in the testing lab and show up in the field, 
+easily bypass existing reliability and security techniques in the testing lab and show up in the field, 
 potentially causing program crashes, wrong outputs, security breaches, and so on.
 
 %% P3: DMT: one possible approach. And its limitations.
 In order to reduce the number possible schedules on each input, researchers 
 have proposed a great idea called deterministic multithreading (or \dmt)~\cite{dthreads:sosp11,
 dpj:oopsla09, dmp:asplos09, kendo:asplos09, coredet:asplos10} that 
-always enforces the same schedule on the same input. By mapping each input to onely 
-one schedule (Figure~\ref{fig:dmt}), \dmt greatly improved reliability for multithreaded programs on each input.
+always enforces the same schedule on the same input. By mapping each input to only 
+one schedule (Figure~\ref{fig:dmt}), \dmt greatly improves reliability for multithreaded programs on each input.
 However, although \dmt is useful, it is not as useful as commonly perceived, 
 because as we have shown in our previous research~\cite{cui:tern:osdi10},
 a typical \dmt system can map slightly different inputs to 
 very different schedules, artificially reducing programs' robustness on input 
 perturbation, and the number of possible schedules on all inputs are still 
-enorous, and the resultant programs are still very hard to test, analyze, verify, etc.
+enormous, and the resultant programs are still very hard to test, analyze, verify, etc.
 
 \begin{figure*}[t]
 \begin{center}
@@ -63,13 +64,12 @@ represented by the shrunk ellipses),
 
 %% P4: StableMT: our new approach and thesis.
 We attacked this root cause by asking: are \emph{all} the enormously
-many schedules necessary?  Our study reveals that \emph{many real-world
+many schedules necessary?  Our study~\cite{cui:tern:osdi10, dthreads:sosp11} reveals that \emph{many real-world
   programs can use a small set of schedules to efficiently process a wide
   range of inputs}~\cite{cui:tern:osdi10}.  Leveraging this insight, we
 envision a new approach we call \emph{stable multithreading (\smt)}
 that reuses each schedule on a wide range of inputs, mapping all inputs to a dramatically
-reduced set of schedules. By vastly shrinking the haystack, it makes the
-needles much easier to find.  By mapping many inputs to the same schedule (Figure~\ref{fig:smt}),
+reduced set of schedules. By mapping many inputs to the same schedule (Figure~\ref{fig:smt}),
 it stabilizes program behaviors against small input perturbations. 
 \smt and \dmt are not mutually exclusive: a system can be both
 deterministic and stable.
@@ -83,8 +83,9 @@ bugs~\cite{parrot:sosp13, dbug:spin11, modist:nsdi09}, and improve the precision
 of program analysis~\cite{wu:pldi12}, verification~\cite{wu:pldi12}, and 
 debugging concurrency bugs~\cite{cui:tern:osdi10}. Some of our \smt techniques have 
 also been used by other researchers to compute schedules for covering all 
-inputs~cite{bergan:oopsla13}. We also plan to leverage \smt to enable transparent 
-state-machine replication~\cite{paxos} for multi-threaded prograsms.
+inputs~\cite{bergan:oopsla13}. We also plan to leverage \smt to enable transparent 
+state-machine replication~\cite{paxos}, a popular fault-tolerance technique in 
+distributed systems and cloud computing, for multi-threaded prograsms.
 
 %% P6: intro to the systems we built: with each addressing different challenges.
 Although the vision of stable multithreading is appealing, realizing it
@@ -104,21 +105,28 @@ schedules
   This challenge is also a decades-long challenge in the area of
   deterministic execution and replay.
 
-\item[$\bullet$] How can we make \smt simple and deployable? To make sure 
-  the schedules we checked are the schedules we run, \smt must be 
- deployed in the field as well as in the testing lab, then ``simplicity" and 
- ``deployability" are  critical for adoption.
+\item[$\bullet$] How can we make \smt simple and deployable? Although latest 
+advances in building \smt and \dmt systems are promising, whether these systems
+can be made simple and deployable remains an open challenge. Existing 
+systems either incur prohibited performance overhead or require sophiscated program analysis,
+and thus they are fairly hard to deploy. 
 
 \end{enumerate}
 
 Over the past four years, we have been tackling these challenges and
 building \smt systems, which resulted in three \smt systems,
 \tern~\cite{cui:tern:osdi10}, \peregrine~\cite{peregrine:sosp11}, and
- \peregrine~\cite{peregrine:sosp11}, with each system addressing each above challenge.
+ \parrot~\cite{parrot:sosp13}, with each system addressing each above challenge.
  Our solutions to these challenges will be described in the following sections.
  Our solutions are by no means the only
  ones; subsequent to \tern, others have also built a system that
  stabilizes schedules for general multithreaded programs~\cite{dthreads:sosp11}.
+
+ To show that \smt can greatly improve software 
+ reliability and security, this article also describes two promising applications of \smt: 
+ (1) greatly improving schedule coverage of a popular systematic testing technique 
+ called model checking~\cite{parrot:sosp13}, and  (2) enabling transparent state-machine replication
+ for multi-threaded programs (\S\ref{sec:rep}).
 
 %% P7: Structures of this proposal.
 The rest of this article is orgnized as follows. \S\ref{sec:tern} introduces \tern, 
