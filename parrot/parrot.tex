@@ -1,14 +1,12 @@
-\section{Parrot} \label{sec:parrot}
+\section{\parrot: Making \smt Simple and Deployable} \label{sec:parrot}
 
 Although the latest advances on building stable
 multi-threading systems are promising, whether \smt systems can be 
 made simple and deployable stills remains an open challenges. Existing systems 
 either incur high performance overhead~cite{dthreads:sosp11} (For instance, 
-we observed
-that a prior system, \dthreads, had 5$\times$ to 100$\times$ slowdown on
-some programs), or require sophiscated
-program analysis~cite{peregreine:sosp11, bergan:oopsla13} and fairly hard to 
-deploy.
+we observed that a prior system, \dthreads, had 5$\times$ to 100$\times$ slowdown on
+some programs), or require sophiscated program analysis~cite{peregreine:sosp11, bergan:oopsla13}
+and fairly hard to deploy.
 These limitations make evaluation in existing systems limited: they often 
 used (1) synthetic benchmarks,
 not real-world programs, from incomplete benchmark suites; (2) one workload
@@ -21,8 +19,8 @@ thread's load well, causing some threads to idle unnecessarily.  Our
 experiments show that ignoring load imbalance as in \dthreads
 can lead to pathological
 slowdown if the order of operations enforced by a schedule
-\emph{serializes} the intended parallel computations
-(\S\ref{sec:comparison}).  To recover performance, one method is to count
+\emph{serializes} the intended parallel computations.
+To recover performance, one method is to count
 the instructions executed by each thread and select schedules that balance
 the instruction counts~\cite{kendo:asplos09, coredet:asplos10,
   dmp:asplos09}, but this method is not stable because input or program
@@ -33,8 +31,7 @@ a reasonably fast schedule and reuses the schedule on
 compatible inputs~\cite{cui:tern:osdi10,peregrine:sosp11}, but it
 requires sophisticated program analysis, complicating deployment.
 
-We present \parrot,\footnote{We name our system after one of the most
-  trainable birds.} a simple, deployable runtime that efficiently makes
+We present \parrot, a simple, deployable runtime that efficiently makes
 threads deterministic and stable by offering a new contract to developers.
 By default, it schedules synchronizations in each thread using
 round-robin, vastly reducing schedules and providing broad repeatability.
@@ -63,7 +60,7 @@ given program points.  It is for performance only, and operates as a
 barrier with deterministic timeouts in \parrot.  Developers use it to switch
 to faster schedules without compromising determinism
 when the default schedules serialize parallel
-computations (\S\ref{sec:example}).  A \emph{performance critical section}
+computations.  A \emph{performance critical section}
 informs the scheduler that a code region is a potential
 bottleneck, encouraging the scheduler to get through the region fast.
 When a thread enters a performance critical section, \parrot delegates 
@@ -85,60 +82,16 @@ data races.  Although it is
 straightforward to make data races deterministic in \parrot,
 % with a memory commit protocol we designed, 
 we deemed it not worthwhile because the cost of doing so outweighs the
-benefits (\S\ref{sec:discussion}).  \parrot's determinism is similar to
+benefits.  \parrot's determinism is similar to
 \kendo's weak determinism~\cite{kendo:asplos09}, but \parrot offers stability
 which Kendo lacks.
 
-Third, we quantitatively show that \parrot achieves good performance and high
-model checking coverage on a diverse set of \nprog programs.  The programs
-include \nrealprog real-world programs, such as \bdb~\cite{berkeleydb},
-\openldap~\cite{openldap}, \redis~\cite{redis}, \mplayer~\cite{mplayer},
-all \nstl parallel C++ STL algorithm 
-implementations~\cite{parallel-stl} which use \openmp, and all \nimagick
-parallel image processing utilities (also \openmp) in the \imagick~\cite{
-imagick}
-software suite.  Further, they
-include \emph{all} \nbenchmarks programs in four widely used benchmark suites:
-\parsec~\cite{parsec}, \phoenix~\cite{phoenix-benchmarks}, \splashx~\cite{
-splashx},
-and \npb~\cite{npb}.  We used complete software or benchmark suites to
-avoid biasing our results. The programs together cover many different
-parallel programming models and idioms such as threads,
-\openmp~\cite{openmp}, fork-join, map-reduce, pipeline, and workpile.  To
-our knowledge, our
-evaluation uses roughly \overeach more programs than any prior
-DMT or \smt evaluation, and \overcombined more than all
-prior evaluations combined.
-% We used at least three different scales/types of workloads per program
-% and a 24-core machine to make our results robust.
-Our experiments show:
-
-\begin{enumerate}
-
-\item[$\bullet$] \parrot is easy to use. It averages only \hintsperprog lines of hints
-  per program to get good performance, and adding hints is fast.  Of all
-  \nprog programs, \nprognohints need no hints, \nproglineuphints need
-  \computes which do not affect determinism, and only \nprognondethints
-  programs need \nondets to trade some determinism for speed.
-
-\item[$\bullet$] \parrot has low overhead.  At the maximum allowed (16--24) cores, \parrot's
-  geometric mean overhead is \meanrealoverhead for \nrealprog real-world 
-programs,
-  \meanbenchoverhead for the other \nbenchmarks programs, and \meanoverhead 
-for all.
-
-\item[$\bullet$] On \nprogcompared programs that two prior systems \dthreads~\cite{
-dthreads:sosp11}
-  and \coredet~\cite{coredet:asplos10} can both handle, \parrot's overhead is \
-xxxcompoverhead whereas \dthreads's
-  is \dthreadssyncoverhead and \coredet's \coredetoverhead.
-
-\item[$\bullet$] \parrot scales well to the maximum allowed cores on our 24-core server and
-  to at least three different scales/types of workloads per program.
-
-\end{enumerate}
-
 \subsection{Evaluation} \label{sec:parrot-eval}
+
+In this evaluation, we focus on examing \parrot's practicality by running it 
+with a wide range of popular-multithreaded programs, check whether \parrot is 
+easy to use with these programs, and collect \parrot's 
+execution time on utlity programs and throughput on server programs.
 
 We evaluated \parrot on a diverse set of \nprog programs. This set
 includes \nrealprog real-world programs: \bdb, a widely used database
@@ -214,25 +167,13 @@ openldap
 and \redis, we ran both endpoints on the same machine to avoid network
 latency.  \nprogadhocsync programs use ad hoc
 synchronization~\cite{syncfinder:osdi10}, and we added a \v{sched\_yield}
-to the busy-wait loops to make the programs work with \parrot.  \nprogtimeout
-programs use \pthread timed operations, and we added \v{set\_base\_time}
-(\S\ref{sec:timeout}) to them. We set the spin-wait of \parrot's scheduler
+to the busy-wait loops to make the programs work with \parrot. We set the
+spin-wait of \parrot's scheduler
 to $10^5$ cycles.  We used the default \compute timeout of 20 except 3,000
 for \ferret.  Some \phoenix programs read large files, so
 we ran them with a warm file cache to focus on measuring their computation
 time. (Cold-cache results are unusable due to large
 variations~\cite{Parrot:github}.)
-
-
-The rest of this section focuses on these questions:
-\begin{enumerate}
-
-\item[\S\ref{sec:ease-of-use}:] Is \parrot easy to use?  How many hints are
-  needed to make the programs with \parrot fast?
-
-\end{enumerate}
-
-
 
 
 
@@ -373,7 +314,7 @@ context switches due to synchronization decreased from 1.9M with
 nondeterministic executions to 921 with \parrot.  The reason of the context
 switch savings was that \parrot's round-robin scheduling reduced contention
 and its synchronizations use a more efficient wait that combines spin- and
-block-waits (\S\ref{sec:scheduler}).  \bodytrackopenmp and \facesim
+block-waits.  \bodytrackopenmp and \facesim
 enjoyed a similar benefit.  So did another 19 programs which had
 10$\times$ fewer context switches with
 \parrot~\cite{Parrot:github}. \linearregrepthread's stalled cycles were
