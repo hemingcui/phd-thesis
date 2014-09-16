@@ -1,4 +1,8 @@
-\section{Computing Schedules} \label{sec:tern}
+%% Terminlogy. Put them here now, and put them separately later.
+\newcommand{\ternnprog}[0]{14\xspace}
+
+
+\section{\tern: Computing Highly-reusable Schedules} \label{sec:tern}
 
 %% how to collect schedules?
 %% from dynamic executions
@@ -159,17 +163,17 @@ four threads.  \tern will detect that the input does not satisfy the
 precondition $nthread=2$, so it will record a new schedule and
 precondition.
 
-\subsection{Evaluation} \label{sec:tern-eval}
+\subsection{\tern Evaluation} \label{sec:tern-eval}
 In this section, we describe the main results of \tern, our first \smt
 system.  We focus on two evaluation questions:
 
 \begin{enumerate}
 
-\item[\S\ref{sec:stable}:] Can \tern frequently reuse schedules?  The
+\item[\S\ref{sec:tern-stable}:] Can \tern frequently reuse schedules?  The
   higher the reuse rate is, the more stable program behaviors become, and
   the more efficient \tern is.
 
-\item[\S\ref{sec:efficient}:] Can \tern efficiently enforce schedules?  A
+\item[\S\ref{sec:tern-efficient}:] Can \tern efficiently enforce schedules?  A
   low overhead is crucial for programs that frequently reuse schedules.
 
 %% \item[\S\ref{sec:deterministic}:] Can \tern deterministically enforce
@@ -187,23 +191,13 @@ system.  We focus on two evaluation questions:
 
 \end{enumerate}
 
-We choose a diverse set of \nprog programs as our evaluation benchmarks.
+We choose a diverse set of \ternnprog programs as our evaluation benchmarks.
 These programs are either widely used real-world parallel programs, such
 as \apache and \pbzip, or parallel
 implementations of computation-intensive algorithms in standard benchmark
 suites.
 
-\subsection{Stability} \label{sec:tern-stable}
-
-To evaluate \tern's stability, \ie, how frequently it can reuse schedules,
-we compare the preconditions it computes to the best possible
-preconditions derived from manual inspection. (Some of the manually
-derived preconditions are shown in Table~\ref{tab:sched-constraints}.)
-For half of the \nprog programs, the preconditions it computes are as
-good as or close to the best preconditions, allowing frequent reuses.
-For the other programs, the preconditions are more restrictive.
-% because of either  implementation limitations of \tern or intrinsic low 
-reuse-rates of the programs.
+\subsubsection{Stability} \label{sec:tern-stable}
 
 \begin{table}[t]
 \centering
@@ -223,9 +217,9 @@ reuse-rates of the programs.
 \vspace{-.05in}
 \end{table}
 
-We also evaluate stability by measuring the schedule reuse rates under
+We evaluate \tern's stability by measuring the schedule reuse rates under
 given workloads.  Table~\ref{tab:stability} shows the results, obtained
-from \tern and replicable in \tern.  The four workloads
+from \tern.  The four workloads
 are either real workloads collected by us or synthetic workloads used by the
 developers themselves~\cite{cui:tern:osdi10}. %(\S\ref{sec:workloads}).
 For three out of the four
@@ -237,41 +231,29 @@ largely because the workload is too random to reuse schedules.
 %% we could measure \tern's performance in an adversarial setting
 Nonetheless, it still processes 44.2\% of the workload.
 
-\subsection{Efficiency} \label{sec:tern-efficient}
-
-The overhead of enforcing schedules is crucial for programs that
-frequently reuse schedules.  Figure~\ref{fig:overhead} shows this overhead
-for both \tern and \tern.  Each bar represents the execution time with
-\tern or \tern normalized to traditional multithreading, averaged over
-500 runs.  For \apache, we show the throughput (TPUT) and response time
-(RESP).
-
-We make two observations about this figure.  First, for most programs, the
-overhead is less than 15\%, demonstrating that \smt
-can be efficient.  For two programs (\watern and
-\cholesky), the overhead is relatively large because they do a large
-number of mutex operations within tight loops.  However, this overhead is
-still below 50\%, and much lower than the 1.1X-10X overhead of a prior
-DMT system~\cite{coredet:asplos10}.  Some programs enjoy a speedup
-because our systems safely skip some blocking
-operations~\cite{cui:tern:osdi10,peregrine:sosp11}.
-
-Second, \tern is only slightly slower than \tern,
-demonstrating that full determinism can be efficient.  (Recall that
-\tern schedules only synchronizations, whereas \tern additionally
-schedules memory accesses to make data races
-deterministic.)
-
 \begin{figure}[t]
 \centering
 \includegraphics[width=.8\columnwidth]{tern/figures/overhead}
 \vspace{-.3in}
-\caption{{\em Normalized execution time when reusing schedules.}  A bar
-  with value greater (smaller) than 1 indicates a slowdown (speedup)
-  compared to traditional multithreading.  The overhead is smaller than
-  15\% for most programs, and up to 50\% for two.  Five programs run
-  faster because \tern or \tern safely skips some blocking
-  operations.} \label{fig:overhead}
+\caption{{\em Relative overhead when reusing schedules.} } \label{fig:tern-overhead}
 \vspace{-.05in}
 \end{figure}
+
+
+\subsubsection{Efficiency} \label{sec:tern-efficient}
+
+Figure~\ref{fig:overhead} shows the relative overhead of \tern over
+nondeterministic execution when reusing schedules, the smaller the better.  For seven out of
+the fourteen programs, the replayer performed almost identically to
+nondeterministic execution. For \pbzip and barnes, \tern performed
+better.  This speedup came partially from the optimization to remove
+unnecessary synchronizations~\cite{cui:tern:osdi10}.  \tern's overhead
+for MySQL, volrend, raytrace, water-nsquared, and choleskey is relatively
+large because these programs performed many synchronization operations
+over a short period of time.  For instance, water-nsquared and cholesky
+both call \v{pthread\_mutex\_lock()} and \v{pthread\_mutex\_unlock()} in a
+tight loop.
+
+
+
 

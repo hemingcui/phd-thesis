@@ -1,4 +1,4 @@
-\section{Efficiently Enforcing Schedules} \label{sec:peregrine}
+\section{\peregrine: Efficiently Enforcing Schedules} \label{sec:peregrine}
 
 %% challenge 1: dmt race \vs overhead
 %% challenge 2: manual annotation
@@ -20,21 +20,6 @@ programs~\cite{lu:concurrency-bugs,syncfinder:osdi10}.  This determinism
 \vs performance challenge has been open for decades in the areas of
 deterministic execution and replay.  Because of this challenge, 
 \tern, our first \smt system, enforces only synchronization schedules.
-
-
-\begin{figure}[t]
-\includegraphics[width=\linewidth]{peregrine/figures/hybrid-schedule}
-\vspace{-.3in}
-\caption{{\em Hybrid schedule idea.} Circles represent synchronizations,
-  and triangles memory accesses.  A synchronization schedule is efficient
-  because it is coarse-grained, but it is not deterministic because data
-  races may still cause executions to deviate from the schedule and
-  fail.  A memory access schedule is
-  deterministic, but it is slow because it is fine-grained.  A hybrid
-  schedule combines the best of both by scheduling memory access only for
-  the racy portion of an execution and synchronizations
-  otherwise.} \label{fig:hybrid-schedule}
-\end{figure}
 
 To address this challenge, we have built \peregrine, our second \smt
 system~\cite{peregrine:sosp11}.  The insight in \peregrine is that although
@@ -62,6 +47,21 @@ However, static race detectors are notoriously imprecise: a majority of
 their reports tend to be false reports, not true data races.  Scheduling
 many memory accesses in the false reports would severely slow down the
 execution.
+
+\begin{figure}[t]
+\includegraphics[width=\linewidth]{peregrine/figures/hybrid-schedule}
+\vspace{-.3in}
+\caption{{\em Hybrid schedule idea.} Circles represent synchronizations,
+  and triangles memory accesses.  A synchronization schedule is efficient
+  because it is coarse-grained, but it is not deterministic because data
+  races may still cause executions to deviate from the schedule and
+  fail.  A memory access schedule is
+  deterministic, but it is slow because it is fine-grained.  A hybrid
+  schedule combines the best of both by scheduling memory access only for
+  the racy portion of an execution and synchronizations
+  otherwise.} \label{fig:hybrid-schedule}
+\end{figure}
+
 
 \peregrine leverages the record-and-reuse approach in \tern to predict races:
 a recorded execution can effectively foretell what may happen for

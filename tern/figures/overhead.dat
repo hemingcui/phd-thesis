@@ -1,40 +1,33 @@
-#	configuration: b1w1                             difference
-# Apache-TPUT, rcslab
-1	100	0.0	100.27	0.0	100.934	0.0     0.664
-# Apache-RESP, rcslab
-2	100	0.0	100.272	0.0	100.95	0.0     0.678
-# PBZIP, rcslab, b1w1
-3	100	0.0	106.8	0.0	106.6	0.0     -0.2
-# AGET, rcslab, b1w1
-4	100	0.0	111.3	0.0	111.5	0.0     0.2
-# PFSCAN, rcslab
-5	100	0.0	98.2	0.0	103.31	0.0     5.11
-# BARNES, rcslab, b1w1
-6	100	0.0	32.3	0.0	37.1	0.0     3.8
-# FFT, rcslab, b1w1
-7	100	0.0	90.3	0.0	90.7	0.0     0.4
-# LU-contig, rcslab, b1w1
-8       100     0.0     95.3    0.0     95.2    0.0     -0.1
-# LU-non-contig, rcslab, b1w1
-9	100	0.0	69.2	0.0	69.1	0.0     -0.1
-# RADIX, rcslab, b1w1
-10	100	0.0	76.9	0.0	80.1	0.0     3.2
-# WATER-SPATIAL, rcslab, b1w1
-11	100	0.0	58.7	0.0	60.1	0.0     1.4
-# WATER_NSQUARED, rcslab, b1w1
-12	100	0.0	109.2	0.0	122.6	0.0     13.4
-# VOLREND, rcslab, b1w1
-#12	100	0.0	139.0	0.0	144.4	0.0     5.4
-# OCEAN, rcslab, b1w1
-13	100	0.0	49.3	0.0	50.6	0.0     1.3
-# FMM, rcslab, b1w1
-14	100	0.0	105.6	0.0	106.8	0.0     1.2
-# CHOLESKY, rcslab, b1w1
-15	100	0.0	145.5	0.0	146.6	0.0     1.1
-# blackscholes, Aug30, b1w1
-16	100	0.0	87.0	0.0	87.2	0.0     0.2
-# swaptions, Aug28, b1w1
-17	100	0.0	97.5	0.0	96.2	0.0     -1.3
-# streamcluster, b1w1
-18	100	0.0	86.6	0.0	86.3	0.0     -0.3
-
+#httpd-tput
+1 1.6 0.0
+#httpd-resp
+2 1.8 0.0
+#mysqld-tput
+3 30.2 0.0
+#mysqld-resp
+4 37.5 0.0
+# mysqld transaction mode
+#pbzip2
+5 -10.5 0.0
+#fft -m10 on rcs2.
+6 5.0 0.0
+#lu -n200 on rcs2.
+7 1.4 0.0
+#barnes
+8 -15.2 0.0
+#radix -n8000 on rcs2.
+9 9.1 0.0
+#fmm default on rcs2.
+10 2.2 0.0
+#ocean
+11 4.8 0.0
+#volrend
+12 15.4 0.0
+#water-spt
+13 2.2 0.0
+#raytrace
+14 21.6 0.0
+#water-nqd
+15 39.1 0.0
+#cholesky
+16 18.6 0.0
