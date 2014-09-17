@@ -1,2 +1,191 @@
 \section{Improving Schedule Coverage of Model Checking} \label{sec:mc}
-TBD.
+
+
+Model checking is a formal verification technique that systematically
+explores possible executions of a program for bugs.  These executions
+together form a \emph{state space} graph, where states are snapshots of the
+running program and edges are nondeterministic events that move the
+execution from one state to another.  This state space is typically very
+large, impossible to completely explore---the so-called \emph{state-space explosion} problem.
+To mitigate this problem, researchers have created
+many heuristics~\cite{yang:fisc:osdi,musuvathi:aodv,killian:macemc:nsdi07} to 
+guide the exploration toward executions
+deemed more interesting, but heuristics have a risk of missing bugs.
+\emph{State-space reduction} techniques~\cite{flanagan:dynamicpo,godefroid:verisoft,demeter:sosp11}
+soundly prune executions without missing bugs, but the effectiveness of these techniques
+is limited.  They work by discovering equivalence: given
+that execution $e_1$ is correct if and only if $e_2$ is, we need check only
+one of them. Unfortunately, equivalence is rare and extremely challenging
+to find, especially for \emph{implementation-level} model checkers which
+check implementations directly~\cite{godefroid:verisoft,musuvathi:aodv,yang:fisc:osdi,
+yang:explode:osdi,killian:macemc:nsdi07,dbug:spin11}.
+This difficulty is reflected in the existence of only two main reduction
+techniques~\cite{flanagan:dynamicpo, demeter:sosp11} for these implementation-
+level model checkers.  Moreover, as a checked system scales, the state space after
+reduction still grows too large to fully explore.  Despite
+decades of efforts, state-space explosion remains the bane of model
+checking.
+
+Integrating \smt and model checking is
+mutually beneficial.  By reducing schedules, \smt offers an extremely
+simple, effective way to mitigate and sometimes completely solve the
+state-space explosion problem without requiring equivalence.  For
+instance, \parrot enables \dbug to verify \nprogverifiedxxx programs,
+including 4 programs containing \nondets (\S\ref{sec:coverage}).
+In return, model checking helps check the schedules that matter for \parrot and developers.
+For instance, it can check the default schedules chosen by \parrot, the
+faster schedules developers choose using \computes, or the schedules
+developers add using \nondets.
+
+\subsection{The \dbug Model Checker} \label{sec:dbug}
+
+In principle, \parrot can be integrated with many model checkers.  We chose
+\dbug~\cite{dbug:spin11} for three reasons.  First, it is 
+open source, checks implementations directly, and 
+supports \pthread synchronizations and Linux 
+socket calls.  Second, it implements one of the
+most advanced state-space reduction techniques---dynamic partial order
+reduction (DPOR)~\cite{flanagan:dynamicpo}, so the further reduction \parrot
+achieves is more valuable.  Third, \dbug can estimate the size of the
+state space based on the executions explored, a technique particularly
+useful for estimating the reduction \parrot can achieve when
+the state space explodes.
+
+Specifically, \dbug represents the state space as an \emph{execution tree}
+where nodes are states and edges are choices representing the operations
+executed.  A path leading from the root to a leaf encodes a unique test
+execution as a sequence of nondeterministic operations.  The total number
+of such paths is the state space size.  To estimate this size based on
+a set of explored paths, \dbug uses the \emph{weighted backtrack
+  estimator}~\cite{Kilby2006}, an online variant of Knuth's offline
+technique for tree size estimation~\cite{Knuth1975}.  It treats the set of
+explored paths as a sample of all paths assuming uniform distribution over
+edges, and computes the state space size as the number of explored
+paths divided by the aggregated probability they are explored.
+
+\subsection{Integrating \parrot and \dbug} \label{sec:smt+mc}
+
+A key integration challenge is that both \parrot and \dbug control the order
+of nondeterministic operations and may interfere, causing
+difficult-to-diagnose false positives.  A na\"{i}ve solution
+is to replicate \parrot's scheduling algorithm inside \dbug.  This
+approach is not only labor-intensive, but also risky because the
+replicated algorithm may diverge from the real one, deviating the checked
+schedules from the actual ones.
+
+Fortunately, the integration is greatly simplified because performance
+critical sections make nondeterminism explicit, and \dbug can ignore
+operations that \parrot runs deterministically.  \parrot's strong-isolation
+semantics further prevent interference
+between \parrot and \dbug.  Our integration uses a nested-scheduler
+architecture similar to Figure~\ref{fig:parrot-arch} except the
+%% Heming: TBD, add the parrot-arch figure in the parrot section.
+nondeterministic scheduler is \dbug.  This architecture is transparent
+to \dbug, and requires only minor changes (\locsmcmc lines) to \parrot.
+First, we modified \v{nondet\_begin} and \v{nondet\_end} to turn \dbug
+on and off.  Second, since \dbug explores event orders only after
+it has received the full set of concurrent events, we modified
+\parrot to notify \dbug when a thread transitions between the run queue
+and the wait queue in \parrot. These notifications help \dbug accurately
+determine when all threads in the system are waiting for \dbug to make
+a scheduling decision.
+
+We found two pleasant surprises in the
+integration.  First, \computes speed up \dbug executions.  Second,
+\parrot's deterministic timeout~\cite{parrot:sosp13} prevents \dbug from
+possibly having to explore infinitely many schedules.  Consider the
+``\v{while(!done) sleep(30);}'' loop which can normally
+nondeterministically repeat any number of times before making
+progress.  This code has only one schedule in the integratied system because \parrot
+makes the \v{sleep} return deterministically.
+
+\subsection{Evaluation} \label{sec:coverage}
+
+In this evaluation, we use the same set of programs as that in \parrot, and we 
+focus on how much \parrot improves \dbug's coverage.
+
+To evaluate coverage, we used small workloads and two threads per workload.
+Otherwise, the time and space overhead of \dbug,
+or model checking in general, becomes prohibitive. Consequently, \parrot's
+reduction measured with small state spaces is a conservative estimate of
+its potential.  Two programs, \volrend and \ua, were excluded because they
+have too many synchronization operations (\eg, 132M for \ua), causing
+\dbug to run out of memory.  Since model checking requires a closed
+(no-input) system, we paired \aget with lightweight web server
+\mongoose~\cite{mongoose}).  We enabled
+state-of-the-art DPOR~\cite{flanagan:dynamicpo} to evaluate how much more
+\parrot can reduce the state space. We checked each program for a maximum of
+one day or until the checking session finished.  We then compared the
+estimated state space sizes.
+
+\begin{table}[t]
+\footnotesize
+\centering
+\begin{tabular}{ccl}
+{\bf Bin } & {\bf \# of Programs} & {\bf State Space Size with \dbug} \\
+\hline
+A & 27 & $1$ $\sim$ $14$ \\
+B & 18 & $28$ $\sim$ $47,330$ \\
+C & 25 & $3.99\times10^{6}$ $\sim$ $1.06\times10^{473}$ \\
+D & 25 & $4.75\times10^{511}$ $\sim$ $2.10\times10^{19734}$ \\
+%E & 1 & N/A \\
+\end{tabular}
+\vspace{-.05in}
+\caption{{\em Estimated \dbug's state space sizes on programs with no
+    \nondet nor network operation.}  } \label{tab:state-space-compute}
+\vspace{-.05in}
+\end{table}
+
+\begin{table}[b]
+\footnotesize
+\centering
+\vspace{-.05in}
+\begin{tabular}{lrrr}
+{\bf Program} & {\bf \dbug} & {\bf \ecosys} & {\bf Time} \\
+\hline\\[-2.3ex]
+%% redis smt+mc results not out yet.
+%% redis                                    & $1.40\times10^{178}$    & N/A   & No       \\
+\openldap                       & $2.40\times10^{2795}$        & $5.70\times10^{1048}$    & No        \\
+\redis                       & $1.26\times10^{8}$        & $9.11\times10^{7}$    & No        \\
+\pfscan                                   & $2.43\times10^{2117}$     & $32,268$   & $1,201$s     \\
+\aget                       & $2.05\times10^{17}$        & $5.11\times10^{10}$    & No        \\
+\nthelement                        & $1.35\times10^{7}$     & $8,224$   & $309$s      \\
+\partialsort                       & $1.37\times10^{7}$     & $8,194$   & $307$s      \\
+\partition                           & $1.37\times10^{7}$     & $8,194$   & $307$s      \\
+\fluidanimate                     & $2.72\times10^{218}$        & $2.64\times10^{218}$  & No        \\
+\cholesky                       & $1.81\times10^{371}$      & $5.99\times10^{152}$   & No   \\
+\fmm                           & $1.25\times10^{78}$       & $2.14\times10^{54}$   & No        \\
+\raytrace                       & $1.08\times10^{13863}$        &  $3.68\times10^{13755}$   & No        \\
+%% UA smt+mc results not out yet.
+%%\ua                                  & $>$ \v{DBL\_MAX}        & $>$ \v{DBL\_MAX}   & No        \\
+\end{tabular}
+\vspace{-.05in}
+\caption{{\em Estimated state space sizes for programs containing
+    \nondets.}  \ecosys finished 4 real-world programs (time in
+  last column), and \dbug none.} \label{tab:state-space-nondet}
+\end{table}
+
+
+Table~\ref{tab:state-space-compute} bins all 95 programs that contain
+(1) no network operations and (2) either no hints or only \computes. For each 
+program,
+\ecosys reduced the state space down to just one
+schedule and finished in 2 seconds. \dbug alone could finish only
+\nprogverifieddbug (out of 45 in bin A and B) within the time limit.
+% The reduction for the bins C and D ranges from \shrinkscale.
+
+Table~\ref{tab:state-space-nondet} shows the results for all
+\nprognondetandnetwork programs containing network operations or
+\nondets.  For all four real-world programs \pfscan, \partition,
+\nthelement, and \partialsort, \ecosys effectively explored all
+schedules in seven hours or less, providing a strong reliability
+guarantee.  These results also demonstrate the power of \parrot:
+the programs can use the checked schedules at runtime for speed.
+
+To summarize, \parrot reduced the state space by \shrinkscale for
+\nprogshrink programs (50 programs in Table~\ref{tab:state-space-compute},
+6 in Table~\ref{tab:state-space-nondet}).  It increased the number of
+verified programs from \nprogverifieddbug to \nprogverifiedxxx (95
+programs in Table~\ref{tab:state-space-compute}, 4 in
+Table~\ref{tab:state-space-nondet}).
+
