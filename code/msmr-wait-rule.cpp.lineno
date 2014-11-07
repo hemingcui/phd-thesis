@@ -1,0 +1,26 @@
+1 : wait_global_turn() {
+2 :   ...; /* Wait until current thread is the head of the run queue. Omitted (in Parrot). */
+3 : 
+4 :   /* Starting from this point, current thread is head of the Parrot run queue,
+5 :   and it's free (and the only one thread) to manipulate the run queue. */
+6 :   if (Current thread doing a socket operation, or
+7 :         there are threads waiting for socket operations in the wait queue) {
+8 : 
+9 :     /* This busy wait is the key of synchronizing the Paxos queue with the run queue. */
+10:     busy wait until (Paxos queue is not empty, or n_conn is 0);
+11: 
+12:     if (Paxos queue is not empty) {
+13:       Dequeue the first operation OP from the Paxos queue, and execute it on device;
+14:       if (Current thread is not the receiver of this OP) {
+15:         /* Wake up the right thread to handle this socket operation. */
+16:         Find the corresponding server thread T of OP from the wait queue;
+17:         Put T at the head of the run queue;
+18: 
+19:         /* Put myself to wait queue. */
+20:         Put current thread to wait queue;
+21:         return;
+22:     }
+23:   }
+24: 
+25:   ...; /* Do the actual operation. E.g., lock or recv. */
+26: }
