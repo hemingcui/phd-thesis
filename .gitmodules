@@ -1,0 +1,3 @@
+[submodule "bib"]
+	path = bib
+	url = https://github.com/hemingcui/bib.git
