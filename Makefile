@@ -1,16 +1,16 @@
-SRC = proposal
-FILES = proposal.toc proposal.bbl proposal.aux proposal.blg proposal.dvi *.log proposal.ps proposal.pdf
+SRC = thesis
+FILES = $(SRC).toc $(SRC).bbl $(SRC).aux $(SRC).blg $(SRC).dvi *.log $(SRC).ps $(SRC).pdf
 
-all:: bbl proposal
+all:: bbl texts
 
-proposal: proposal.tex terminology.tex abstract.tex intro.tex related.tex conclusion.tex \
+texts: $(SRC).tex terminology.tex abstract.tex intro.tex related.tex conclusion.tex \
 	app-model-chk.tex app-replication.tex plan.tex bib/biblio.bib tern/*.tex
-	dvipdf proposal.dvi
-	dvips -o proposal.ps -t letter proposal.dvi
-	test -e p.pdf || ln -s $(SRC).pdf p.pdf
+	dvipdf $(SRC).dvi
+	dvips -o $(SRC).ps -t letter $(SRC).dvi
+	#test -e p.pdf || ln -s $(SRC).pdf p.pdf
 
 bbl:
-	rm -rf proposal.bbl
+	rm -rf $(SRC).bbl
 	latex  $(SRC) 2>&1 > $(SRC).build.log
 	bibtex  $(SRC) 2>&1 >> $(SRC).build.log
 	latex  $(SRC) 2>&1 >> $(SRC).build.log
