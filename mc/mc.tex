@@ -1,4 +1,4 @@
-\section{Improving Schedule Coverage of Model Checking} \label{sec:mc}
+\chapter{Improving Schedule Coverage of Model Checking} \label{sec:mc}
 
 
 Model checking is a formal verification technique that systematically
@@ -37,7 +37,7 @@ For instance, it can check the default schedules chosen by \parrot, the
 faster schedules developers choose using \computes, or the schedules
 developers add using \nondets.
 
-\subsection{The \dbug Model Checker} \label{sec:dbug}
+\section{The \dbug Model Checker} \label{sec:dbug}
 
 In principle, \parrot can be integrated with many model checkers.  We chose
 \dbug~\cite{dbug:spin11} for three reasons.  First, it is 
@@ -63,7 +63,7 @@ explored paths as a sample of all paths assuming uniform distribution over
 edges, and computes the state space size as the number of explored
 paths divided by the aggregated probability they are explored.
 
-\subsection{Integrating \parrot and \dbug} \label{sec:smt+mc}
+\section{Integrating \parrot and \dbug} \label{sec:smt+mc}
 
 A key integration challenge is that both \parrot and \dbug control the order
 of nondeterministic operations and may interfere, causing
@@ -99,7 +99,7 @@ nondeterministically repeat any number of times before making
 progress.  This code has only one schedule in the integratied system because \parrot
 makes the \v{sleep} return deterministically.
 
-\subsection{Evaluation} \label{sec:coverage}
+\section{Evaluation} \label{sec:coverage}
 
 In this evaluation, we use the same set of programs as that in \parrot, and we 
 focus on how much \parrot improves \dbug's coverage.

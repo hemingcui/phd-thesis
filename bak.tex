@@ -1,0 +1,98 @@
+\documentclass[12pt]{article}
+
+\usepackage{graphics}
+\usepackage{epsfig}
+\usepackage{times}
+\usepackage{amsmath}
+\usepackage{xspace}
+\usepackage[nolineno,noindent,norules]{lgrind}
+\usepackage{subfig,graphics,graphicx,color}
+\DeclareGraphicsExtensions{.eps}
+
+\input{terminology}
+
+%% Reference stuff.
+\usepackage[square,comma,numbers,sort]{natbib}
+\usepackage{hypernat}
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=false,
+  pdfborder={0 0 0},
+  pdftitle={\mytitle},
+  pdfkeywords={\mykeywords},
+  bookmarksnumbered,
+  pdfstartview={FitH},
+  urlcolor=cyan,
+  pdfpagelabels=true,
+  pdfdisplaydoctitle=true,
+}
+
+
+
+% <http://psl.cs.columbia.edu/phdczar/proposal.html>:
+%
+% The standard departmental thesis proposal format is the following:
+%        30 pages
+%        12 point type
+%        1 inch margins all around = 6.5   inch column
+%        (Total:  30 * 6.5   = 195 page-inches)
+%
+% For letter-size paper: 8.5 in x 11 in
+% Latex Origin is 1''/1'', so measurements are relative to this.
+
+\topmargin      0.0in
+\headheight     0.0in
+\headsep        0.0in
+\oddsidemargin  0.0in
+\evensidemargin 0.0in
+\textheight     9.0in
+\textwidth      6.5in
+
+\title{
+{Doctoral Thesis Proposal} \\
+~\\
+\bf \mytitle}
+\author{ {Heming Cui}  \\
+Department of Computer Science \\
+Columbia University\\
+{\small heming@cs.columbia.edu} \\
+}
+\date{\today}
+
+\begin{document}
+\pagestyle{plain}
+\pagenumbering{roman}
+\maketitle
+
+\pagebreak
+\begin{abstract}
+\input{abstract}
+\end{abstract}
+
+\pagebreak
+\tableofcontents
+\pagebreak
+
+\cleardoublepage
+\pagenumbering{arabic}
+
+\input{intro}
+
+\input{stable-mt}
+
+\input{mc/mc}
+
+\input{app-replication}
+
+\input{related}
+
+\input{plan}
+
+\begin{footnotesize}
+\bibliographystyle{abbrvnat}
+\bibliography{bib/biblio}
+\end{footnotesize}
+
+\end{document}
+
+
