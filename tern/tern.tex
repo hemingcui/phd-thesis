@@ -81,8 +81,8 @@ avoiding the runtime cost of recomputing schedules.
 
 A na\"ive way to compute the precondition is to collect constraints from
 all input-dependent branches in an execution.  For instance, if a branch
-instruction inspects input variable \v{X} and goes down the true branch,
-we add a constraint that \v{X} must be nonzero to the precondition.  A
+instruction inspects input variable $X$ and goes down the true branch,
+we add a constraint that $X$ must be nonzero to the precondition.  A
 precondition computed this way is sufficient, but it contains many
 unnecessary constraints concerning only thread-local computations.  Since
 an over-constraining precondition decreases schedule-reuse rates, \tern
@@ -114,7 +114,7 @@ removes these unnecessary constraints from the precondition.
 \caption{{\it All input constraints collected for the schedule.}  Each
   constraint is labeled with its line number in
   Figure~\ref{fig:pbzip2}. Constraints collected from function
-  \v{compress} are later removed by \tern because they have no effects on
+  \texttt{compress} are later removed by \tern because they have no effects on
   the schedule.  The remaining constraints simplify to
   $nthread=2$.} \label{fig:pbzip2-constraints}
 \end{figure}
@@ -122,14 +122,14 @@ removes these unnecessary constraints from the precondition.
 We illustrate how \tern works using a simple program based on the
 aforementioned parallel compression utility \pbzip.
 Figure~\ref{fig:pbzip2} shows this example. Its input includes all command
-line arguments in \v{argv} and the input file data.
-To compress a file, it spawns \v{nthread} worker threads,
+line arguments in \texttt{argv} and the input file data.
+To compress a file, it spawns \texttt{nthread} worker threads,
 splits the file accordingly, and compresses the file blocks in parallel by
-calling function \v{compress}. To coordinate the worker threads, it uses a
+calling function \texttt{compress}. To coordinate the worker threads, it uses a
 synchronized work list. (Here we use work-list synchronization for
 clarity; in practice, \tern handles Pthread synchronizations.) The example
-actually has a bug: it is missing \v{pthread\_join} operations at line 7,
-so the work list may be used by function \v{worker} after it is cleared at
+actually has a bug: it is missing \texttt{pthread\_join} operations at line 7,
+so the work list may be used by function \texttt{worker} after it is cleared at
 line 8, causing potential program crashes. This bug is based on a real
 bug in \pbzip.
 
