@@ -3,11 +3,10 @@ FILES = $(SRC).lot $(SRC).lof $(SRC).out $(SRC).toc $(SRC).bbl $(SRC).aux $(SRC)
 
 all:: bbl texts
 
-texts: $(SRC).tex terminology.tex abstract.tex intro.tex related.tex conclusion.tex \
-	app-model-chk.tex app-replication.tex plan.tex bib/biblio.bib tern/*.tex
-	dvipdf $(SRC).dvi
-	dvips -o $(SRC).ps -t letter $(SRC).dvi
-	#test -e p.pdf || ln -s $(SRC).pdf p.pdf
+texts: *.tex bib/biblio.bib \
+	tern/*.tex peregrine/*.tex parrot/*.tex mc/*.tex analysis/*.tex
+	dvipdf $(SRC).dvi >> $(SRC).build.log 2>&1
+	dvips -o $(SRC).ps -t letter $(SRC).dvi >> $(SRC).build.log 2>&1
 
 bbl:
 	rm -rf $(SRC).bbl
