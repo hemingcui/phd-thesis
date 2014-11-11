@@ -23,9 +23,7 @@
 \usepackage{fancyhdr}
 \usepackage{afterpage}
 
-\newcommand{\thesistitle}{Thesis title}
-\newcommand{\thesisauthor}{Author's name}
-\newcommand{\thesisyear}{20XX}
+\input{terminology}
 
 %
 % We use the hyperref package and customize it for optimal PDF 
@@ -35,8 +33,6 @@
 pdfpagemode={UseOutlines},letterpaper,bookmarks,bookmarksopen=true,
 pdfstartview={FitH},bookmarksnumbered=true,]{hyperref}
 
-
-\input{terminology}
 \input{header}
 
 %% Reference stuff.
@@ -46,7 +42,7 @@ pdfstartview={FitH},bookmarksnumbered=true,]{hyperref}
 \hypersetup{
   colorlinks=false,
   pdfborder={0 0 0},
-  pdftitle={\mytitle},
+  pdftitle={\thesistitle},
   pdfkeywords={\mykeywords},
   bookmarksnumbered,
   pdfstartview={FitH},
