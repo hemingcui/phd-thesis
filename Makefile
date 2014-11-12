@@ -1,5 +1,6 @@
 SRC = thesis
-FILES = $(SRC).lot $(SRC).lof $(SRC).out $(SRC).toc $(SRC).bbl $(SRC).aux $(SRC).blg $(SRC).dvi *.log $(SRC).ps $(SRC).pdf
+FILES = $(SRC).lot $(SRC).lof $(SRC).out $(SRC).toc $(SRC).bbl \
+	$(SRC).aux $(SRC).blg $(SRC).dvi *.log $(SRC).ps $(SRC).pdf *~
 
 all:: bbl texts
 
