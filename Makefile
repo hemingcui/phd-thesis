@@ -5,7 +5,7 @@ FILES = $(SRC).lot $(SRC).lof $(SRC).out $(SRC).toc $(SRC).bbl \
 all:: bbl texts
 
 texts: *.tex bib/biblio.bib \
-	tern/*.tex peregrine/*.tex parrot/*.tex mc/*.tex analysis/*.tex
+	tern/*.tex peregrine/*.tex parrot/*.tex mc/*.tex bugs/*.tex
 	dvipdf $(SRC).dvi >> $(SRC).build.log 2>&1
 	dvips -o $(SRC).ps -t letter $(SRC).dvi >> $(SRC).build.log 2>&1
 
