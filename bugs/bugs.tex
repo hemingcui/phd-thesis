@@ -1,18 +1,272 @@
 \chapter{Reproducing Concurrency Bugs} \label{sec:bugs}
 
 \section{State of the Art} \label{sec:bugs-intro}
-First, concurrency bugs are extremely hard to reproduce in traditional thread runtimes.
+Unlike sequential programs, repeated executions of the same multithreaded
+program on the same input may yield different (\eg, correct \vs buggy)
+behaviors, depending on how the threads interleave. Conventional wisdom
+has long blamed this \emph{nondeterminism} for the challenges in reliable
+multithreading~\cite{lee06}: threads are nondeterministic by default, 
+and it is the (tricky) job of developers to account for this nondeterminism.
+Nondeterminism has direct implications on reliability.  For instance, it
+makes testing less effective: a program may run correctly on an input in
+the testing lab because the interleavings tested happen to be correct, but
+executions on the same exact input may still fail in the field when the
+program hits a buggy, untested interleaving.
 
-Second, \dmt aims to address this problem, but actually it may aggravate this problem.
+To eliminate this nondeterminism, several groups of researchers including
+us have dedicated much effort to building deterministic multithreading (DMT)
+systems~\cite{dmp:asplos09,coredet:asplos10,kendo:asplos09,grace:oopsla09,dthreads:sosp11,dpj:oopsla09,determinator:cacm}. These systems force a multithreaded program to always execute the same
+thread interleaving, or \emph{schedule}, on the same input, thus always
+resulting in the same behavior.  By mapping each input to only one
+schedule, DMT brings determinism, a key property of sequential computing,
+into multithreading.
 
-Third, \smt can address this problem. Introduce concurency bugs with respect to sync-schedules.
+%%\para{Determinism $\centernot \implies$ reliability.} 
+Determinism is a narrow property: same input + same program = same behavior. It has no
+jurisdiction if the input or program changes however slightly.  Yet, we
+often expect a program to be robust or stable against slight program
+changes or input perturbations.  For instance, adding a debug \v{printf}
+should in principle not make the bug
+disappear.  Similarly, a single bit flip of a file should usually not
+cause a compression utility to crash. Unfortunately, determinism
+does not provide this stability and, if na\"{i}vely implemented,
+even undermines it.
+
+To illustrate, consider the system depicted in
+Figure~\ref{fig:dmt} which maps each input to an arbitrary schedule. This
+mapping is perfectly deterministic, but it destabilizes program
+behaviors on multiple inputs.  A single bit flip may force a program to
+discard a correct schedule and adventure into a vastly different, buggy
+schedule.
+
+This instability is counterintuitive at least,
+and raises new reliability challenges.  For instance, testing one input
+provides little assurance on very similar inputs, despite that the differences
+in input do not invalidate the tested schedule.  Debugging now requires
+every bit of the bug-inducing input, including not only the data a user
+typed, but also environment variables, shared libraries, \etc.  A
+different user name?  Error report doesn't include credit card numbers?
+The bug may never be reproduced, regardless of how many times developers
+retry, because the schedule chosen by the deterministic system for the
+altered input happens to be correct.  Note that even a correct
+sequential program may show very different behaviors for small input
+changes across boundary conditions, but these conditions are typically
+infrequent and the different behaviors are intended by developers.  In
+contrast, the instability introduced by the system in Figure~\ref{fig:dmt}
+is artificial and on all inputs.
+
+Besides inputs, na\"{i}vely implemented determinism can destabilize
+program behaviors on minor code changes, so adding a debug \v{printf}
+causes the bug to deterministically disappear.  Another problem is that
+the number of all possible schedules remains enormous, so the coverage of
+schedule testing tools remains low.
+
+In practice, to mitigate these problems, researchers have to augment
+determinism with other techniques.  To support debug \v{printf}, some
+propose to temporarily revert to nondeterministic
+execution~\cite{dmp:asplos09}.  DMP~\cite{dmp:asplos09},
+CoreDet~\cite{coredet:asplos10}, and Kendo~\cite{kendo:asplos09} change
+schedules only if the inputs change low-level instructions executed.
+Although better than mapping each input to an arbitrary schedule, they
+still allow small input perturbations to destabilize schedules
+unnecessarily when the perturbations change the low-level instructions
+executed (\eg, one extra \v{load} executed), observed in our
+experiments~\cite{cui:tern:osdi10}. Our \tern and \peregrine systems and others'
+\dthreads~\cite{dthreads:sosp11} built subsequently to \tern combine DMT
+with \smt (elaborated next section) to frequently reuse schedules on a
+wide range of inputs for stability.
+
+By vastly reducing the set of schedules, \smt brings numerous reliability benefits
+to reproducing concurrency bugs.  Reproducing a bug now does not require the exact input,
+as long as the original and the altered inputs map to the same schedule.
+It does not require the exact program either, as long as the changes to
+the program do not affect the schedule.  Users may remove private
+information such as credit card numbers from their bug reports. Developers
+may reproduce the bugs in different environments or add \v{printf}
+statements.
+
+TBD: reasons to choose \tern. Introduce why we need a race detection algorithm.
 
 \section{Detection Algorithm} \label{sec:bugs-detection}
 
-Can also detect input dependent concurrency bugs.
-TBD.
+\subsection{Detecting Data Races} \label{sec:detect-race}
+
+%\capstartfalse
+\begin{figure}
+\begin{minipage}[t]{0.45\linewidth}
+\tiny
+\lgrindfile{bugs/code/avoided-race.cpp}
+\caption{\small\em A conventional race, not a schedule race.}
+\label{fig:avoided-race}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.48\linewidth}
+\tiny 
+\lgrindfile{bugs/code/symbolic-race.cpp}
+\vspace{-.2in}
+\caption{\small\em A symbolic race that occurs only when $i=j$.}
+\label{fig:symbolic-race}
+\end{minipage}
+\vspace{-.2in}
+\end{figure}
+%\capstarttrue
+
+As discussed in \S\ref{sec:define-schedule}, if a memoized schedule allows
+data races, runs reusing this schedule may become nondeterministic.  Thus,
+for determinism, we would like to detect races in memoized schedules and
+discard them from the schedule cache.  A general race detector would flag
+too many races for \tern because it detects conventional races with respect
+to the original synchronization constraints of the program, whereas we
+want to detect races with respect to the order constraints of a
+schedule~\cite{recplay:tocs} (call them \emph{schedule races}).
+Figure~\ref{fig:avoided-race} shows a conventional race, but not a
+schedule race because the synchronization order shown ``kills'' the race.
+
+Thus, we built a simple race detector to detect schedule races.  It runs
+with the memoizer and is happens-before based.  It considers one memory
+access happens before another with respect to the synchronization order
+the memoizer records.  Sometimes a pair of instructions may appear to be a
+race, when in fact their relative order does not alter a run.  For
+instance, a write-write race is benign if both instructions write the same
+value.  Similarly, a read-write race is benign if the value written by one
+instruction does not affect the value read by another.  Our race detector
+prunes these benign races.
+
+Our detector also flags \emph{symbolic races}, the races that are
+data-dependent on inputs.  Figure~\ref{fig:symbolic-race} shows an example.
+Both variables $i$ and $j$ are inputs, and the race occurs only when $i =
+j$.  The risk of a symbolic races is that it may be absent in a
+memoization run and thus skip detection, but show up nondeterministically
+in a reuse run.  To detect symbolic races, our race detector queries the
+underlying symbolic execution engine for pointer equality.  For example,
+to detect the race in Figure~\ref{fig:symbolic-race}, it would query the
+underlying symbolic execution engine for the satisfiability of
+$\&a[i]=\&a[j]$.  It flags a symbolic race if this constraint is satisfiable.
+Once a symbolic race is flagged, \tern adds additional input constraints to
+ensure that the race does not occur in reuse runs.  For
+Figure~\ref{fig:symbolic-race}, we would add $\&a[i]\neq \&a[j]$, which
+simplifies to $i\neq j$.
+
+Our race detector can detect all schedule races in a memoization run.  It
+can also detect all symbolic races if developers correctly annotate all
+data that affect synchronization operations and memory locations accessed.
+If this assumption holds and our race detector reports no races in a
+memoization run, \tern ensures that the memoized schedule can be
+deterministically reused.
+
 
 \section{Evaluation} \label{sec:bugs-evaluation}
+
+\subsection{Reproducing Concurrency Bugs} \label{sec:bug-determinism}
+
+\begin{table}[t]
+\begin{center}
+{
+\small
+\begin{tabular}{lp{2.3in}}
+
+{\bf Program} & {\bf Error Description} \\
+
+\hline
+
+Apache & Reference count decrement and check against 0 are not atomic.\\
+
+\pbzip & Variable \v{fifo} is used in one thread after being freed by another.\\
+
+
+% Mozilla-73761 & Accessing the property cache array and its flag are not
+% atomic.  \\
+
+% Mozilla-201134 & Accumulative updates to a security flag called
+% \v{nsCertType} are atomic. \\
+
+% Mozilla-133773 & A hash table in a global variable called
+% \v{atomState} is used after 
+fft & \v{initdonetime} and  \v{finishtime} are read
+before assigned the correct values.\\
+
+lu & Variable \v{rf} is read before assigned the  correct
+value. \\
+
+barnes & Variable \v{tracktime} is read before assigned the
+correct value.\\
+
+\end{tabular}}
+\end{center}
+\caption{{\em Concurrency errors used in evaluation}.} \label{table:races}
+\end{table}
+
+We also evaluated how deterministically \tern could reproduce or avoid
+bugs.  Table~\ref{table:races} lists five real concurrency bugs we used.
+We selected them because they were frequently used in previous
+studies~\cite{avio:asplos06,ctrigger:asplos09,lu:concurrency-bugs,pres:sosp09}
+and we could reproduce them on our evaluation machine.  To measure bug
+determinism, we first memoized schedules for programs listed in
+Table~\ref{table:races}.  We then manually inserted \v{usleep()} to these
+programs to get alternate schedules.  We then ran the buggy programs
+again, reusing the memoized schedules.  We also injected random delays
+into the reuse runs to perturb timing.  We found that, \tern consistently
+reproduced or avoided all five bugs.  We verified this result
+by inspecting the memoized schedules.
+
+\subsection{Bug Stability} \label{sec:bug-stable}
+
+%%\newcommand{\bug}{\ding{54}\xspace}
+%%\newcommand{\nobug}{\ding{52}\xspace}
+
+\begin{table}
+\small
+\centering
+\begin{tabular}{c|c@{\hspace{.07in}}cc
+                 |c@{\hspace{.07in}}cc
+                 |c@{\hspace{.07in}}cc}
+
+{\bf      }& \multicolumn{3}{|c|}{\bf Nondet} 
+           & \multicolumn{3}{|c|}{\bf \coredet} 
+           & \multicolumn{3}{|c }{\bf tern} \\
+\hline
+{\bf -p2} & \nobug & \nobug & \nobug
+          & \nobug & \bug   & \nobug
+          & \nobug & \nobug & \nobug  \\
+{\bf -p4} & \nobug & \nobug & \nobug
+          & \bug   & \bug   & \nobug
+          & \nobug & \nobug & \nobug \\
+{\bf -p8} & \nobug & \nobug & \nobug
+          & \bug   & \bug   & \bug
+          & \nobug & \nobug & \nobug \\
+\hline
+{\bf Args.}& {\bf -m10} & {\bf 12} & {\bf 14}
+           & {\bf -m10} & {\bf 12} & {\bf 14}
+           & {\bf -m10} & {\bf 12} & {\bf 14} \\
+\end{tabular}
+\caption{{\em Bug stability results on \splash \v{fft}.}  The leftmost
+  column and the bottommost row show the command line arguments.  Option
+  {\bf -p} specifies the number of threads, and {\bf -m} the amount of
+  computation (matrix size).  Symbol \bug indicates that the bug occured,
+  and \nobug the bug never occured. }
+\label{tab:coredet}
+\end{table}
+
+We compared \tern to \coredet~\cite{coredet:asplos10} in terms of \emph{bug
+  stability}: does a bug occur in one run but disappear in another when
+the input varies slightly?  We ran three buggy
+\splash programs, fft, lu, and barnes, in three modes: nondeterministic
+execution (Nondet), with \coredet, and with \tern.  We varied their inputs by
+varying the number of threads and the amount of computation.
+% We varied their execution environments by running them on
+% our main evaluation machine (Intel CPU) and on an additional AMD machine.
+%For each program, execution mode, input, and machine combination, we ran
+For each program, execution mode, and input combination, we ran
+the program 100 times, and recorded whether the corresponding bug occurred.
+
+We present only the fft results; the results of the other programs are
+similar.  Table~\ref{tab:coredet} shows the buggy behaviors of fft.
+  In nondeterministic mode, the bug never
+occurred, despite that each run almost always yielded a new
+synchronization order. With \coredet, slight changes in computation made the
+bug occur or disappear.  With \tern, the bug never occurred, and
+\tern reused only three schedules for all runs, one for each
+thread count.  
 
 Bugs table. Introduce them.
 
