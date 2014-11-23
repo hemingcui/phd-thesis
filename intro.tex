@@ -1,41 +1,17 @@
 \chapter{Introduction} \label{sec:intro}
 
 %% P1: Multi-threading is critical and popular.
-Multi-threading becomes increasing pervasive and critical because of two 
-computing trends. First, due to the physical constraints on circuit speed, 
-computing platforms, ranging from laptops, desktops, smart phones, to servers, are having
-more and more cores rather than faster and faster single-core. In order to 
-harness the power of multi-core, developers write more and more multi-threaded programs on these platforms. 
-Second, the emerging cloud computing trend requires networking services, ranging from 
-web servers to storage engines, to process more and more requests concurrently, which also 
-pushes developers to write more and more multi-threaded networking programs. These two trends continue and 
+Multithreading has become pervasive and critical because of two computing trends. First, due to the physical constraints on circuit speed, computing platforms, ranging from laptops, desktops, smart phones, to servers, are having more and more cores rather than faster and faster single-core. In order to 
+harness the power of multi-core, developers write more and more multi-threaded programs on these platforms. Second, the emerging cloud computing trend requires networking services, ranging from 
+web servers to storage engines, to process more and more requests concurrently, which also pushes developers to write more and more multi-threaded networking programs. These two trends continue and 
 multit-threading becomes increaingly pervasive and critical.
 
 %% P2: However, it is hard to get right.
-Unfortunately, despite decades of effort from both academia and industry, 
-multi-threaded programs are still notoriously difficult to get right. A key 
-reason is: even running on the same input, the concurrently running threads of 
-a program may interleave in \emph{too many} different ways, and we call these interleavings 
-\emph{schedules}. Considering all inputs, the number of possible schedules is even greater. 
-In this traditional multit-threading manner, each input may run into too many 
-thread interleavings, and each interleaving may process many different inputs.
-This messy many-to-many mapping (Figure~\ref{fig:nondet}) makes multi-threaded programs extremely
-hard to test, analyze, and verify. As a result, a concurency bug hidden in one schedule can 
-easily bypass existing reliability and security techniques in the testing lab and show up in the field, 
-potentially causing program crashes, wrong outputs, security breaches, and so on.
+Unfortunately, despite decades of effort from both academia and industry, multithreaded programs are still notoriously difficult to get right. A key reason is: even running on the same input, the concurrently running threads of a program may interleave in \emph{too many} different ways, and we call these interleavings \emph{schedules}. Considering all inputs, the number of possible schedules is even greater. 
+In this traditional multit-threading manner, each input may run into too many thread interleavings, and each interleaving may process many different inputs. This messy many-to-many mapping (Figure~\ref{fig:nondet}) makes multi-threaded programs extremely hard to test, analyze, and verify. As a result, a concurency bug hidden in one schedule can easily bypass existing reliability and security techniques in the testing lab and show up in the field, potentially causing program crashes, wrong outputs, security breaches, and so on.
 
 %% P3: DMT: one possible approach. And its limitations.
-In order to reduce the number possible schedules on each input, researchers 
-have proposed a great idea called deterministic multithreading (or \dmt)~\cite{dthreads:sosp11,
-dpj:oopsla09, dmp:asplos09, kendo:asplos09, coredet:asplos10} that 
-always enforces the same schedule on the same input. By mapping each input to only 
-one schedule (Figure~\ref{fig:dmt}), \dmt greatly improves reliability for multithreaded programs on each input.
-However, although \dmt is useful, it is not as useful as commonly perceived, 
-because as we have shown in our previous research~\cite{cui:tern:osdi10},
-a typical \dmt system can map slightly different inputs to 
-very different schedules, artificially reducing programs' robustness on input 
-perturbation, and the number of possible schedules on all inputs are still 
-enormous, and the resultant programs are still very hard to test, analyze, verify, etc.
+In order to reduce the number possible schedules on each input, researchers have proposed a great idea called deterministic multithreading (or \dmt)~\cite{dthreads:sosp11, dpj:oopsla09, dmp:asplos09, kendo:asplos09, coredet:asplos10} that always enforces the same schedule on the same input. By mapping each input to only one schedule (Figure~\ref{fig:dmt}), \dmt greatly improves reliability for multithreaded programs on each input. However, although \dmt is useful, it is not as useful as commonly perceived, because as we have shown in our previous research~\cite{cui:tern:osdi10}, a typical \dmt system can map slightly different inputs to very different schedules, artificially reducing programs' robustness on input perturbation, and the number of possible schedules on all inputs are still enormous, and the resultant programs are still very hard to test, analyze, verify, and so on.
 
 \begin{figure*}[t]
 \begin{center}
