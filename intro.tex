@@ -2,7 +2,7 @@
 
 %% P1: Multi-threading is critical and popular.
 Multithreading has become pervasive and critical because of two computing trends. First, due to the physical constraints on circuit speed, computing platforms are having more and more cores rather than faster and faster single-core. In order to harness the power of multi-core, developers write more and more multi-threaded programs on these platforms. Second, the emerging cloud computing trend requires networking services (\eg, \http servers and database servers) to process more and more requests concurrently, which also pushes developers to write more and more multi-threaded programs. These two trends will continue and 
-multit-threading becomes increaingly pervasive and critical.
+multithreading becomes increaingly pervasive and critical.
 
 %% P2: However, it is hard to get right.
 Unfortunately, despite decades of effort from both academia and industry, multithreaded programs are still notoriously difficult to get right, and these programs are plagued with harmful concurrency bugs that can cause wrong outputs, program crashes, security breaches, and so on. A key reason of this difficulty is: even running on the same input, the concurrently running threads of a program may interleave in \emph{too many} different ways, and we call these interleavings \emph{schedules}. Considering all inputs, the number of possible schedules is even greater. In this traditional multit-threading manner, each input may run into too many thread interleavings, and each interleaving may process many different inputs. This messy many-to-many mapping (Figure~\ref{fig:nondet}) makes multi-threaded programs extremely hard to test, analyze, and verify. As a result, a concurency bug hidden in one schedule can easily bypass existing reliability and security techniques in the testing lab and show up in the field.
@@ -47,7 +47,7 @@ To make \smt real, I have worked with Columbia and CMU colleagues as a leader to
 
 \para{Challenge 1: How to compute highly reusable schedules for different inputs?} The more reusable a schedule is, the fewer schedules are needed. However, finding highly reusable schedules is hard with existing static or dynamic techniques, because statically computed schedules are not guaranteed to work at runtime due to the halting problem, and dynamically computing schedules may cause prohibitive overhead.
 
-\tern~\cite{cui:tern:osdi10}, \S\ref{sec:tern} introduces our first \smt system, addresses the schedule-finding challenge by proposing a technique called \emph{schedule memoizatoin} that memoizes a set of past, working schedules, and then 
+\tern~\cite{cui:tern:osdi10} (\S\ref{sec:tern}) introduces our first \smt system, addresses the first challenge by proposing a technique called \emph{schedule memoizatoin} that memoizes a set of past, working schedules, and then 
 reuses these schedules on future inputs when possible. This technique is inspired
 by a real-world analogy that human and animals tend to migrate along past, familiar routes
 and avoid possible hazards in unknown ones. In order to find a schedule 
