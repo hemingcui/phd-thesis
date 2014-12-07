@@ -1,4 +1,30 @@
-Multithreaded programs have become pervasive and critical due to the accelerating computational demand (e.g., Big Data) and the rise of the multi-core hardware. Unfortunately, despite much research and engineering effort, these programs are still notoriously difficult to get right, and they are plagued with harmful concurrency bugs that can cause wrong outputs, program crashes, security breaches, and so on. Our study reveals that a key reason of this difficulty is that multithreaded programs have too many possible thread interleavings at runtime, probably due to performance favor. Even given only a single input, a program may run into excessive schedules, depending on such factors as hardware timing and OS scheduling. Considering all inputs, the number of schedules is even much greater. Finding a buggy schedule in this huge schedule set is like finding a needle in a haystack, which aggravates understanding, testing, and analyzing a program.
+Multithreaded programs have become pervasive and critical due to the
+accelerating computational demand (e.g., Big Data) and the rise of the
+multi-core hardware. Unfortunately, despite much research and engineering
+effort, these programs are still notoriously difficult to get right, and they
+are plagued with harmful concurrency bugs that can cause wrong outputs, program
+crashes, security breaches, and so on. Our study reveals that a key reason of
+this difficulty is that multithreaded programs have too many possible thread
+interleavings at runtime, probably due to performance favor. Even given only a
+single input, a program may run into excessive schedules, depending on such
+factors as hardware timing and OS scheduling. Considering all inputs, the number
+of schedules is even much greater. Finding a buggy schedule in this huge
+schedule set is like finding a needle in a haystack, which aggravates
+understanding, testing, and analyzing a program.
 
-In order to reduce the number of schedules for all inputs, we have studied the relation between inputs and schedules of real-world programs, and made an eye-opening discovery: many programs need only a small set of schedules to efficiently process a wide range of inputs! Leveraging this discovery, we have proposed a new idea called Stable Multi-Threading (StableMT) that reuses each schedule on a wide range of inputs. By greatly reducing the number of possible schedules for all inputs, StableMT drastically shrinks the ``haystack" and makes the ``needles" (concurrency bugs) much easier to find, making multithreaded programs much easier to get right. In order to make StableMT real, we have built three StableMT systems, \tern, \peregrine, and \parrot, with each addressing a distinct research challenge. We have also quantitatively demonstrated that StableMT can benefit several existing reliability techniques, including making reproducing real-world concurrency bugs much easier, and greatly improving coverage of a systematic testing technique called model checking by many orders of magnitudes.
+In order to reduce the number of schedules for all inputs, we have studied the
+relation between inputs and schedules of real-world programs, and made an
+eye-opening discovery: many programs need only a small set of schedules to
+efficiently process a wide range of inputs! Leveraging this discovery, we have
+proposed a new idea called Stable Multi-Threading (StableMT) that reuses each
+schedule on a wide range of inputs. By greatly reducing the number of possible
+schedules for all inputs, StableMT drastically shrinks the ``haystack" and makes
+the ``needles" (concurrency bugs) much easier to find, making multithreaded
+programs much easier to get right. In order to make StableMT real, we have built
+three StableMT systems, \tern, \peregrine, and \parrot, with each addressing a
+distinct research challenge. We have also quantitatively demonstrated that
+StableMT can benefit several existing reliability techniques, including making
+reproducing real-world concurrency bugs much easier, and greatly improving
+coverage of a 
+systematic testing technique called model checking by many orders of magnitudes.
 
