@@ -12,8 +12,6 @@ developers to write more and more multithreaded programs. These two trends will
 continue and multithreading will become increaingly pervasive and critical.
 
 %% P2: However, it is hard to get right.
-%% FIXME: seems the subfigure can not be ~ref{} correctly. Currently we use the
-%% real figure name.
 Unfortunately, despite decades of effort from both academia and industry,
 multithreaded programs are still notoriously difficult to get right, and these
 programs are plagued with harmful concurrency bugs that can cause wrong outputs,
@@ -24,7 +22,7 @@ interleavings \emph{schedules}. Considering all inputs, the number of possible
 schedules is even greater. In this traditional multithreading manner, each
 input may run into too many thread interleavings, and each interleaving may
 process many different inputs. This messy many-to-many mapping
-(Figure~1.1~(a)) makes multi-threaded programs extremely hard to
+(Figure~\ref{fig:nondet}) makes multi-threaded programs extremely hard to
 understand, test, analyze, and verify. As a result, a concurency bug hidden in
 one schedule can easily bypass even advanced reliability and security techniques
 in the testing lab and show up in the production runs.
@@ -59,16 +57,17 @@ Deterministic.}]{\includegraphics[width=.23\linewidth]{figures/dmt}
   \label{fig:smtn}}
 \vspace{-.05in}
 \caption{Different multithreading approaches. Red stars represent buggy
-schedules. Traditional multithreading (1.1~(a)) is a conceptual many-to-many
-mapping where one input may execute under many schedules because of
+schedules. Traditional multithreading (\subref*{fig:nondet}) is a conceptual
+many-to-many mapping where one input may execute under many schedules because of
 nondeterminism, and many inputs may execute under one schedule because a
 schedule fixes the order of the communication operations but allows the local
-computations to operate on any input data. \dmt (1.1~(b)) may map each input to
-an arbitrary schedule, reducing programs' robustness on input perturbations. 
-\smt (1.1~(c) and 1.1~(d)) reduces the total set of schedules for all inputs
-(represented by the shrunk ellipses), increasing robustness and improving
-reliability. \smt and \dmt are orthogonal: a \smt system can be deterministic
-(1.1~(c)) or nondeterministic (1.1~(d)).}
+computations to operate on any input data. \dmt (\subref*{fig:dmt}) may map each
+input to an arbitrary schedule, reducing programs' robustness on input
+perturbations. \smt (\subref*{fig:smt} and \subref*{fig:smtn}) reduces the total
+set of schedules for all inputs (represented by the shrunk ellipses), increasing
+robustness and improving reliability. \smt and \dmt are orthogonal: a \smt
+system can be deterministic (\subref*{fig:smt}) or nondeterministic
+(\subref*{fig:smtn}).}
 \vspace{-.2in}
 \end{center}
 \end{figure*}
