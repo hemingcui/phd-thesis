@@ -5,11 +5,11 @@ Multithreading has become pervasive and critical because of two computing
 trends. First, due to the physical constraints on circuit speed, computing
 platforms are having more and more cores rather than faster and faster
 single-core. In order to harness the power of multi-core, developers write more
-and more multi-threaded programs on these platforms. Second, the emerging cloud
+and more multithreaded programs on these platforms. Second, the emerging cloud
 computing trend requires networking services (\eg, \http servers and database
 servers) to process more and more requests concurrently, which also pushes
-developers to write more and more multi-threaded programs. These two trends will
-continue and multithreading becomes increaingly pervasive and critical.
+developers to write more and more multithreaded programs. These two trends will
+continue and multithreading will become increaingly pervasive and critical.
 
 %% P2: However, it is hard to get right.
 Unfortunately, despite decades of effort from both academia and industry,
@@ -19,7 +19,7 @@ program crashes, security breaches, and so on. A key reason of this difficulty
 is: even running on the same input, the concurrently running threads of a
 program may interleave in \emph{too many} different ways, and we call these
 interleavings \emph{schedules}. Considering all inputs, the number of possible
-schedules is even greater. In this traditional multit-threading manner, each
+schedules is even greater. In this traditional multithreading manner, each
 input may run into too many thread interleavings, and each interleaving may
 process many different inputs. This messy many-to-many mapping
 (Figure~\ref{fig:nondet}) makes multi-threaded programs extremely hard to test,
