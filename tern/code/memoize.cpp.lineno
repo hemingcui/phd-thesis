@@ -1,0 +1,19 @@
+1 :   queue_t activeq, waitq[N];
+2 :   pthread_mutex_lock_wrapper(pthread_mutex_t *mutex) { 
+3 :    retry:
+4 :     while(self()!=activeq.head); // wait for our turn
+5 :     if(!phtread_mutex_trylock(mutex)) { // mutex acquired 
+6 :       append(schedule, self()); // add tid to schedule
+7 :       move(self(), activeq.tail); // give turn to next thread
+8 :       return;
+9 : 	}
+10: 	move(self(), waitq[mutex].tail); // deterministically wait
+11: 	goto retry; // wait for our turn again
+12:   }
+13:   pthread_mutex_unlock_wrapper(pthread_mutex_t *mutex) {
+14: 	while(self()!=activeq.head); // wait for our turn
+15: 	pthread_mutex_unlock(mutex); // mutex released
+16: 	wake_up(waitq[mutex].head); // deterministically wake up
+17: 	append(schedule, self()); // add tid to schedule
+18: 	move(self(), activeq.tail); // give turn to next thread
+19:   }

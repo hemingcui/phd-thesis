@@ -1,0 +1,9 @@
+% Remember to use the lgrind style
+
+\Head{}
+\File{code/avoided\-race.cpp}{2014}{9}{15}{23:57}{72}
+\L{\LB{\C{}//_T1}\Tab{12}{//_T2\CE{}}}
+\L{\LB{++\V{x};}}
+\L{\LB{\V{lock}(\V{l1});}}
+\L{\LB{}\Tab{12}{\V{lock}(\V{l2});}}
+\L{\LB{}\Tab{12}{++\V{x};}}

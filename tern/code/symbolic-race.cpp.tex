@@ -1,0 +1,11 @@
+% Remember to use the lgrind style
+
+\Head{}
+\File{code/symbolic\-race.cpp}{2014}{9}{15}{23:57}{116}
+\L{\LB{\C{}//_T1}\Tab{12}{//_T2\CE{}}}
+\L{\LB{\V{lock}(\V{l1});}}
+\L{\LB{\V{a}[\V{i}]++;}\Tab{12}{\V{lock}(\V{l2});}}
+\L{\LB{}\Tab{12}{\V{a}[\V{j}]\-\-;}}
+\L{\LB{\V{unlock}(\V{l1});}\Tab{13}{}}
+\L{\LB{}\Tab{12}{\V{unlock}(\V{l2});}}
+\L{\LB{}\Tab{7}{}}

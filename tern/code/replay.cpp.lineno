@@ -1,0 +1,6 @@
+1:   pthread_mutex_lock_wrapper(mutex) {
+2:     down(sem[self()]); // wait for our turn
+3:     pthread_mutex_lock(mutex);
+4:     next = shift schedule; // find next thread in schedule
+5:     up(sem[next]); // wake up next thread
+6:   }

@@ -1,0 +1,23 @@
+% Remember to use the lgrind style
+
+\Head{}
+\File{memoize.cpp}{2014}{12}{9}{0:37}{771}
+\L{\LB{}\Tab{2}{\V{queue\_t}_\V{activeq},_\V{waitq}[\V{N}];}}
+\index{pthread\_mutex\_lock\_wrapper}\Proc{pthread\_mutex\_lock\_wrapper}\L{\LB{}\Tab{2}{\V{pthread\_mutex\_lock\_wrapper}(\V{pthread\_mutex\_t}_*\V{mutex})_\{_}}
+\L{\LB{}\Tab{3}{\V{retry:}}}
+\L{\LB{}\Tab{4}{\K{while}(\V{self}()!=\V{activeq}.\V{head});_\C{}//_wait_for_our_turn\CE{}}}
+\L{\LB{}\Tab{4}{\K{if}(!\V{phtread\_mutex\_trylock}(\V{mutex}))_\{_\C{}//_mutex_acquired_\CE{}}}
+\L{\LB{}\Tab{6}{\V{append}(\V{schedule},_\V{self}());_\C{}//_add_tid_to_schedule\CE{}}}
+\L{\LB{}\Tab{6}{\V{move}(\V{self}(),_\V{activeq}.\V{tail});_\C{}//_give_turn_to_next_thread\CE{}}}
+\L{\LB{}\Tab{6}{\K{return};}}
+\L{\LB{}\Tab{8}{\}}}
+\L{\LB{}\Tab{8}{\V{move}(\V{self}(),_\V{waitq}[\V{mutex}].\V{tail});_\C{}//_deterministically_wait\CE{}}}
+\L{\LB{}\Tab{8}{\K{goto}_\V{retry};_\C{}//_wait_for_our_turn_again\CE{}}}
+\L{\LB{}\Tab{2}{\}}}
+\index{pthread\_mutex\_unlock\_wrapper}\Proc{pthread\_mutex\_unlock\_wrapper}\L{\LB{}\Tab{2}{\V{pthread\_mutex\_unlock\_wrapper}(\V{pthread\_mutex\_t}_*\V{mutex})_\{}}
+\L{\LB{}\Tab{8}{\K{while}(\V{self}()!=\V{activeq}.\V{head});_\C{}//_wait_for_our_turn\CE{}}}
+\L{\LB{}\Tab{8}{\V{pthread\_mutex\_unlock}(\V{mutex});_\C{}//_mutex_released\CE{}}}
+\L{\LB{}\Tab{8}{\V{wake\_up}(\V{waitq}[\V{mutex}].\V{head});_\C{}//_deterministically_wake_up\CE{}}}
+\L{\LB{}\Tab{8}{\V{append}(\V{schedule},_\V{self}());_\C{}//_add_tid_to_schedule\CE{}}}
+\L{\LB{}\Tab{8}{\V{move}(\V{self}(),_\V{activeq}.\V{tail});_\C{}//_give_turn_to_next_thread\CE{}}}
+\L{\LB{}\Tab{2}{\}}}

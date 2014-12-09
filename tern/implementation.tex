@@ -1,0 +1,458 @@
+\section{Refinements} \label{sec:impl}
+
+This section describes four refinements we made, one for
+determinism (\S\ref{sec:detect-race}) and three for speed
+(\S\ref{sec:skip-waits}-\S\ref{sec:slicing}).
+
+\subsection{Detecting Data Races} \label{sec:detect-race}
+
+%%\capstartfalse
+\begin{figure}
+\begin{minipage}[t]{0.45\linewidth}
+\tiny
+\lgrindfile{tern/code/avoided-race.cpp}
+\caption{\small\em A conventional race, not a schedule race.}
+\label{fig:avoided-race}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.48\linewidth}
+\tiny 
+\lgrindfile{tern/code/symbolic-race.cpp}
+\vspace{-.2in}
+\caption{\small\em A symbolic race that occurs only when $i=j$.}
+\label{fig:symbolic-race}
+\end{minipage}
+\vspace{-.2in}
+\end{figure}
+%%\capstarttrue
+
+As discussed in \S\ref{sec:define-schedule}, if a memoized schedule allows
+data races, runs reusing this schedule may become nondeterministic.  Thus,
+for determinism, we would like to detect races in memoized schedules and
+discard them from the schedule cache.  A general race detector would flag
+too many races for \tern because it detects conventional races with respect
+to the original synchronization constraints of the program, whereas we
+want to detect races with respect to the order constraints of a
+schedule~\cite{recplay:tocs} (call them \emph{schedule races}).
+Figure~\ref{fig:avoided-race} shows a conventional race, but not a
+schedule race because the synchronization order shown ``kills'' the race.
+
+Thus, we built a simple race detector to detect schedule races.  It runs
+with the memoizer and is happens-before based.  It considers one memory
+access happens before another with respect to the synchronization order
+the memoizer records.  Sometimes a pair of instructions may appear to be a
+race, when in fact their relative order does not alter a run.  For
+instance, a write-write race is benign if both instructions write the same
+value.  Similarly, a read-write race is benign if the value written by one
+instruction does not affect the value read by another.  Our race detector
+prunes these benign races.
+
+Our detector also flags \emph{symbolic races}, the races that are
+data-dependent on inputs.  Figure~\ref{fig:symbolic-race} shows an example.
+Both variables $i$ and $j$ are inputs, and the race occurs only when $i =
+j$.  The risk of a symbolic races is that it may be absent in a
+memoization run and thus skip detection, but show up nondeterministically
+in a reuse run.  To detect symbolic races, our race detector queries the
+underlying symbolic execution engine for pointer equality.  For example,
+to detect the race in Figure~\ref{fig:symbolic-race}, it would query the
+underlying symbolic execution engine for the satisfiability of
+$\&a[i]=\&a[j]$.  It flags a symbolic race if this constraint is satisfiable.
+Once a symbolic race is flagged, \tern adds additional input constraints to
+ensure that the race does not occur in reuse runs.  For
+Figure~\ref{fig:symbolic-race}, we would add $\&a[i]\neq \&a[j]$, which
+simplifies to $i\neq j$.
+
+Our race detector can detect all schedule races in a memoization run.  It
+can also detect all symbolic races if developers correctly annotate all
+data that affect synchronization operations and memory locations accessed.
+If this assumption holds and our race detector reports no races in a
+memoization run, \tern ensures that the memoized schedule can be
+deterministically reused.
+
+%% If a symbolic race is
+%% possible, we add additional input constraints to prevent the race from
+%% occurring in a reuse run.  For instance, for the race in
+%% Figure~\ref{fig:symbolic-race}, we will add $i \neq j$ to the input
+%% constraints of the memoized schedule.  
+% Our race detector is sound if the \v{symbolic()} annotations capture all
+% nondeterminism that may alter the memory locations accessed.
+
+
+%% As discussed in \S\ref{sec:define-schedule}, reusing a schedule may lead
+%% to nondeterministic runs if the schedule allows races.  Thus, for
+%% determinism, we would like to detect races when memoizing schedules and
+%% discard racy schedules from the schedule cache.  A general race detector
+%% would flag too many races for \tern because it detects conventional races
+%% with respect to the original synchronization constraints of the program,
+%% whereas we want to detect races with respect to the order constraints of a
+%% schedule (call them \emph{schedule races}).  Figure~\ref{fig:avoided-race}
+%% shows a conventional race, but not a schedule race because the
+%% synchronization order shown prevents the race from occurring.  Thus, we
+%% built a simple custom race detector that runs within the memoizer.  It
+%% detects schedule races with respect to the synchronization order logged by
+%% the memoizer.
+
+%% To prune benign races that do not make schedules nondeterministic, we
+%% implemented another technique to check that reordering two racy
+%% instructions would not alter the run.  Specifically, given a pair of racy
+%% instructions, this technique flags  the race as benign if (1) for a
+%% write-write race, both instructions write the same value or (2) for a
+%% read-write race, the value written by one instruction does not affect the
+%% value read by another.
+
+%% % Researchers have found that conventional races outnumber schedule races
+%% % by orders of magnitude~\cite{pres:sosp09}.
+
+%% Our detector also flags \emph{symbolic races} that involve symbolic memory
+%% locations.  Figure~\ref{fig:symbolic-race} shows an example.  Both
+%% variables $i$ and $j$ are inputs, and the race occurs only when $i = j$.
+%% The risk of such symbolic races is that they may be absent in memoization
+%% runs and skip detection, but show up nondeterministically in reuse runs.
+
+%% To detect symbolic races, our race detector queries the underlying
+%% symbolic execution engine for pointer equality.  If a symbolic race is
+%% possible, we add additional input constraints to prevent the race from
+%% occurring in a reuse run.  For instance, for the race in
+%% Figure~\ref{fig:symbolic-race}, we will add $i \neq j$ to the input
+%% constraints of the memoized schedule.  
+%% % Our race detector is sound if the \v{symbolic()} annotations capture all
+%% % nondeterminism that may alter the memory locations accessed.
+
+
+\subsection{Skipping Unnecessary Synchronizations}  \label{sec:skip-waits}
+
+When reusing a schedule, \tern enforces a total synchronization order
+according to the schedule.  These \tern-enforced execution order constraints
+are more stringent than the constraints enforced by the original
+synchronizations in the program.  Thus, for speed, \tern can actually skip
+these unnecessary synchronizations.  In our current implementation, we
+skip \v{sleep()}, \v{usleep()}, and \v{pthread\_barrier\_wait()}
+because they are frequently used.  We
+found that this optimization was quite effective and
+even made programs run faster than nondeterministic execution
+(\S\ref{sec:overhead}).
+
+% For instance, we can skip the actual \v{pthread\_mutex\_lock()} in
+% Figure~\ref{fig:replayer} as well as other pthread lock-related
+% functions.
+
+%% One risk is that the original program may break abstraction boundaries and
+%% peek into the internals of the synchronization objects, while \tern has
+%% skipped the corresponding synchronization operations.  
+
+
+% this problem is analog to double paging.
+
+% \tern enforces order.   barrier_wait is redundant. but cause a sleep.
+
+\subsection{Simplifying Constraints} \label{sec:simplify}
+
+To reuse a schedule, \tern must check if the current input satisfies the
+constraints of the schedule.  The overhead of this check depends on the
+number of constraints, yet the set of constraints \tern collects may not
+always be in simplified form.  That is, a subset of the constraints may
+imply the entire set.  For example, consider a loop ``\v{for(int
+  i=0;i!=n;++i)}'' with a symbolic bound $n$.  When running this code with
+$n=10$, we will collect a set of constraints $\{0 \neq n, 1 \neq n, ...,
+10 = n\}$, but the last constraint alone implies the entire set.
+
+To simplify constraints, \tern uses a greedy algorithm.  Given a set of
+constraints $C$, it iterates through each constraint $c$, and checks if
+$C/\{c\}$ implies $\{c\}$.  If so, it simply discards $c$.  Our
+observation is that constraints collected later in a run tend to be more
+compact than the earlier ones.  Thus, when pruning constraints, we start
+from the ones collected earlier.  Although we could have used the
+underlying symbolic execution engine to simplify constraints, it lacks
+this domain knowledge and may perform poorly.
+
+\subsection{Slicing Out Irrelevant Branches} \label{sec:slicing}
+
+A branch statement may observe a piece of symbolic data but perform no
+synchronization operation in either branch.  The constraints collected
+from this branch are unlikely to affect schedules.  If we include
+irrelevant constraints in the input constraints of a schedule, we not only
+increase constraint checking time, but also preclude legal reuses of the
+schedule.
+
+To address this problem, \tern employs a simple static analysis to
+automatically prune likely irrelevant constraints.  At the heart of this
+technique is a slicing analysis that identifies branch statements unlikely
+to affect synchronization operations.  Specifically, given a branch
+statement $s$, this analysis computes $s_d$, the immediate
+post-dominator~\cite{aho:dragon:06} of $s$, and marks $s$ as irrelevant if
+no synchronization operations are between $s$ and $s_d$.  Although simple,
+this technique reduced constraint checking time significantly
+(\S\ref{sec:overhead}).  However, we note that our analysis is unsound
+because it ignores data dependencies.  Thus, we plan to implement a sound
+slicing algorithm~\cite{castro:bouncer} in our future work.
+
+
+
+%% \subsection{Memoizing Schedules Online}
+
+%% online version:
+%%    batch  - rerun
+
+%%    server - forward
+
+%%       haven't implemented forwarding for MySQL
+
+%% By default, \tern works in offline mode: 
+
+%% a developer pre-populates a schedule cache and hardwires it to her
+%% application.
+
+
+%% memoizes schedules offline.  
+
+%% default: offline.  already very useful.  evaluation results.
+
+%% hower, to react better to dynamic load: online.
+
+
+%% We implemented online memoization differently for batch and server
+%% programs.  For batch programs, we used a restart approach: if \tern
+%% cannot find a memoized schedule for an input, it restarts the 
+
+%% To avoid interfering the actual run, \tern sandboxes the shadow run by
+%% crudely forking a process and dropping all file and network
+%% output. (Better sandboxes can of course be built.)
+
+%%   Specifically,
+%% at program start, \tern records the command line arguments.  In one of the
+%% \v{symbolic()} calls, if \tern cannot find a schedule
+%% for the finds out that the current input satisfies
+%% no memoized constraints, it switches to the memoizer and restarts the
+%% program on the recorded command line arguments by calling \v{exec()}.  For
+%% server programs, we used a shadow program approach because restarting
+%% server tends to be costly.  Specifically, we run two versions of the
+%% program, one with the replayer and the other with memoizer.  User requests
+%% are sent to the replayer version of the program.  If the replayer cannot
+%% find a schedule for some input, it forwards the input the memoizer.
+
+%% For either type of programs, \tern must ensure that 
+
+%% restarting or forwarding
+
+%% Our current implementation provides only simple output buffering.
+
+%% better sandbox can be built.
+
+
+
+%% \subsection{Speeding Up Reuse Runs}
+
+%% We used two techniques to speed up the runs that reuse schedules.  The
+%% first is called \emph{relay semaphores}.  To reuse a schedule, we must
+%% enforce the execution order constraints of the schedule.  We experimented
+%% a variety of methods such as letting the threads spin-waits or using
+%% condition variables.  We finally settled with semaphores which tend to
+%% perform the best.  Specifically, we let each threads wait on a
+%% thread-local semaphore before it gets its turn according to a memoized
+%% schedule.  Once a threads is done with its turn, it finds the next thread
+%% according to the schedule and signals the thread's semaphore; it then
+%% waits for its turn again by waiting on its semaphore.  By block waiting on
+%% semaphores, we avoid the overhead of spin waits; by deterministically
+%% relaying turns, we avoid the lock contention overhead of a condition
+%% variable solution.
+
+%% The second is called \emph{skipped wait}.  
+
+%% memoization run: wait
+
+%% reuse run, do not have to wait.  
+
+%% sleep(30)
+
+%% do not have to wait 30 seconds.  
+
+%%   - skip wait
+
+%%   - more aggressive: skip sync operations, peek the sync var values.  
+
+%%     cite R2 interface thing.  
+
+
+%% The third is constraint simplification.
+
+%% redundant constraints   0 < n 2 < n 3 >= n
+
+
+
+%% \subsection{Assisting Developer Annotations} \label{sec:slicing}
+
+%% The accuracy of the \v{symbolic()} annotations affect \tern's effectiveness.
+%% If developer ``over-mark'' too much data as symbolic, the constraints
+%% \tern collects may be too specific and prevent legitimate schedule reuses;
+%% if developer ``under-mark'' too little, the constraints may be too general
+%% and cause \tern to wrongly reuse schedules on incompatible inputs.
+
+%% We created two techniques to simplify this annotation task.  Our first
+%% technique automatically prunes likely irrelevant constraints, thus
+%% tolerating over-marks.  For instance, with this technique, we   were able to achieve high reuse rates in our experiments
+%% despite that we marked the entire HTTP requests to Apache and all command
+%% line arguments to the batch programs as symbolic.  At the heart of this
+%% technique is a static slicing analysis that identifies branch statements
+%% unlikely to affect synchronization operations.  Specifically, given a
+%% branch statement $s$, this analysis computes $s_d$, the immediate
+%% post-dominator~\cite{xxx-some-compiler-book} of $s$, and marks constraints
+%% from $s$ as likely irrelevant if no synchronization operations are between
+%% $s$ and $s_d$.  Note our slicing analysis is unsound because it ignores
+%% data dependency.  We could have used sound precondition
+%% slicing~\cite{castro:bouncer}, but our simple, unsound analysis worked
+%% well in our experiments.
+
+
+
+
+%% \tern collects for a schedule may be over-constraining,
+%% \ie, containing superfluous constraints that do not affect the schedule.
+%% For instance, a program may check the value of a symbolic byte in an
+%% \v{if}-statement, but perform no synchronizations or blocking system calls
+%% in either branch.  We could have pruned such constraints using
+%% precondition slicing~\cite{castro:bouncer}, but we have not implemented it
+%% in \tern because the hit rate of the schedule cache is already high (cf
+%% \S\ref{sec:evaluation}).  Moreover, \tern can improve its schedule cache
+%% upon cache misses by deriving fresh schedules and merging them into the
+%% cache.
+
+
+%% Our second technique tolerates under-marks by storing extra schedules.
+
+%% The intuition is that
+
+%% When developers under mark
+
+%% an input satisfies input constraint, but still cannot reuse the schedule.
+
+
+%% Specifically, for a single set of input constraints, we may store more
+%% than one schedules in the schedule cache.  We order these schedules based
+%% on their reuse rates in descending order, the same strategy as schedule
+%% cache replacement (\S\ref{sec:cache-replace}).  
+
+
+
+%% remmber more than one schedules for a set of constraints.
+
+%% if one cannot be reused, rank it lower.
+
+%% use the same cache replacement algorithm
+
+
+
+
+
+
+
+%% our second technique modifies the schedule cache xxx.
+
+%% under one constraint check, multiple schedules.
+
+%% sort them uses finish ratio, same as cache replacement.
+
+%% a schedule frequently broken ranked lower, 
+
+%% so that we will use frequently finish schedule first.
+
+
+%% our last technique assists in annotation.  when schedule is broken,
+%% position last common hook in old and new schedule.  also first unique hook
+%% of the schedules.  computes the branches that (1) appeared in the run and
+%% (2) 
+
+
+
+%% path constraints too specific
+
+%%    specific file blocks to compress does not affect interleaving
+
+%%    if keep in constraints, 
+
+%% simple slicing that use dominance.  if any branch dominates 
+
+
+
+%% The planned \tern design described so far considers input constraints for a
+%% particular run.  Although this method already allows us to reuse a
+%% schedule across many inputs, it may still contain superficial constraints
+%% that unnecessarily limit the applicability of a schedule.  For example, an
+%% \v{if}-statement may inspect some input data but then perform the same
+%% synchronizations and memory accesses in both the true and false branches.
+%% Figure~\ref{fig:superficial}(a) shows such an example.  The constraints on
+%% $i$ and $j$ are superficial because regardless of their values, the
+%% synchronization order shown can always be reused deterministically.
+
+
+   
+
+%%   - cache replacement
+
+%%   - divergence detection
+
+
+
+%% %% \subsection{Adapting \klee}
+
+%% %% To adapt \klee to \tern, we made four main modifications.  First, \klee works
+%% %% with only sequential program, and we thus extended \klee to support threads
+%% %% and shared memory.  Specifically, we run a \klee instance for each thread
+%% %% in a program, and let these \klee instances store constraints in shared
+%% %% memory.  Second, we simplified \klee to only collect constraints without
+%% %% solving them, because unlike \klee, \tern does not need to explore different
+%% %% execution paths.
+%% %% % \klee is designed to
+%% %% % generate many different testcases to test many paths.  The original \klee
+%% %% % solves constraints to explore different execution paths of a program, and
+%% %% % constraint solving can be expensive and unnecessary for the memoizer.
+%% %% % It does so by
+%% %% % systematically exploring both branches of a symbolic conditional, which
+%% %% % involves much (slow) constraint solving.  
+%% %% Third, due to a limitation of the constraint solver \klee uses, it
+%% %% concretizes symbolic divisions (either the divisor or the dividend is
+%% %% symbolic) when divisor is not a power of two.  We modified \klee to simply
+%% %% ignore symbolic divisions.  
+%% %% Lastly, we extended \klee to track both symbolic and concrete values for
+%% %% symbolic inputs so that we can concretize the symbolic inputs with
+%% %% meaningful values (cf \S\ref{sec:window}).
+
+%% %% how to modify klee to allow it to run multi-threaded programs.
+%% %% Need to consider "design level" of modification to klee (as a black box).
+%% %% Change two level memory model to single memory model.
+%% %% Add "shared memory" feature, since original klee copies the state (and each state denotes a fork, so they do not share memory), and this does not follow the threading principle.
+%% %% Change klee to be a constraint collector (not just simplifying klee, but also change klee to be a concrete/symbolic mix execution engine). 
+%% %% No longer solving any constraints, just check whether input satisfy constraints (input makes all constraints to be true).
+
+%% %% Below are some implementation details which may be interesting.
+
+%% %% Handling thread creation (how to instrument pthread create() with LLVM, and redirect the pthread create() functions and change PC of IRs).
+
+%% %% How to handle determinisit thread creation in klee (assuming thread pool). This is crucial for maintaing my own thread ids deterministically).
+
+
+%% %% How to add hook functions with LLVM.
+
+
+
+%% %% - internal cache problem.  add more mark symbolic
+
+%% %% - input timing.  recv().  sleep().
+
+
+
+
+
+%% %% x/symbolic  : skip making sybmolic = 0
+
+%% %% dbt2: make floating point 
+
+%% %% z = y/x: division.  don't do symbolic.
+
+%% %% modifications to programs:  
+
+%% %%     - uninitialized reads
+
+%% %%     - 
+
+
+%% %% dbt2 floating point

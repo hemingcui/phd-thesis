@@ -1,0 +1,8 @@
+#1 708.0 659.4 371.2 365.3
+# above value is the sum of constraint checking time for all the 8 requests for one httpd window, 
+# now I divide them to be 8 to get the average constraint checking time for each httpd request.
+1 88.5 82.4 46.4 45.7
+2 322.3 245.1 148.6 117.0
+# Map the first value, 7850.4, to be 7850.4+1500-8000 = 1250.4
+3 1350.4 501.1 516.8 492.0
+4 331.5 238.0 317.6 227.9

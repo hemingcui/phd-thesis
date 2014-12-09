@@ -1,0 +1,256 @@
+\section{Background}
+\label{sec:background}
+
+This section presents a background of \tern. We explain the instability
+problem of existing \dmt systems (\S\ref{sec:dmt-background}), our choice
+of schedule representation in \tern (\S\ref{sec:define-schedule}), and why
+we can reuse schedules across inputs (\S\ref{sec:schedule-constraints}).
+
+%  sync match atomic intent.  within atomic region, can have multiple
+%  memory accesses.  sync order in particular.  lexical scope.  lock and
+%  unlock.  semantic unit.
+
+% One problem is that if an input causes a race, the same synchronization order
+% cannot ensure the same shared memory access order.  Although this problem
+% is particularly serious for Kendo~\cite{kendo} because it has no
+% flexibility choosing alternative schedules given an input, 
+
+
+% don't say this, since we can't guarantee.
+% Moreover, \ds\ need consider only races that cannot be avoided by.
+% order-determined races in PRES
+
+\subsection{The Instability Problem} \label{sec:dmt-background}
+
+%% We formally define the notion of \dmt stability on batch
+%% programs as follows.  (We do not consider server programs
+%% because \ds\ converts server programs to batch.)  Let
+%% the domain of inputs be $\mathcal{I}$ and the domain of thread schedules
+%% $\mathcal{S}$.  A \dmt system can be viewed a deterministic function $dmt$
+%% over the domain of $\mathcal{I} \times \mathcal{S}$: given an input $I \in
+%% \mathcal{I}$, $S = dmt(I)$ computes the schedule $S \in \mathcal{S}$ of
+%% this input.  A stable $dmt$ is one such that if $similar_I(I_1, I_2) \leq
+%% R_I$, then $similar_S(dmt(I_1), dmt(I_2)) \leq R_S$, $similar_I$ is a
+%% similarity metric for inputs, $similar_S$ is a similarity metric for
+%% schedules (\eg, edit distance), and $R_I$ and $R_S$ are two thresholds.
+
+A \dmt system is, conceptually, a function that maps an input $I$ to a
+schedule $S$.  The properties of this function are that the same $I$
+should map to the same $S$ and that $S$ is a feasible schedule for
+processing $I$.  A stable \dmt system such as \tern has an additional
+property: it maps similar inputs to the same schedule.  Existing \dmt
+systems, however, tend to map similar inputs to different schedules, thus
+suffering from the instability problem.  
+
+
+%% is fundamental: 
+
+We argue that this problem is inherent in existing \dmt systems because
+they are stateless.  They must provide the same schedule for an input
+across different runs, using information only from the current run.
+To force threads to communicate (\eg, acquire locks or access shared memory)
+deterministically, existing \dmt systems cannot rely on physical clocks.  Instead, they
+maintain a logical clock per thread that ticks deterministically based on
+the code this thread has run.  Moreover, threads may communicate only when
+their logical clocks have deterministic values (\eg, smallest across the
+logical clocks of all threads~\cite{kendo:asplos09}).  By induction,
+logical clocks make threads deterministic.
+
+%% The 
+
+%% This stateless approach leads to instability for two reasons.
+
+%%  \ie, when computing schedules, they consider only the
+%% current run and ignore prior runs.  The reasons are two fold.
+
+However, the problem with logical clocks is that for efficiency,
+they must tick at
+roughly the same rate to prevent a thread with a slower clock from
+starving others.  Thus, existing \dmt systems have to tie their logical
+clocks to low-level instructions executed (\eg, completed
+loads~\cite{kendo:asplos09}).  Consequently, a small change to the input or
+execution environment may alter a few instructions executed, in turn
+altering the logical clocks and subsequent thread communications.  That is,
+a small change to the input or execution environment may cascade into a
+much different (\eg, correct vs. buggy) schedule.  
+
+
+%% In fact, small environmental changes such
+%% as changing processor types and shared libraries may all have this effect,
+%% as observed in our experiments 
+
+
+
+%and ignore the rich execution history of a program.
+
+% Although previous work~\cite{coredet} noted 
+
+%% \subsection{Deterministic Replay} \label{sec:dr-background}
+
+%% Deterministic
+%% replay~\cite{r2:osdi,friday2007,srinivasan:flashback,revirt,dejavu,vmware-record-replay,smp-revirt:vee08,pres:sosp09,scribe:sigmetrics10,odr:sosp09,capo:asplos09}
+%% addresses a different problem than \dmt.  It aims to reproduce an exact
+%% recorded execution, usually for debugging.  Mechanically, most
+%% deterministic replay systems passively record nondeterministic events in a
+%% program's execution in one environment (\eg, user machines), then
+%% reproduce the recorded execution by faithfully replaying the recorded
+%% nondeterministic events in another environment (\eg, developer machines).
+%% Deterministic replay has been shown to work on commodity multicore
+%% hardware~\cite{smp-revirt:vee08,pres:sosp09,odr:sosp09,scribe:sigmetrics10}
+%% and large, complex systems.  It can readily record input timing and thread
+%% scheduling nondeterminism.  However, it does not constrain normal program
+%% executions to be deterministic, thus does not have some of the benefits
+%% \dmt has, such as making program behaviors repeatable and increasing
+%% testing confidence.  Deterministic replay may incur large storage overhead
+%% for record precise thread schedules on multiprocessor, which \dmt avoids.
+
+%% \ds\ searches its cache for a schedule that
+%% can process the input.  If such a schedule does not exist, \ds\ returns a
+%% new schedule for the input and momizes the schedule.
+
+\subsection{Schedule Representation and Determinism} \label{sec:define-schedule}
+
+Previous \dmt systems have considered two types of schedules: (1) a
+deterministic order of shared memory
+accesses~\cite{dmp:asplos09,coredet:asplos10} and (2) a synchronization
+order (\ie, a total order of synchronization
+operations)~\cite{kendo:asplos09}.  The first type of schedules are truly
+deterministic even if there are races, but they are costly to enforce on
+commodity hardware (\eg, up to 10 times overhead~\cite{coredet:asplos10}).  The
+second type can be efficiently enforced (\eg, 16\%
+overhead~\cite{kendo:asplos09}) because most code is not synchronization
+code and can run in parallel; however, they are deterministic only for
+inputs that lead to race-free runs~\cite{recplay:tocs,kendo:asplos09}.
+
+tern represents schedules as synchronization orders for efficiency.  An
+additional benefit is that synchronization orders can be reused more
+frequently than memory access orders (cf next subsection).
+Moreover, researchers have found that many concurrency errors
+are not data races, but atomicity and order
+violations~\cite{lu:concurrency-bugs}.  These errors can be
+deterministically reproduced or avoided using only  synchronization orders.
+
+% just: another meaning is correct
+
+Although data races may still make runs which reuse schedules nondeterministic,
+\tern is less prone to this problem than existing \dmt
+systems~\cite{kendo:asplos09} because it has the flexibility to select
+schedules.  If it detects a race in a memoized schedule, it can simply
+discard this schedule and memoize another.  This selection task is often
+easy because most schedules are race-free.  In rare cases, \tern may be
+unable to find a race-free schedule, resulting in nondeterministic runs.
+However, we argue that input nondeterminism cannot be fully eliminated
+anyway, so we may as well tolerate some scheduling nondeterminism,
+following the end-to-end argument.
+
+%% % Before we discuss how a schedule may constrain an input, we must first
+%% % define the notion of schedule.
+%% Previous \dmt work has used two definitions of schedule.  A strongly
+%% deterministic schedule is a deterministic order of all shared memory
+%% accesses~\cite{dmp:asplos09,coredet:asplos10}, which ensures that the same input always
+%% results in the same output even in the presence of data races (ignoring
+%% input timing).  A weakly deterministic schedule is a deterministic order
+%% of all synchronization operations~\cite{kendo:asplos09}, which ensures determinism
+%% for inputs that lead to race-free executions~\cite{exit-lock}.  This
+%% equivalence has been exploited by previous
+%% systems~\cite{musuvathi:chess:osdi08,r2:osdi,kendo:asplos09} to improve
+%% performance.
+
+%% \ds\ chooses the order of synchronization operations as schedule for
+%% efficiency as previous
+%% systems~\cite{musuvathi:chess:osdi08,r2:osdi,kendo:asplos09}.  Deterministic
+%% synchronization order is more efficient to enforce on today's hardware
+%% than deterministic memory access order~\cite{kendo:asplos09,pres:sosp09}.  Note that even
+%% though \ds\ requires synchronization operations of a program occur in a
+%% deterministic total order, the majority of code is not synchronization and
+%% can thus run in parallel.  Moreover, synchronization operations map to
+%% high-level programmer intents, making a schedule defined at this level
+%% more flexible for processing different inputs. We show some concrete
+%% examples next subsection.  (\ds\ also includes potentially blocking system
+%% calls in its schedule because these calls are natural scheduling points of
+%% the OS scheduler; see \S\ref{sec:batch} for more details.)
+
+%% The downside of using synchronization orders as schedules is that data
+%% races can still make program executions
+%% nondeterministic~\cite{kendo:asplos09}.  Note that only data races not
+%% prevented by a synchronization order can do so; those prevented by a
+%% synchronization order (\emph{order-determined race} in
+%% PRES~\cite{pres:sosp09}) do not affect determinism at all.  For example,
+%% the race on \v{x} in the example below does not affect determinism as long
+%% as the two lock operations occur in the same order as below:
+%% % make this show up in center of column
+
+%% {\hspace{.5in}
+%% \begin{minipage}{2in}
+%% \tiny 
+%% \lgrindfile{code/avoided-race.cpp}
+%% \end{minipage}
+%% }
+
+%% \noindent
+%% Moreover \ds\ can mitigate the data race problem by reusing schedules
+%% shown to work.  (In contrast, Kendo~\cite{kendo:asplos09}, a \dmt system that also
+%% enforces deterministic synchronization orders, is more prone to this
+%% problem because it derives a schedule for an input without considering
+%% previous runs.)
+
+% For instance, a deterministic order of critical regions still allows
+% variable number
+% a program to assess the protected shared memory as many times within each
+% critical region.
+% If there are races,  pres can be used
+
+\subsection{Why Can We Reuse Schedules?} \label{sec:schedule-constraints}
+
+\begin{table}
+\centering
+\small
+\begin{tabular}{lp{2.2in}}
+{\bf Program} & {\bf Input Constraints for Schedule Reuse} \\
+\hline
+
+\pbzip & Same number of file blocks (\v{NumBlocks} or \v{-b}) and threads (\v{-p}) \\
+
+Apache & For groups of typical HTTP GET requests, same cache status and
+response sizes \\
+
+fft    & Same number of threads (\v{-p}) \\
+
+lu     & Same number of threads (\v{-p}), size of the matrix (\v{-n}), and
+block size (\v{-b}) \\   
+
+barnes & Same number of threads (\v{NPROC}) and values of variables
+\v{dtime} and \v{tstop} \\
+% MySQL  &   \\   
+
+\end{tabular}
+\caption{\small{\em Input constraints of five programs to reuse
+    schedules.}  Identifiers without a dash are configuration
+  variables, and those with a dash are command line options.
+} \label{tab:sched-constraints}
+\end{table}
+
+This subsection presents an intuitive and an empirical argument to support
+our insight that we can frequently reuse schedules for many
+programs/workloads.  Intuitively, synchronization operations map to developer
+intents of inter-thread control flow.  By enforcing the same
+synchronization order, we fix the same inter-thread ``path,'' but still
+allow many different inputs to flow down this path.  (This observation is
+similarly made for sequential
+paths~\cite{fisher:branch:asplos92,ball:branch:pldi93,ball:path:micro29}.)
+%Just like a sequential path can process many different
+%inputs
+%an inter-thread ``path'' can do so, too
+
+To empirically validate our insight, we studied the input constraints to
+reuse schedules for five programs, including a parallel compression
+utility \pbzip; the Apache web server; and three scientific programs fft,
+lu, and barnes in \splash.  Table~\ref{tab:sched-constraints} shows the
+results for all programs studied.  We found that the input constraints
+were often general, allowing frequent reuses of schedules.  For instance,
+\pbzip can use the same schedule to compress many different files, as long
+as the number of threads and the number of file blocks remain the same.
+
+% (The example in \S\ref{sec:example} further illustrates our insight.)
+
+
