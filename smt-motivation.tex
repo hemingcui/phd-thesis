@@ -1,13 +1,27 @@
 \chapter{Motivation and Background of \smt} \label{sec:smt-motivation}
 
-\section{Why Are Multithreaded Programs So Hard to Get Right?} \label{sec:smt-why}
+This chapter presents the academic value of Stable Multithreading (\smt). We
+start from analyzing why multithreaded programs are so difficult to get right,
+including why existing effort can not help much; and then we introduce \smt, our
+new approach that can make these programs much easier to get right.
+
+\section{Why Are Multithreaded Programs So Hard to Get Right?}
+\label{sec:smt-why}
 
 \begin{figure*}[t]
 \begin{center}
-\subfloat[{\em Traditional.}]{\includegraphics[width=.23\linewidth]{figures/nondet}\label{fig:nondet}}
-\subfloat[{\em Deterministic.}]{\includegraphics[width=.23\linewidth]{figures/dmt}\label{fig:dmt}}
-\subfloat[{\em Stable (deterministic).}]{\includegraphics[width=.23\linewidth]{figures/smt}\label{fig:smt}}
-\subfloat[{\em Stable (nondeterministic).}]{\includegraphics[width=.23\linewidth]{figures/smtn}\label{fig:smtn}}
+\subfloat[{\em
+Traditional.}]{\includegraphics[width=.23\linewidth]{figures/nondet}
+  \label{fig:nondet}}
+\subfloat[{\em
+Deterministic.}]{\includegraphics[width=.23\linewidth]{figures/dmt}
+  \label{fig:dmt}}
+\subfloat[{\em Stable
+(deterministic).}]{\includegraphics[width=.23\linewidth]{figures/smt}
+  \label{fig:smt}}
+\subfloat[{\em Stable
+(nondeterministic).}]{\includegraphics[width=.23\linewidth]{figures/smtn}
+  \label{fig:smtn}}
 \vspace{-.05in}
 \caption{Different multithreading approaches. Red stars represent buggy
   schedules.  Traditional multithreading (\subref*{fig:nondet})
@@ -15,11 +29,12 @@
   many schedules because of nondeterminism, and many inputs may execute
   under one schedule because a schedule fixes the order of the
   communication operations but allows the local computations to operate on
-  any input data.  DMT (\subref*{fig:dmt}) may
-  map each input to an arbitrary schedule, reducing programs' robustness
-  on input perturbations.  \smt (\subref*{fig:smt} and
-  \subref*{fig:smtn}) reduces the total set of schedules for all inputs (represented by the shrunk ellipses),
-  increasing robustness and improving reliability.
+  any input data.  DMT (\subref*{fig:dmt}) may map each input to an arbitrary
+schedule, reducing programs' robustness on input perturbations.  \smt
+(\subref*{fig:smt} and
+  \subref*{fig:smtn}) reduces the total set of schedules for all inputs
+  (represented by the shrunk ellipses), increasing robustness and improving
+reliability.
   \smt and DMT are orthogonal: a \smt system can be deterministic
   (\subref*{fig:smt}) or nondeterministic (\subref*{fig:smtn}).}
 \vspace{-.2in}
@@ -35,20 +50,19 @@ nondeterminism is a lesser cause than too many schedules.
 To ease discussion, we use \emph{input} to broadly refer to the data a
 program reads from its execution environment, including not only the data
 read from files and sockets, but also command line arguments, return
-values of external functions such as \v{gettimeofday}, and any external data that can affect program
-execution.  We use \emph{schedule} to broadly refer to the (partially or
-totally) ordered set of communication operations in a multithreaded
-execution, including synchronizations (\eg, \v{lock} and
+values of external functions such as \v{gettimeofday}, and any external data
+that can affect program execution.  We use \emph{schedule} to broadly refer to
+the (partially or totally) ordered set of communication operations in a
+multithreaded execution, including synchronizations (\eg, \v{lock} and
 \v{unlock} operations) and shared memory accesses (\eg, \v{load} and
 \v{store} instructions to shared memory). Of all the schedules, most run
 fine, but some trigger concurrency errors, causing program crashes,
 incorrect computations, deadlocked executions, and other failures.
 Consider the toy program below: \lgrindfile{code/sync-bug.cpp}
 \noindent The schedule in which thread 2 gets the lock before thread 1
-causes a dereference-of-NULL failure.  Consider another example.  The toy program
-below has data races on \v{balance}: \lgrindfile{code/race-bug.cpp}
-\noindent 
-The schedule with the statements executed in the order shown corrupts
+causes a dereference-of-NULL failure.  Consider another example.  The toy
+program below has data races on \v{balance}: \lgrindfile{code/race-bug.cpp}
+\noindent The schedule with the statements executed in the order shown corrupts
 \v{balance}. We call the schedules that trigger concurrency errors
 \emph{buggy schedules}.  Strictly speaking, the errors are in the
 programs, triggered by a combination of inputs and schedules.  However,
@@ -59,7 +73,29 @@ occurs for all inputs allowed by the schedule).  Thus, recent research on
 testing multithreaded programs (\eg,~\cite{musuvathi:chess:osdi08}) is
 focused on effectively testing schedules to find the buggy ones.
 
-\subsection{Challenges Caused by Nondeterminism} \label{sec:nondet}
+\subsection{Root Cause: Too Many Schedules For All Inputs}
+
+A typical multithreaded program has an enormous number of schedules.  For
+a single input, the number of schedules is asymptotically exponential in
+the schedule length.  For instance, given $m$ threads each competing for a
+lock $k$ times, each order of lock acquisitions forms a schedule, easily
+yielding $\frac{(mk)!}{(k!)^m} \ge (m!)^k$ total schedules---a number
+exponential in both $m$ and $k$. Aggregated over all inputs, the number of
+schedules is even greater.
+
+Finding a few buggy schedules in these exponentially many schedules raises
+a series of ``needle-in-a-haystack'' challenges.  For instance, to write
+correct multithreaded programs, developers must carefully synchronize
+their code to weed out the buggy schedules.  As usual, humans err when
+they must scrutinize many possibilities to locate corner cases. Various
+forms of testing tools suffer, too.  Stress testing is the common method
+for (indirectly) testing schedules, but it often redundantly tests the
+same schedules while missing others.  Recent tools
+(\eg,~\cite{musuvathi:chess:osdi08}) systematically test schedules for bugs, but
+we seriously lack resources to cover more than a tiny fraction of all
+exponentially many schedules.
+
+\subsection{Determinism Is Good, But Not Sufficient} \label{sec:smt-nondet}
 
 A multithreaded program is nondeterministic because even with the same
 program and input, different schedules may still lead to different
@@ -83,29 +119,6 @@ execute under one schedule because a schedule fixes the order of the
 communication operations but allows the local computations to operate on
 any input data.
 
-\subsection{Challenges Caused by Too Many Schedules}
-
-A typical multithreaded program has an enormous number of schedules.  For
-a single input, the number of schedules is asymptotically exponential in
-the schedule length.  For instance, given $m$ threads each competing for a
-lock $k$ times, each order of lock acquisitions forms a
-schedule, easily yielding $\frac{(mk)!}{(k!)^m} \ge
-(m!)^k$ total schedules---a number exponential in both $m$ and $k$.
-Aggregated over all inputs, the number of schedules is even greater.
-
-Finding a few buggy schedules in these exponentially many schedules raises
-a series of ``needle-in-a-haystack'' challenges.  For instance, to write
-correct multithreaded programs, developers must carefully synchronize
-their code to weed out the buggy schedules.  As usual, humans err when
-they must scrutinize many possibilities to locate corner cases. Various
-forms of testing tools suffer, too.  Stress testing is the common method
-for (indirectly) testing schedules, but it often redundantly tests the
-same schedules while missing others.  Recent tools
-(\eg,~\cite{musuvathi:chess:osdi08}) systematically test
-schedules for bugs, but we seriously lack resources to cover more than a tiny
-fraction of all exponentially many schedules.
-
-\subsection{Determinism Is Not As Useful as Commonly Perceived}
 
 To address the challenges raised by nondeterminism, researchers including
 us have dedicated much effort and built several systems that force a
@@ -129,10 +142,9 @@ narrow property: same input + same program = same behavior. It has no
 jurisdiction if the input or program changes however slightly.  Yet, we
 often expect a program to be robust or stable against slight program
 changes or input perturbations.  For instance, adding a debug \v{printf}
-should in principle not make the bug
-disappear.  Similarly, a single bit flip of a file should usually not
-cause a compression utility to crash. Unfortunately, determinism
-does not provide this stability and, if na\"{i}vely implemented,
+should in principle not make the bug disappear.  Similarly, a single bit flip of
+a file should usually not cause a compression utility to crash. Unfortunately,
+determinism does not provide this stability and, if na\"{i}vely implemented,
 even undermines it.
 
 To illustrate, consider the system depicted in
@@ -174,17 +186,16 @@ Although better than mapping each input to an arbitrary schedule, they
 still allow small input perturbations to destabilize schedules
 unnecessarily when the perturbations change the low-level instructions
 executed (\eg, one extra \v{load} executed), observed in our
-experiments~\cite{cui:tern:osdi10}. Our \tern, \peregrine, and \parrot systems and others'
-\dthreads~\cite{dthreads:sosp11} built subsequently to \tern combine DMT
-with \smt (elaborated next section) to frequently reuse schedules on a
+experiments~\cite{cui:tern:osdi10}. Our \tern, \peregrine, and \parrot systems
+and others' \dthreads~\cite{dthreads:sosp11} built subsequently to \tern combine
+DMT with \smt (elaborated next section) to frequently reuse schedules on a
 wide range of inputs for stability.
 
 \para{Reliability $\centernot \implies$ determinism.} Determinism
-is a binary property: if
-an input maps to $n > 1$ schedules, executions on this input may be
-nondeterministic, however small $n$ is.  Yet, a nondeterministic system
-with a small set of total schedules can be made reliable easily.  Consider an
-extreme case, the nondeterministic system depicted in
+is a binary property: if an input maps to $n > 1$ schedules, executions on this
+input may be nondeterministic, however small $n$ is.  Yet, a nondeterministic
+system with a small set of total schedules can be made reliable easily. 
+Consider an extreme case, the nondeterministic system depicted in
 Figure~\ref{fig:smtn} which maps all inputs to at most two schedules.  In this
 system, the challenges caused by nondeterminism (\S\ref{sec:nondet}) are
 easy to solve.  For instance, to reproduce a field failure given an input,
@@ -200,30 +211,39 @@ outcomes.
 \centering
 \small
 \begin{tabular}{lll}
-{\bf Program} & {\bf Purpose } & {\bf Constraints on inputs sharing schedules} \\ \hline
+{\bf Program} & {\bf Purpose } & {\bf Constraints on inputs sharing schedules}
+\\ \hline
 
-\apache & Web server               & For a group of typical HTTP GET requests, same cache status \\
+\apache & Web server               & For a group of typical HTTP GET requests,
+same cache status \\
 
 \pbzip  & Compression              & Same number of threads \\
 
-\aget   &  File download           & Same number of threads, similar file sizes  \\
+\aget   &  File download           & Same number of threads, similar file sizes 
+\\
 
-\barnes & N-body simulation        & Same number of threads, same values of two configuration variables \\
+\barnes & N-body simulation        & Same number of threads, same values of two
+configuration variables \\
 
 \fft    & Fast Fourier transform   & Same number of threads \\
 
-\luc    & Matrix decomposition     & Same number of threads, similar sizes of matrices and blocks \\
+\luc    & Matrix decomposition     & Same number of threads, similar sizes of
+matrices and blocks \\
 
-\blackscholes & Option pricing     & Same number of threads, number of options no less than number of threads    \\
+\blackscholes & Option pricing     & Same number of threads, number of options
+no less than number of threads    \\
 
-\swaptions &  Swaption pricing     & Same number of threads, number of swaptions no less than number of threads   \\
+\swaptions &  Swaption pricing     & Same number of threads, number of swaptions
+no less than number of threads   \\
 
 \end{tabular}
 \vspace{-.05in}
 \caption{{\em Constraints on inputs sharing the same equivalent class of
     schedules}.  For each program, one schedule out of the class
   suffices to process any input satisfying the constraints in the
-  third column under typical setups (\eg, no system call failures or signals).  We describe how to compute such constraints in \S\ref{sec:build}.} \label{tab:sched-constraints}
+  third column under typical setups (\eg, no system call failures or signals). 
+We describe how to compute such constraints in \S\ref{sec:build}.}
+\label{tab:sched-constraints}
 \vspace{-.15in}
 \end{table*}
 
@@ -237,8 +257,8 @@ make the needles easier to find.
 
 We investigated this question on a
 diverse set of popular multithreaded programs, ranging from server
-programs such as \apache, to desktop utilities such as parallel compression utility
-\pbzip, to parallel implementations of computation-intensive algorithms
+programs such as \apache, to desktop utilities such as parallel compression
+utility \pbzip, to parallel implementations of computation-intensive algorithms
 such as fast Fourier transformation.  These programs use diverse
 synchronization primitives such as locks, semaphores, condition variables,
 and barriers.  Our investigation reveals the following two insights.
@@ -255,9 +275,10 @@ consider the aforementioned \pbzip which splits an input file
 among multiple threads, each compressing one file block.  The
 communication, \ie, which thread gets which file block, is independent of
 the thread-local compression. Under a typical setup (\eg, no \v{read}
-failures or signals), for each different number of threads set by a user, \pbzip can use two
-schedules (one if the file can be evenly divided by the number of threads and another otherwise) to
-compress any file, regardless of the file data.
+failures or signals), for each different number of threads set by a user, \pbzip
+can use two schedules (one if the file can be evenly divided by the number of
+threads and another otherwise) to compress any file, regardless of the file
+data.
 
 This loose coupling of inputs and schedules is not unique to \pbzip; many
 other programs also exhibit this property.
@@ -266,7 +287,8 @@ programs shown include three real-world programs, \apache, \pbzip, and
 \aget (a parallel file download utility) and five implementations of
 computation-intensive algorithms from two widely used benchmark suites,
 Stanford's \splash and Princeton's \parsec.  (We describe
-how to compute the constraints that a schedule places on the inputs in \S\ref{sec:build}.)
+how to compute the constraints that a schedule places on the inputs in
+\S\ref{sec:build}.)
 
 Second, the overhead of enforcing a schedule on different inputs is low.
 Presumably, the exponentially many schedules allow the
@@ -287,33 +309,32 @@ on inputs that map to the same schedule and minor program changes that
 do not affect the schedules, providing robustness and stability
 anticipated by developers and users.
 
-\smt and DMT are orthogonal. \smt aims to reduce the set of schedules for
-\emph{all} inputs, whereas DMT aims to reduce the schedules for \emph{each} input (down
-to one).  A \smt system may be either deterministic or nondeterministic.
-Figure~\ref{fig:smt} and Figure~\ref{fig:smtn} depict two \smt systems: the
-many-to-one mapping in Figure~\ref{fig:smt} is deterministic, while the
-many-to-few mapping in Figure~\ref{fig:smtn} is nondeterministic.  A
-many-to-few mapping improves performance because the
-runtime system can choose an efficient schedule out of a few for an input
-based on current timing factors, but it increases the efforts and
-resources needed for reliability.  Fortunately, the choices of schedules
-are only a few (\eg, a small constant such as two), so the challenges
-caused by nondeterminism are easy to solve.
+\smt is complementary to \dmt. \smt aims to reduce the set of schedules for
+\emph{all} inputs, whereas DMT aims to reduce the schedules for \emph{each}
+input (down to one).  A \smt system may be either deterministic or
+nondeterministic. Figure~\ref{fig:smt} and Figure~\ref{fig:smtn} depict two \smt
+systems: the many-to-one mapping in Figure~\ref{fig:smt} is deterministic, while
+the many-to-few mapping in Figure~\ref{fig:smtn} is nondeterministic.  A
+many-to-few mapping improves performance because the runtime system can choose
+an efficient schedule out of a few for an input based on current timing factors,
+but it increases the efforts and resources needed for reliability.  Fortunately,
+the choices of schedules are only a few (\eg, a small constant such as two), so
+the challenges caused by nondeterminism are easy to solve.
 
 \subsection{Benefits}
 
-By vastly reducing the set of schedules, \smt brings numerous reliability benefits
-to multithreading.  We describe several:
+By vastly reducing the set of schedules, \smt brings numerous reliability
+benefits to multithreading.  We describe several:
 
 \para{Testing.} \smt automatically
 increases the coverage of schedule testing tools, with coverage
 defined as the ratio of tested schedules over all schedules.
 For instance, consider \pbzip again which needs only two
-schedules for each different number of threads under typical setups.  Testing 32 schedules effectively covers from
-1 to 16 threads.  Given that (1) \pbzip achieves peak performance when the
-number of threads is identical or close to the number of cores
-and (2) a typical machine has up to 16 cores, 32 tested schedules can
-practically cover most schedules executed in the field.
+schedules for each different number of threads under typical setups.  Testing 32
+schedules effectively covers from 1 to 16 threads.  Given that (1) \pbzip
+achieves peak performance when the number of threads is identical or close to
+the number of cores and (2) a typical machine has up to 16 cores, 32 tested
+schedules can practically cover most schedules executed in the field.
 
 \para{Debugging.} Reproducing a bug now does not require the exact input,
 as long as the original and the altered inputs map to the same schedule.
@@ -327,10 +348,10 @@ statements.
 only on the set of schedules enforced in the field, gaining
 precision.  Dynamic analysis enjoys the same benefits as testing.  Model
 checking can now check drastically fewer schedules, mitigating the so-called
-``state explosion'' problem~\cite{clarke:ModelChecking}.  Interactive theorem proving becomes easier, too,
-because verifiers need to prove theorems only on the set of schedules
-enforced in the field.  We will describe these benefits in more detail in
-\S\ref{sec:specialize}.
+``state explosion'' problem~\cite{clarke:ModelChecking}.  Interactive theorem
+proving becomes easier, too, because verifiers need to prove theorems only on
+the set of schedules enforced in the field.  We will describe these benefits in
+more detail in \S\ref{sec:specialize}.
 
 \para{Avoiding errors at runtime.}  Programs can also adaptively learn correct
 schedules in the field, then reuse them on future inputs to avoid unknown,
@@ -340,14 +361,15 @@ detail in \S\ref{sec:memoize}.
 \subsection{Caveats}
 
 \smt is certainly not for every multithreaded program.  It works well with
-programs whose schedules are loosely coupled with inputs, but there are also other programs.  For instance, a program may decide to spawn
-threads or invoke synchronizations based on intricate conditions involving many bits in the input.
-The parallel \v{grep}-like utility \pfscan is an example.  It searches for a
-keyword in a set of files using multiple threads, and for each match, it
-grabs a lock to increment a counter.  A schedule computed on one set of
-files is unlikely to suit another.
-To increase the input range each schedule covers, developers can
-exclude the operations on this lock from the schedule using annotations.
+programs whose schedules are loosely coupled with inputs, but there are also
+other programs.  For instance, a program may decide to spawn
+threads or invoke synchronizations based on intricate conditions involving many
+bits in the input. The parallel \v{grep}-like utility \pfscan is an example.  It
+searches for a keyword in a set of files using multiple threads, and for each
+match, it grabs a lock to increment a counter.  A schedule computed on one set
+of files is unlikely to suit another. To increase the input range each schedule
+covers, developers can exclude the operations on this lock from the schedule
+using annotations.
 
 
 \smt provides robustness and stability on small input and program
