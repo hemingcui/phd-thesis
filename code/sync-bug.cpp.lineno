@@ -1,0 +1,4 @@
+1: // thread 1     // thread 2
+2: lock(l);        lock(l);
+3: *p = ...;       p = NULL;
+4: unlock(l);      unlock(l);

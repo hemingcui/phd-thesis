@@ -43,36 +43,36 @@ test, analyze, verify, and so on.
 %Chapter~\ref{sec:related} will analyze these
 %systems in more details.
 
-\begin{figure*}[t]
-\begin{center}
-\subfloat[{\em
-Traditional.}]{\includegraphics[width=.23\linewidth]{figures/nondet}
-  \label{fig:nondet}}
-\subfloat[{\em
-Deterministic.}]{\includegraphics[width=.23\linewidth]{figures/dmt}
-  \label{fig:dmt}}
-\subfloat[{\em Stable
-(deterministic).}]{\includegraphics[width=.23\linewidth]{figures/smt}
-  \label{fig:smt}}
-\subfloat[{\em Stable
-(nondeterministic).}]{\includegraphics[width=.23\linewidth]{figures/smtn}
-  \label{fig:smtn}}
-\vspace{-.05in}
-\caption{Different multithreading approaches. Red stars represent buggy
-schedules. Traditional multithreading (\subref*{fig:nondet}) is a conceptual
-many-to-many mapping where one input may execute under many schedules because of
-nondeterminism, and many inputs may execute under one schedule because a
-schedule fixes the order of the communication operations but allows the local
-computations to operate on any input data. \dmt (\subref*{fig:dmt}) may map each
-input to an arbitrary schedule, reducing programs' robustness on input
-perturbations. \smt (\subref*{fig:smt} and \subref*{fig:smtn}) reduces the total
-set of schedules for all inputs (represented by the shrunk ellipses), increasing
-robustness and improving reliability. \smt and \dmt are orthogonal: a \smt
-system can be deterministic (\subref*{fig:smt}) or nondeterministic
-(\subref*{fig:smtn}).}
-\vspace{-.2in}
-\end{center}
-\end{figure*}
+% \begin{figure*}[t]
+% \begin{center}
+% \subfloat[{\em
+% Traditional.}]{\includegraphics[width=.23\linewidth]{figures/nondet}
+%   \label{fig:nondet}}
+% \subfloat[{\em
+% Deterministic.}]{\includegraphics[width=.23\linewidth]{figures/dmt}
+%   \label{fig:dmt}}
+% \subfloat[{\em Stable
+% (deterministic).}]{\includegraphics[width=.23\linewidth]{figures/smt}
+%   \label{fig:smt}}
+% \subfloat[{\em Stable
+% (nondeterministic).}]{\includegraphics[width=.23\linewidth]{figures/smtn}
+%   \label{fig:smtn}}
+% \vspace{-.05in}
+% \caption{Different multithreading approaches. Red stars represent buggy
+% schedules. Traditional multithreading (\subref*{fig:nondet}) is a conceptual
+% many-to-many mapping where one input may execute under many schedules because of
+% nondeterminism, and many inputs may execute under one schedule because a
+% schedule fixes the order of the communication operations but allows the local
+% computations to operate on any input data. \dmt (\subref*{fig:dmt}) may map each
+% input to an arbitrary schedule, reducing programs' robustness on input
+% perturbations. \smt (\subref*{fig:smt} and \subref*{fig:smtn}) reduces the total
+% set of schedules for all inputs (represented by the shrunk ellipses), increasing
+% robustness and improving reliability. \smt and \dmt are orthogonal: a \smt
+% system can be deterministic (\subref*{fig:smt}) or nondeterministic
+% (\subref*{fig:smtn}).}
+% \vspace{-.2in}
+% \end{center}
+% \end{figure*}
 
 %% P4: StableMT: our new approach and thesis.
 In order to reduce the number of schedules for all inputs, we have studied the

@@ -1,0 +1,8 @@
+% Remember to use the lgrind style
+
+\Head{}
+\File{sync\-bug.cpp}{2012}{8}{22}{23:42}{106}
+\L{\LB{\C{}//_thread_1}\Tab{16}{//_thread_2\CE{}}}
+\L{\LB{\V{lock}(\V{l});}\Tab{16}{\V{lock}(\V{l});}}
+\L{\LB{*\V{p}_=_.\,.\,.;}\Tab{16}{\V{p}_=_\V{NULL};}}
+\L{\LB{\V{unlock}(\V{l});}\Tab{16}{\V{unlock}(\V{l});}}

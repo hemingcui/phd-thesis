@@ -1,0 +1,9 @@
+% Remember to use the lgrind style
+
+\Head{}
+\File{race\-bug.cpp}{2012}{8}{30}{15:36}{160}
+\L{\LB{\C{}//_thread_1}\Tab{21}{//_thread_2}\Tab{44}{\CE{}}}
+\L{\LB{\C{}//_deposit_100}\Tab{21}{//_withdraw_100\CE{}}}
+\L{\LB{\V{t}_=_\V{balance}_+_\N{100};}}
+\L{\LB{}\Tab{21}{\V{balance}_=_\V{balance}_\-_\N{100};}}
+\L{\LB{\V{balance}_=_\V{t};}}

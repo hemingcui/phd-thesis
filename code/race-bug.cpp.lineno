@@ -1,0 +1,5 @@
+1: // thread 1          // thread 2            
+2: // deposit 100       // withdraw 100
+3: t = balance + 100;
+4:                      balance = balance - 100;
+5: balance = t;
