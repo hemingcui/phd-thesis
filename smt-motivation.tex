@@ -1,9 +1,12 @@
 \chapter{Motivation and Background of \smt} \label{sec:smt-motivation}
 
-This chapter analyzes the potential of Stable Multithreading (\smt). We
-start from analyzing why multithreaded programs are so difficult to get right,
-including why existing effort can not help much; and then we introduce \smt, our
-new approach that can make these programs much easier to get right.
+This chapter aims to analyze the potential of Stable Multithreading (\smt). We
+first present the key reason that makes multithreaded programs so difficult to
+get right (\S\ref{sec:smt-why}); and then explain why eterministic
+multithreading (\dmt), a recently proposed technique that aims to address this
+key reason, can not help much (\S\ref{sec:smt-why}); and finally we introduce
+\smt, our new approach that can make multithreaded programs much easier to get
+right(\S\ref{sec:smt-potential}).
 
 \section{Why Are Multithreaded Programs So Hard to Get Right?}
 \label{sec:smt-why}
@@ -73,7 +76,7 @@ occurs for all inputs allowed by the schedule).  Thus, recent research on
 testing multithreaded programs (\eg,~\cite{musuvathi:chess:osdi08}) is
 focused on effectively testing schedules to find the buggy ones.
 
-\subsection{Root Cause: Too Many Schedules For All Inputs}
+\subsection{Key Reason: Too Many Schedules For All Inputs}
 
 A typical multithreaded program has an enormous number of schedules.  For
 a single input, the number of schedules is asymptotically exponential in
@@ -95,7 +98,7 @@ same schedules while missing others.  Recent tools
 we seriously lack resources to cover more than a tiny fraction of all
 exponentially many schedules.
 
-\subsection{Determinism Is Good, But Not Sufficient} \label{sec:smt-nondet}
+\section{Determinism: Not as Good as Commonly Perceived} \label{sec:smt-dmt}
 
 A multithreaded program is nondeterministic because even with the same
 program and input, different schedules may still lead to different
@@ -205,7 +208,8 @@ no problem understanding and doing it because there are only two possible
 outcomes.
 
 
-\section{Shrinking the Haystack with Stable Multithreading} \label{sec:smt}
+\section{Shrinking the Haystack with Stable Multithreading}
+\label{sec:smt-potential}
 
 \begin{table*}[t]
 \centering
