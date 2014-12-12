@@ -1,6 +1,6 @@
 \chapter{Motivation and Background of \smt} \label{sec:smt-motivation}
 
-This chapter aims to analyze the potential of Stable Multithreading (\smt). We
+This chapter analyzes the potential of Stable Multithreading (\smt). We
 first present the key reason that makes multithreaded programs so difficult to
 get right (\S\ref{sec:smt-why}); and then explain why eterministic
 multithreading (\dmt), a recently proposed technique that aims to address this
@@ -44,27 +44,27 @@ reliability.
 \end{center}
 \end{figure*}
 
-We start with preliminaries, then describe the challenges caused by
-nondeterminism and by too many schedules.  We then explain why
-nondeterminism is a lesser cause than too many schedules.
+In this section, we start with preliminaries, then describe the key reason that
+makes multithreading so difficult to get right is: a multithreaded program has
+too many possible schedules for all inputs at runtime.
 
 \subsection{Preliminaries: Inputs, Schedules, and Buggy Schedules}
 
 To ease discussion, we use \emph{input} to broadly refer to the data a
 program reads from its execution environment, including not only the data
 read from files and sockets, but also command line arguments, return
-values of external functions such as \v{gettimeofday}, and any external data
+values of external functions such as \vv{gettimeofday}, and any external data
 that can affect program execution.  We use \emph{schedule} to broadly refer to
 the (partially or totally) ordered set of communication operations in a
-multithreaded execution, including synchronizations (\eg, \v{lock} and
-\v{unlock} operations) and shared memory accesses (\eg, \v{load} and
-\v{store} instructions to shared memory). Of all the schedules, most run
+multithreaded execution, including synchronizations (\eg, \vv{lock} and
+\vv{unlock} operations) and shared memory accesses (\eg, \vv{load} and
+\vv{store} instructions to shared memory). Of all the schedules, most run
 fine, but some trigger concurrency errors, causing program crashes,
 incorrect computations, deadlocked executions, and other failures.
 Consider the toy program below: \lgrindfile{code/sync-bug.cpp}
 \noindent The schedule in which thread 2 gets the lock before thread 1
 causes a dereference-of-NULL failure.  Consider another example.  The toy
-program below has data races on \v{balance}: \lgrindfile{code/race-bug.cpp}
+program below has data races on \vv{balance}: \lgrindfile{code/race-bug.cpp}
 \noindent The schedule with the statements executed in the order shown corrupts
 \v{balance}. We call the schedules that trigger concurrency errors
 \emph{buggy schedules}.  Strictly speaking, the errors are in the
@@ -87,16 +87,22 @@ exponential in both $m$ and $k$. Aggregated over all inputs, the number of
 schedules is even greater.
 
 Finding a few buggy schedules in these exponentially many schedules raises
-a series of ``needle-in-a-haystack'' challenges.  For instance, to write
-correct multithreaded programs, developers must carefully synchronize
-their code to weed out the buggy schedules.  As usual, humans err when
-they must scrutinize many possibilities to locate corner cases. Various
-forms of testing tools suffer, too.  Stress testing is the common method
-for (indirectly) testing schedules, but it often redundantly tests the
-same schedules while missing others.  Recent tools
-(\eg,~\cite{musuvathi:chess:osdi08}) systematically test schedules for bugs, but
-we seriously lack resources to cover more than a tiny fraction of all
-exponentially many schedules.
+a series of ``needle-in-a-haystack" challenges. For instance, when facing these
+excessive schedules, developers' understanding are prone to mistakes, and we
+have seen tons of concurrency bug reports sent to the email lists of real-world
+software. Various forms of testing tools suffer, too.  Stress testing is the
+common method for (indirectly) testing schedules, but it often redundantly tests
+the same schedules while missing others. To mitigate redundant testing effort,
+recent advanced tools (\eg,~\cite{musuvathi:chess:osdi08}) can systematically
+test schedules and have effectively found harmful bugs in real-world programs,
+and these tools have included several smartest algorithms
+(\eg,~\cite{flanagan:dynamicpo}) to improve schedule coverage. Unfortunately,
+despite of these great effort, these tools still can not cover more than a tiny
+fraction of all exponentially many schedules, and concurency bugs within an
+untested schedule can show up in production runs and lead to critical failures
+and vulnerabilities. In a word, these exponentially many schedules is the key
+reason that causes multithreaded programs extremely difficult to understand,
+test, analyze, or verify.
 
 \section{Determinism: Not as Good as Commonly Perceived} \label{sec:smt-dmt}
 
