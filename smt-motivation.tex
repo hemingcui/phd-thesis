@@ -1,12 +1,14 @@
-\chapter{Motivation and Background of \smt} \label{sec:smt-motivation}
+\chapter{Motivation and Background of Stable Multithreading (\smt)}
+\label{sec:smt-motivation}
 
-This chapter analyzes the potential of Stable Multithreading (\smt). We
-first present the key reason that makes multithreaded programs so difficult to
-get right (\S\ref{sec:smt-why}); and then explain why eterministic
-multithreading (\dmt), a recently proposed technique that aims to address this
-key reason, can not help much (\S\ref{sec:smt-why}); and finally we introduce
-\smt, our new approach that can make multithreaded programs much easier to get
-right(\S\ref{sec:smt-potential}).
+This chapter first presents the key reason that makes multithreaded programs so
+difficult to get right (\S\ref{sec:smt-why}), and then introduces
+\smt, our new approach that can greatly reduce the number of schedules on all
+inputs, making multithreaded programs much easier to get right
+(\S\ref{sec:smt-potential}). \smt is not the only technique to reduce the number
+of schedules, and researchers have proposed a complementary technique called
+Dterministic Multithreading (\dmt) that reduces the number of schedules
+on each input, so this chapter also compares \smt with \dmt.
 
 \section{Why Are Multithreaded Programs So Hard to Get Right?}
 \label{sec:smt-why}
@@ -84,134 +86,35 @@ the schedule length.  For instance, given $m$ threads each competing for a
 lock $k$ times, each order of lock acquisitions forms a schedule, easily
 yielding $\frac{(mk)!}{(k!)^m} \ge (m!)^k$ total schedules---a number
 exponential in both $m$ and $k$. Aggregated over all inputs, the number of
-schedules is even greater.
-
-Finding a few buggy schedules in these exponentially many schedules raises
-a series of ``needle-in-a-haystack" challenges. For instance, when facing these
-excessive schedules, developers' understanding are prone to mistakes, and we
-have seen tons of concurrency bug reports sent to the email lists of real-world
-software. Various forms of testing tools suffer, too.  Stress testing is the
-common method for (indirectly) testing schedules, but it often redundantly tests
-the same schedules while missing others. To mitigate redundant testing effort,
-recent advanced tools (\eg,~\cite{musuvathi:chess:osdi08}) can systematically
-test schedules and have effectively found harmful bugs in real-world programs,
-and these tools have included several smartest algorithms
-(\eg,~\cite{flanagan:dynamicpo}) to improve schedule coverage. Unfortunately,
-despite of these great effort, these tools still can not cover more than a tiny
-fraction of all exponentially many schedules, and concurency bugs within an
-untested schedule can show up in production runs and lead to critical failures
-and vulnerabilities. In a word, these exponentially many schedules is the key
-reason that causes multithreaded programs extremely difficult to understand,
-test, analyze, or verify.
-
-\section{Determinism: Not as Good as Commonly Perceived} \label{sec:smt-dmt}
-
-A multithreaded program is nondeterministic because even with the same
-program and input, different schedules may still lead to different
-behaviors.  For instance, the two toy programs in the previous subsection
-do not always run into the bugs.  Except for the schedules described, the
-other schedules lead to correct executions.
-
-This nondeterminism raises many challenges, especially in
-testing and debugging.  Suppose an input can execute under $n$ schedules.
-Testing $n-1$ schedules is not enough for complete reliability because the
-single untested schedule may still be buggy.  An execution in the field
-may hit this untested schedule and fail.  Debugging is challenging, too.
-To reproduce a field failure for diagnosis, the exact input alone is not
-enough. Developers must also manage to reconstruct the buggy schedule out
-of $n$ possibilities.
-
-Figure~\ref{fig:nondet} depicts the traditional multithreading approach.
-Conceptually, it is a many-to-many mapping, where one input may execute
-under many schedules because of nondeterminism, and many inputs may
-execute under one schedule because a schedule fixes the order of the
+schedules is even greater. Figure~\ref{fig:nondet} depicts the traditional
+multithreading approach. Conceptually, it is a many-to-many mapping, where one
+input may execute under many schedules because of nondeterminism, and many
+inputs may execute under one schedule because a schedule fixes the order of the
 communication operations but allows the local computations to operate on
 any input data.
 
-
-To address the challenges raised by nondeterminism, researchers including
-us have dedicated much effort and built several systems that force a
-multithreaded program to always run the same schedule on the same input,
-bringing determinism to multithreading.  This determinism does have value
-for reliability.  For instance, one testing execution now validates all
-future executions on the same input.  Reproducing a concurrency error now
-requires only the input.
-
-In contrast to this effort, little has been done to solve the
-challenges caused by too many schedules.  We believe
-the community has charged nondeterminism more than its share of the guilt
-and overlooked the main culprit---a rather quantitative cause that
-multithreaded programs simply have too many schedules.
-We argue that, although determinism has value, its value
-is smaller than commonly perceived.  It is neither sufficient nor
-necessary for reliability.
-
-\para{Determinism $\centernot \implies$ reliability.} Determinism is a
-narrow property: same input + same program = same behavior. It has no
-jurisdiction if the input or program changes however slightly.  Yet, we
-often expect a program to be robust or stable against slight program
-changes or input perturbations.  For instance, adding a debug \v{printf}
-should in principle not make the bug disappear.  Similarly, a single bit flip of
-a file should usually not cause a compression utility to crash. Unfortunately,
-determinism does not provide this stability and, if na\"{i}vely implemented,
-even undermines it.
-
-To illustrate, consider the system depicted in
-Figure~\ref{fig:dmt} which maps each input to an arbitrary schedule. This
-mapping is perfectly deterministic, but it destabilizes program
-behaviors on multiple inputs.  A single bit flip may force a program to
-discard a correct schedule and adventure into a vastly different, buggy
-schedule.
-
-This instability is counterintuitive at least,
-and raises new reliability challenges.  For instance, testing one input
-provides little assurance on very similar inputs, despite that the differences
-in input do not invalidate the tested schedule.  Debugging now requires
-every bit of the bug-inducing input, including not only the data a user
-typed, but also environment variables, shared libraries, \etc.  A
-different user name?  Error report doesn't include credit card numbers?
-The bug may never be reproduced, regardless of how many times developers
-retry, because the schedule chosen by the deterministic system for the
-altered input happens to be correct.  Note that even a correct
-sequential program may show very different behaviors for small input
-changes across boundary conditions, but these conditions are typically
-infrequent and the different behaviors are intended by developers.  In
-contrast, the instability introduced by the system in Figure~\ref{fig:dmt}
-is artificial and on all inputs.
-
-Besides inputs, na\"{i}vely implemented determinism can destabilize
-program behaviors on minor code changes, so adding a debug \v{printf}
-causes the bug to deterministically disappear.  Another problem is that
-the number of all possible schedules remains enormous, so the coverage of
-schedule testing tools remains low.
-
-In practice, to mitigate these problems, researchers have to augment
-determinism with other techniques.  To support debug \v{printf}, some
-propose to temporarily revert to nondeterministic
-execution~\cite{dmp:asplos09}.  DMP~\cite{dmp:asplos09},
-CoreDet~\cite{coredet:asplos10}, and Kendo~\cite{kendo:asplos09} change
-schedules only if the inputs change low-level instructions executed.
-Although better than mapping each input to an arbitrary schedule, they
-still allow small input perturbations to destabilize schedules
-unnecessarily when the perturbations change the low-level instructions
-executed (\eg, one extra \v{load} executed), observed in our
-experiments~\cite{cui:tern:osdi10}. Our \tern, \peregrine, and \parrot systems
-and others' \dthreads~\cite{dthreads:sosp11} built subsequently to \tern combine
-DMT with \smt (elaborated next section) to frequently reuse schedules on a
-wide range of inputs for stability.
-
-\para{Reliability $\centernot \implies$ determinism.} Determinism
-is a binary property: if an input maps to $n > 1$ schedules, executions on this
-input may be nondeterministic, however small $n$ is.  Yet, a nondeterministic
-system with a small set of total schedules can be made reliable easily. 
-Consider an extreme case, the nondeterministic system depicted in
-Figure~\ref{fig:smtn} which maps all inputs to at most two schedules.  In this
-system, the challenges caused by nondeterminism (\S\ref{sec:nondet}) are
-easy to solve.  For instance, to reproduce a field failure given an input,
-developers can easily afford to search for one out of only two schedules.
-To offer an analogy, a coin toss is nondeterministic, but humans have
-no problem understanding and doing it because there are only two possible
-outcomes.
+Finding a few buggy schedules in these exponentially many schedules raises
+a series of ``needle-in-a-haystack" challenges on understanding, testing,
+analyzing, and verification of multithreaded programs. For instance, when facing
+these excessive schedules, developers' understanding are prone to mistakes, and
+we have seen tons of concurrency bug reports sent to the email lists of
+real-world software. Various forms of testing tools suffer, too.  Stress testing
+is a common method for (indirectly) testing schedules, but it often redundantly
+tests the same schedules while missing others. To mitigate redundant testing
+effort, recent advanced testing tools (\eg,~\cite{musuvathi:chess:osdi08,
+modist:nsdi09, dbug:ssv10, demeter:sosp11}) can systematically test schedules,
+and these tools have included several remarkable reduction algorithms
+(\eg,~\cite{flanagan:dynamicpo, demeter:sosp11}) to avoid testing the same or
+equavalent schedules and improve schedule coverage. Recent advanced program
+analysis and verification tools also make notable attempts to improve schedule
+coverage based on these reduction algorithms. All these advanced
+tools have effectively found new harmful concurrency bugs in real-world
+software. Unfortunately, despite of these great effort, these tools still can
+not cover more than a tiny fraction of all exponentially many schedules, and
+concurency bugs within an untested schedule can show up in production runs and
+lead to critical failures and vulnerabilities. Therefore, we argue that the
+exponentially many schedules is the key reason that causes multithreaded
+programs extremely difficult to get right.
 
 
 \section{Shrinking the Haystack with Stable Multithreading}
@@ -257,21 +160,20 @@ We describe how to compute such constraints in \S\ref{sec:build}.}
 \vspace{-.15in}
 \end{table*}
 
-Motivated by the limitations of determinism and the
-challenges caused by exponentially many schedules, we investigated a
-central research question: \emph{are all the exponentially many schedules
-  necessary}?  A schedule is necessary if it is the only one
+To reduce the number of schedules and make multithreading easier to get right,
+we investigated a central research question: \emph{are all the exponentially
+many schedules necessary}?  A schedule is necessary if it is the only one
 that can (1) process specific inputs or (2) yield good performance under
 specific scenarios. Removing unnecessary schedules from the haystack would
 make the needles easier to find.
 
-We investigated this question on a
-diverse set of popular multithreaded programs, ranging from server
-programs such as \apache, to desktop utilities such as parallel compression
-utility \pbzip, to parallel implementations of computation-intensive algorithms
-such as fast Fourier transformation.  These programs use diverse
-synchronization primitives such as locks, semaphores, condition variables,
-and barriers.  Our investigation reveals the following two insights.
+We investigated this question on a diverse set of popular multithreaded
+programs, ranging from server programs such as \apache, to desktop utilities
+such as parallel compression utility \pbzip, to parallel implementations of
+computation-intensive algorithms such as fast Fourier transformation.  These
+programs use diverse synchronization primitives such as locks, semaphores,
+condition variables, and barriers.  Our investigation reveals the following two
+insights.
 
 First, for many programs, a wide range of inputs share the same equivalent
 class of schedules.  Thus, one schedule out of the class suffices to
@@ -318,18 +220,6 @@ challenges at once.  In addition, \smt stabilizes program behaviors
 on inputs that map to the same schedule and minor program changes that
 do not affect the schedules, providing robustness and stability
 anticipated by developers and users.
-
-\smt is complementary to \dmt. \smt aims to reduce the set of schedules for
-\emph{all} inputs, whereas DMT aims to reduce the schedules for \emph{each}
-input (down to one).  A \smt system may be either deterministic or
-nondeterministic. Figure~\ref{fig:smt} and Figure~\ref{fig:smtn} depict two \smt
-systems: the many-to-one mapping in Figure~\ref{fig:smt} is deterministic, while
-the many-to-few mapping in Figure~\ref{fig:smtn} is nondeterministic.  A
-many-to-few mapping improves performance because the runtime system can choose
-an efficient schedule out of a few for an input based on current timing factors,
-but it increases the efforts and resources needed for reliability.  Fortunately,
-the choices of schedules are only a few (\eg, a small constant such as two), so
-the challenges caused by nondeterminism are easy to solve.
 
 \subsection{Benefits}
 
@@ -388,3 +278,108 @@ is still room to improve.  For instance, when developers change their
 programs by adding synchronizations, it may be more efficient to
 update previously computed schedules rather than to recompute from
 scratch. We leave this idea for future work.
+
+
+
+\section{Determinism: Not as Good as Commonly Perceived} \label{sec:smt-dmt}
+
+A multithreaded program is nondeterministic because even with the same
+program and input, different schedules may still lead to different
+behaviors.  For instance, the two toy programs in the previous subsection
+do not always run into the bugs.  Except for the schedules described, the
+other schedules lead to correct executions. This nondeterminism raises many
+challenges, especially in testing and debugging.  Suppose an input can execute
+under $n$ schedules. Testing $n-1$ schedules is not enough for complete
+reliability because the single untested schedule may still be buggy.  An
+execution in the field may hit this untested schedule and fail.  Debugging is
+challenging, too. To reproduce a field failure for diagnosis, the exact input
+alone is not enough. Developers must also manage to reconstruct the buggy
+schedule out of $n$ possibilities.
+
+To address the challenges raised by nondeterminism, researchers have dedicated
+much effort and built several Deterministic MultiThreading (or \dmt) systems
+that force a multithreaded program to always run the same schedule on the same
+input.  This determinism does have value for reliability.  For instance, one
+testing execution now validates all future executions on the same input, and 
+reproducing a concurrency error now requires only the input.
+
+In contrast to this effort, little has been done to solve the
+challenges caused by too many schedules.  We believe
+the community has charged nondeterminism more than its share of the guilt
+and overlooked the main culprit---a rather quantitative cause that
+multithreaded programs simply have too many schedules.
+We argue that, although determinism has value, its value
+is smaller than commonly perceived.  It is neither sufficient nor
+necessary for reliability.
+
+\para{Determinism $\centernot \implies$ reliability.} Determinism is a
+narrow property: same input + same program = same behavior. It has no
+jurisdiction if the input or program changes however slightly.  Yet, we
+often expect a program to be robust or stable against slight program
+changes or input perturbations.  For instance, adding a debug \v{printf}
+should in principle not make the bug disappear.  Similarly, a single bit flip of
+a file should usually not cause a compression utility to crash. Unfortunately,
+determinism does not provide this stability and, if na\"{i}vely implemented,
+even undermines it.
+
+To illustrate, consider the system depicted in
+Figure~\ref{fig:dmt} which maps each input to an arbitrary schedule. This
+mapping is perfectly deterministic, but it destabilizes program
+behaviors on multiple inputs.  A single bit flip may force a program to
+discard a correct schedule and adventure into a vastly different, buggy
+schedule. This instability is counterintuitive at least,
+and raises new reliability challenges.  For instance, testing one input
+provides little assurance on very similar inputs, despite that the differences
+in input do not invalidate the tested schedule.  Debugging now requires
+every bit of the bug-inducing input, including not only the data a user
+typed, but also environment variables, shared libraries, \etc.  A
+different user name?  Error report doesn't include credit card numbers?
+The bug may never be reproduced, regardless of how many times developers
+retry, because the schedule chosen by the deterministic system for the
+altered input happens to be correct. Besides inputs, na\"{i}vely implemented
+determinism can destabilize program behaviors on minor code changes, so adding a
+debug \vv{printf} causes the bug to deterministically disappear.  Another
+problem is that the number of all possible schedules remains enormous, so the
+coverage of schedule testing tools remains low.
+
+In practice, to mitigate these problems, researchers have to augment
+determinism with other techniques.  To support debug \vv{printf}, some
+propose to temporarily revert to nondeterministic
+execution~\cite{dmp:asplos09}.  DMP~\cite{dmp:asplos09},
+CoreDet~\cite{coredet:asplos10}, and Kendo~\cite{kendo:asplos09} change
+schedules only if the inputs change low-level instructions executed.
+Although better than mapping each input to an arbitrary schedule, they
+still allow small input perturbations to destabilize schedules
+unnecessarily when the perturbations change the low-level instructions
+executed (\eg, one extra \vv{load} executed), observed in our
+experiments~\cite{cui:tern:osdi10}.
+% Our \tern, \peregrine, and \parrot systems
+% and others' \dthreads~\cite{dthreads:sosp11} built subsequently to \tern
+% combine
+% DMT with \smt (elaborated next section) to frequently reuse schedules on a
+% wide range of inputs for stability.
+
+\para{Reliability $\centernot \implies$ determinism.} Determinism
+is a binary property: if an input maps to $n > 1$ schedules, executions on this
+input may be nondeterministic, however small $n$ is.  Yet, a nondeterministic
+system with a small set of total schedules can be made reliable easily. 
+Consider an extreme case, the nondeterministic system depicted in
+Figure~\ref{fig:smtn} which maps all inputs to at most two schedules.  In this
+system, the challenges caused by nondeterminism (\S\ref{sec:nondet}) are
+easy to solve.  For instance, to reproduce a field failure given an input,
+developers can easily afford to search for one out of only two schedules.
+To offer an analogy, a coin toss is nondeterministic, but humans have
+no problem understanding and doing it because there are only two possible
+outcomes.
+
+\dmt is complementary to \smt. \smt aims to reduce the set of schedules for
+\emph{all} inputs, whereas DMT aims to reduce the schedules for \emph{each}
+input (down to one).  A \smt system may be either deterministic or
+nondeterministic. Figure~\ref{fig:smt} and Figure~\ref{fig:smtn} depict two \smt
+systems: the many-to-one mapping in Figure~\ref{fig:smt} is deterministic, while
+the many-to-few mapping in Figure~\ref{fig:smtn} is nondeterministic.  A
+many-to-few mapping improves performance because the runtime system can choose
+an efficient schedule out of a few for an input based on current timing factors,
+but it increases the efforts and resources needed for reliability.  Fortunately,
+the choices of schedules are only a few (\eg, a small constant such as two), so
+the challenges caused by nondeterminism are easy to solve.
