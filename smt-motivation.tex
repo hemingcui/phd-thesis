@@ -210,7 +210,7 @@ representations (Chapter~\ref{sec:peregrine}), our systems incurred less than
 overhead enforcing schedules on different inputs for most evaluated programs.
 Relevant systems (\eg,~\cite{kendo:asplos09, determinator:osdi10} also show that
 carefully enforcing schedules can achieve only modest overhead. Afterall,
-considering the reliability and security benefits introduced by \smt, We believe
+considering the reliability benefits introduced by \smt, We believe
 this moderate overhead is worthwhile.
 
 Leveraging these two insights, we have invented Stable Multithreading (or \smt),
@@ -223,7 +223,7 @@ test, analyze, and verify.
 \subsection{Benefits}
 
 By vastly reducing the set of schedules, \smt brings numerous reliability
-and security benefits to multithreading.  We describe several:
+benefits to multithreading.  We describe several:
 
 \para{Understanding.} Developers now only need to focus on understanding a much
 smaller set of schedules, which can greatly reduce their burden. Developers can
@@ -259,8 +259,7 @@ integrated our \parrot~\cite{parrot:sosp13} system with an open source model
 checker called DBug~\cite{dbug:spin11}, and \parrot significantly increases the
 number of programs that \dbug can exhaust searching schedules under our
 evaluation settings. More details will be given in Chapter~\ref{sec:parrot}.
-Interactive theorem proving, a popular technique on ensuring strong security and
-reliability properties in software, becomes much easier, too, because verifiers
+Interactive theorem proving becomes much easier, too, because verifiers
 need to prove theorems only on the set of schedules enforced in the field.  We
 will describe these benefits in more details in Chapter~\ref{sec:peregrine}.
 
@@ -316,13 +315,13 @@ input.  This determinism does have value for reliability.  For instance, one
 testing execution now validates all future executions on the same input, and 
 reproducing a concurrency error now requires only the input.
 
-However, \dmt only focuses on reducing the number schedules on each input, and it does not help much on reducing the number of schedules for all inputs of a multithreaded program.  We believe
-the community has charged nondeterminism more than its share of the guilt
-and overlooked the main culprit---a rather quantitative cause that
-multithreaded programs simply have too many schedules.
-We argue that, although determinism has value, its value
-is smaller than commonly perceived: it is neither sufficient nor
-necessary for reliability.
+However, \dmt only focuses on reducing the number schedules on each input, and
+it does not help much on reducing the number of schedules for all inputs of a
+multithreaded program.  We believe the community has charged nondeterminism more
+than its share of the guilt and overlooked the main culprit---a rather
+quantitative cause that multithreaded programs simply have too many schedules.
+We argue that, although determinism has value, its value is smaller than
+commonly perceived: it is neither sufficient nor necessary for reliability.
 
 \para{Determinism $\centernot \implies$ reliability.} Determinism is a
 narrow property: same input + same program = same behavior. It has no
@@ -380,7 +379,7 @@ no problem understanding and doing it because there are only two possible
 outcomes.
 
 \dmt is complementary to \smt. \smt aims to reduce the set of schedules for
-\emph{all} inputs, whereas DMT aims to reduce the schedules for \emph{each}
+\emph{all} inputs, whereas \dmt aims to reduce the schedules for \emph{each}
 input (down to one).  A \smt system may be either deterministic or
 nondeterministic. Figure~\ref{fig:smt} and Figure~\ref{fig:smtn} depict two \smt
 systems: the many-to-one mapping in Figure~\ref{fig:smt} is deterministic, while
@@ -389,4 +388,8 @@ many-to-few mapping improves performance because the runtime system can choose
 an efficient schedule out of a few for an input based on current timing factors,
 but it increases the efforts and resources needed for reliability.  Fortunately,
 the choices of schedules are only a few (\eg, a small constant such as two), so
-the challenges caused by nondeterminism are easy to solve. Our \tern, \peregrine, and \parrot systems and others' \dthreads~\cite{dthreads:sosp11} built subsequently to \tern combine \dmt with \smt (elaborated next section) to frequently reuse schedules on a wide range of inputs for stability. The following three chapters will present our three systems.
+the challenges caused by nondeterminism are easy to solve. Our \tern,
+\peregrine, and \parrot systems and others' \dthreads~\cite{dthreads:sosp11}
+built subsequently to \tern combine \dmt with \smt to frequently reuse schedules
+on a wide range of inputs for stability. The following three chapters will
+present our three systems.
