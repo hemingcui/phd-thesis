@@ -321,7 +321,7 @@ the community has charged nondeterminism more than its share of the guilt
 and overlooked the main culprit---a rather quantitative cause that
 multithreaded programs simply have too many schedules.
 We argue that, although determinism has value, its value
-is smaller than commonly perceived.  It is neither sufficient nor
+is smaller than commonly perceived: it is neither sufficient nor
 necessary for reliability.
 
 \para{Determinism $\centernot \implies$ reliability.} Determinism is a
@@ -365,11 +365,6 @@ still allow small input perturbations to destabilize schedules
 unnecessarily when the perturbations change the low-level instructions
 executed (\eg, one extra \vv{load} executed), observed in our
 experiments~\cite{cui:tern:osdi10}.
-% Our \tern, \peregrine, and \parrot systems
-% and others' \dthreads~\cite{dthreads:sosp11} built subsequently to \tern
-% combine
-% DMT with \smt (elaborated next section) to frequently reuse schedules on a
-% wide range of inputs for stability.
 
 \para{Reliability $\centernot \implies$ determinism.} Determinism
 is a binary property: if an input maps to $n > 1$ schedules, executions on this
@@ -394,4 +389,4 @@ many-to-few mapping improves performance because the runtime system can choose
 an efficient schedule out of a few for an input based on current timing factors,
 but it increases the efforts and resources needed for reliability.  Fortunately,
 the choices of schedules are only a few (\eg, a small constant such as two), so
-the challenges caused by nondeterminism are easy to solve.
+the challenges caused by nondeterminism are easy to solve. Our \tern, \peregrine, and \parrot systems and others' \dthreads~\cite{dthreads:sosp11} built subsequently to \tern combine \dmt with \smt (elaborated next section) to frequently reuse schedules on a wide range of inputs for stability. The following three chapters will present our three systems.
