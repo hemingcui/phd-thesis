@@ -1,20 +1,47 @@
+This chapter describes \tern, our first \smt (and also \dmt) system that
+addresses the challenge of mapping inputs to schedules. To build a system that
+is both \smt and \dmt is also challenging, because as we described in
+Chapter~\ref{sec:smt-motivation}, a typical \dmt has the instability problem
+that destabilizes program behaviors on input perturbation, sacrificing many
+benefits brought by \smt. Therefore, this chapter will also describes our
+solution on addressing this instability problem.
+
 \section{Overview} \label{sec:tern-overview}
 
-Multithreaded programs are difficult to write, test, and debug.  A key
-reason is nondeterminism: different runs of a multithreaded
-program may show different behaviors, depending on how the threads
-interleave~\cite{lee06}.
+Crucial to implementing \smt is how to compute the set of schedules for
+processing inputs.  At the bare minimum, a schedule must be feasible when
+enforced on an input, so the execution does not get stuck or deviate from
+the schedule.  Ideally, the set of schedules should also be small for
+reliability.  One possible idea is to pre-compute schedules using static
+source code analysis, but the halting problem makes it undecidable to
+statically compute schedules guaranteed to work dynamically.  Another
+possibility is to compute schedules on the fly while a program is running,
+but the computations may be complex and their overhead high.
 
-Two main factors make threads interleave nondeterministically.  The first
-is \emph{scheduling}, how the OS and hardware schedule threads.
-Scheduling nondeterminism is not essential and can be eliminated without
-affecting correctness for most programs.  The second is \emph{input}, what
-data (\emph{input data}) arrives at what time (\emph{input timing}).
-Input nondeterminism sometimes is essential because major changes in
-inputs require different schedules.  However, frequently input
-nondeterminism is not essential and the same schedule can be used to
-process many different inputs (\S\ref{sec:define-schedule}).  We believe
-nonessential nondeterminism should be eliminated in favor of determinism.
+%% P2: state why we also want DMT. Because it is especially useful for testing
+%% and debugging.
+
+%% P3: A typical DMT system has the instability problem. Reuse paragraphs in
+%% TERN paper.
+
+%% P4: Our solution that addresses the challenge as well as the instability
+%% problem...
+
+% Multithreaded programs are difficult to write, test, and debug.  A key
+% reason is nondeterminism: different runs of a multithreaded
+% program may show different behaviors, depending on how the threads
+% interleave~\cite{lee06}.
+
+% Two main factors make threads interleave nondeterministically.  The first
+% is \emph{scheduling}, how the OS and hardware schedule threads.
+% Scheduling nondeterminism is not essential and can be eliminated without
+% affecting correctness for most programs.  The second is \emph{input}, what
+% data (\emph{input data}) arrives at what time (\emph{input timing}).
+% Input nondeterminism sometimes is essential because major changes in
+% inputs require different schedules.  However, frequently input
+% nondeterminism is not essential and the same schedule can be used to
+% process many different inputs (\S\ref{sec:define-schedule}).  We believe
+% nonessential nondeterminism should be eliminated in favor of determinism.
 
 \emph{Deterministic multithreading} (\dmt)
 systems~\cite{dmp:asplos09,coredet:asplos10,kendo:asplos09} make threads
