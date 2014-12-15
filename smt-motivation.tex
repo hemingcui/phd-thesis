@@ -353,17 +353,16 @@ inputs, despite that the differences in input do not invalidate the tested
 schedule. Debugging now requires every bit of the bug-inducing input, including
 not only the data a user typed, but also environment variables, shared
 libraries, \etc. A different user name?  Error report doesn't include credit
-card numbers?
-The bug may never be reproduced, regardless of how many times developers
-retry, because the schedule chosen by the deterministic system for the
-altered input happens to be correct. Besides inputs, na\"{i}vely implemented
+card numbers? The bug may never be reproduced, regardless of how many times
+developers retry, because the schedule chosen by the deterministic system for
+the altered input happens to be correct. Besides inputs, na\"{i}vely implemented
 determinism can destabilize program behaviors on minor code changes, so adding a
 debug \vv{printf} causes the bug to deterministically disappear.
-Chapter~\ref{sec:tern} will describe why this instability problem is fundamental
-in \dmt systems, and how \tern, our first \smt system, addresses this problem.
-In a word, when running with \dmt, the number of possible schedules for all
-inputs remains enormous, so a multithreaded program is still extremely difficult
-to understand, test, analyze, or verify.
+Chapter~\ref{sec:tern} will give more concrete results on this
+instability problem, and how \tern, our first \smt system, addresses this
+problem. In a word, when running with \dmt, the number of possible schedules for
+all inputs remains enormous, so a multithreaded program is still extremely
+difficult to understand, test, analyze, or verify.
 
 In practice, to mitigate these problems, researchers have to augment
 determinism with other techniques.  To support debug \vv{printf}, some
