@@ -23,8 +23,8 @@ program behaviors deterministic and stable across sites.
 
 The memoizer implements this algorithm by implementing the wrapper
 functions in Table~\ref{tab:interface}.  Figure~\ref{fig:memoizer} shows
-the wrappers to \v{pthread\_mutex\_lock()} and
-\v{pthread\_mutex\_unlock()}.  The memoizer maintains a queue of active
+the wrappers to \vv{pthread\_mutex\_lock()} and
+\vv{pthread\_mutex\_unlock()}.  The memoizer maintains a queue of active
 threads.  Only the thread at the head of the queue ``has the turn'' (line
 4 and 14).  Once the thread is done with the operation, it gives up the
 turn by moving itself to the tail of the queue (line 7 and 18).
@@ -38,7 +38,7 @@ to avoid nondeterministic wakeup orders in pthread library.  Second, we
 log synchronizations (line 6 and line 17) only when the thread has the turn, so
 that the log faithfully reflects the actual order of synchronizations.
 Lastly, we maintain our internal thread IDs to avoid nondeterminism in the
-OS thread IDs across runs.  Function \v{self()} returns this internal ID
+OS thread IDs across runs.  Function \vv{self()} returns this internal ID
 for the current thread (line 6 and line 17).
 
 The memoizer allows a thread to break out of the round-robin when the
@@ -61,10 +61,10 @@ with a lock operation; line 7, line 10, and line 18 with an unlock
 operation; and line 16 a NOP.
 
 %% The memoizer handles other synchronization operations similar to lock and
-%% unlock with the most involved one being \v{pthread\_cond\_wait()}.
-%% %  and \v{pthread\_create()}.  
+%% unlock with the most involved one being \vv{pthread\_cond\_wait()}.
+%% %  and \vv{pthread\_create()}.  
 %% For brevity, we omit the details and only note that we replace the mutex
-%% used in a \v{pthread\_cond\_wait()} call with our own mutex to avoid
+%% used in a \vv{pthread\_cond\_wait()} call with our own mutex to avoid
 %% potential deadlocks and maintain an internal queue to ensure that threads
 %% waiting on the condition variable are woken up in a deterministic order.
 %% signal becomes broadcast
@@ -203,15 +203,15 @@ Once \tern memoized a schedule $S$ and its constraints $C$, \tern stores the
 tuple into the schedule cache.  Although the schedule cache is
 conceptually a set of $\langle C, S \rangle$ tuples, its actual structure
 is a decision tree because a program may incrementally read inputs from
-its environment, calling \v{symbolic()} multiple times.  For example, the
-code in Figure~\ref{fig:pbzip2} calls \v{symbolic()} twice.
+its environment, calling \vv{symbolic()} multiple times.  For example, the
+code in Figure~\ref{fig:pbzip2} calls \vv{symbolic()} twice.
 
 Figure~\ref{fig:schedule-tree} illustrates how \tern constructs the
 decision tree of the schedule cache.  Given a $\langle C, S \rangle$
 tuple, \tern breaks it down to sub-tuples $\langle C_i, S_i \rangle$
-separated by \v{symbolic()} calls, where $S_i$ contains the
+separated by \vv{symbolic()} calls, where $S_i$ contains the
 synchronization operations logged and $C_i$ contains the constraints
-collected between the $i^{th}$ and $(i+1)^{th}$ \v{symbolic()} calls.  It
+collected between the $i^{th}$ and $(i+1)^{th}$ \vv{symbolic()} calls.  It
 then merges the sub-tuples into the $i^{th}$ level of the decision tree.
 
 \tern avoids merging redundant tuples into the cache.  That is, if the
@@ -247,8 +247,8 @@ the schedule cache is often small.
 To reuse a schedule, \tern must check that the input satisfies the input
 constraints of the schedule.  To do so, it maintains an iterator to the
 decision tree of the schedule cache.  The iterator starts from the root.
-As the program runs and calls \v{symbolic()}, \tern moves the iterator down
-the tree.  It checks if the data passed into a \v{symbolic()} call
+As the program runs and calls \vv{symbolic()}, \tern moves the iterator down
+the tree.  It checks if the data passed into a \vv{symbolic()} call
 satisfies any set of constraints stored at the corresponding decision tree
 node and, if so, enforces the corresponding schedule.
  
@@ -262,7 +262,7 @@ thread in the schedule by signaling the semaphore of the next thread.
 Compared to an approach using locks or condition variables, semaphore
 relay avoids unnecessary lock contentions.  Figure~\ref{fig:replayer}
 illustrates semaphore relay using the replayer's
-\v{pthread\_mutex\_lock()} wrapper.
+\vv{pthread\_mutex\_lock()} wrapper.
 
 \begin{figure}[t]
 \begin{minipage}[c]{.8\linewidth}
@@ -277,7 +277,7 @@ We note several subtleties of the pseudo code in
 Figure~\ref{fig:replayer}.  First, we do not use non-blocking lock
 operations (line 3) as in Figure~\ref{fig:memoizer} because the memoizer only logs successful lock
 acquisitions.  Second, the replayer maintains internal thread IDs the same
-way as the memoizer to avoid mismatches.  Lastly, the \v{down()} (line 2)
+way as the memoizer to avoid mismatches.  Lastly, the \vv{down()} (line 2)
 is actually a timed wait (with a default 0.1ms timeout), so that a
 thread can break out of a schedule when the dynamic load mismatches the
 schedule's assumptions.  Note that these timeouts merely cause delays and

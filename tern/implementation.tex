@@ -74,7 +74,7 @@ deterministically reused.
 %% occurring in a reuse run.  For instance, for the race in
 %% Figure~\ref{fig:symbolic-race}, we will add $i \neq j$ to the input
 %% constraints of the memoized schedule.  
-% Our race detector is sound if the \v{symbolic()} annotations capture all
+% Our race detector is sound if the \vv{symbolic()} annotations capture all
 % nondeterminism that may alter the memory locations accessed.
 
 
@@ -115,7 +115,7 @@ deterministically reused.
 %% occurring in a reuse run.  For instance, for the race in
 %% Figure~\ref{fig:symbolic-race}, we will add $i \neq j$ to the input
 %% constraints of the memoized schedule.  
-%% % Our race detector is sound if the \v{symbolic()} annotations capture all
+%% % Our race detector is sound if the \vv{symbolic()} annotations capture all
 %% % nondeterminism that may alter the memory locations accessed.
 
 
@@ -126,13 +126,13 @@ according to the schedule.  These \tern-enforced execution order constraints
 are more stringent than the constraints enforced by the original
 synchronizations in the program.  Thus, for speed, \tern can actually skip
 these unnecessary synchronizations.  In our current implementation, we
-skip \v{sleep()}, \v{usleep()}, and \v{pthread\_barrier\_wait()}
+skip \vv{sleep()}, \v{usleep()}, and \v{pthread\_barrier\_wait()}
 because they are frequently used.  We
 found that this optimization was quite effective and
 even made programs run faster than nondeterministic execution
 (\S\ref{sec:overhead}).
 
-% For instance, we can skip the actual \v{pthread\_mutex\_lock()} in
+% For instance, we can skip the actual \vv{pthread\_mutex\_lock()} in
 % Figure~\ref{fig:replayer} as well as other pthread lock-related
 % functions.
 
@@ -151,7 +151,7 @@ To reuse a schedule, \tern must check if the current input satisfies the
 constraints of the schedule.  The overhead of this check depends on the
 number of constraints, yet the set of constraints \tern collects may not
 always be in simplified form.  That is, a subset of the constraints may
-imply the entire set.  For example, consider a loop ``\v{for(int
+imply the entire set.  For example, consider a loop ``\vv{for(int
   i=0;i!=n;++i)}'' with a symbolic bound $n$.  When running this code with
 $n=10$, we will collect a set of constraints $\{0 \neq n, 1 \neq n, ...,
 10 = n\}$, but the last constraint alone implies the entire set.
@@ -220,10 +220,10 @@ slicing algorithm~\cite{castro:bouncer} in our future work.
 
 %%   Specifically,
 %% at program start, \tern records the command line arguments.  In one of the
-%% \v{symbolic()} calls, if \tern cannot find a schedule
+%% \vv{symbolic()} calls, if \tern cannot find a schedule
 %% for the finds out that the current input satisfies
 %% no memoized constraints, it switches to the memoizer and restarts the
-%% program on the recorded command line arguments by calling \v{exec()}.  For
+%% program on the recorded command line arguments by calling \vv{exec()}.  For
 %% server programs, we used a shadow program approach because restarting
 %% server tends to be costly.  Specifically, we run two versions of the
 %% program, one with the replayer and the other with memoizer.  User requests
@@ -281,7 +281,7 @@ slicing algorithm~\cite{castro:bouncer} in our future work.
 
 %% \subsection{Assisting Developer Annotations} \label{sec:slicing}
 
-%% The accuracy of the \v{symbolic()} annotations affect \tern's effectiveness.
+%% The accuracy of the \vv{symbolic()} annotations affect \tern's effectiveness.
 %% If developer ``over-mark'' too much data as symbolic, the constraints
 %% \tern collects may be too specific and prevent legitimate schedule reuses;
 %% if developer ``under-mark'' too little, the constraints may be too general
@@ -308,7 +308,7 @@ slicing algorithm~\cite{castro:bouncer} in our future work.
 %% \tern collects for a schedule may be over-constraining,
 %% \ie, containing superfluous constraints that do not affect the schedule.
 %% For instance, a program may check the value of a symbolic byte in an
-%% \v{if}-statement, but perform no synchronizations or blocking system calls
+%% \vv{if}-statement, but perform no synchronizations or blocking system calls
 %% in either branch.  We could have pruned such constraints using
 %% precondition slicing~\cite{castro:bouncer}, but we have not implemented it
 %% in \tern because the hit rate of the schedule cache is already high (cf
@@ -377,7 +377,7 @@ slicing algorithm~\cite{castro:bouncer} in our future work.
 %% particular run.  Although this method already allows us to reuse a
 %% schedule across many inputs, it may still contain superficial constraints
 %% that unnecessarily limit the applicability of a schedule.  For example, an
-%% \v{if}-statement may inspect some input data but then perform the same
+%% \vv{if}-statement may inspect some input data but then perform the same
 %% synchronizations and memory accesses in both the true and false branches.
 %% Figure~\ref{fig:superficial}(a) shows such an example.  The constraints on
 %% $i$ and $j$ are superficial because regardless of their values, the

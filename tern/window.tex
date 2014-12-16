@@ -37,9 +37,9 @@ To buffer requests, \tern needs to know when a server receives a request
 and when it is done processing the request.  Inferring these task
 boundaries based on thread creation and exit is unreliable because server
 programs frequently use thread pools.  Thus, \tern currently lets
-developers annotate these boundaries using \v{begin\_task()} and
-\v{end\_task()}.  Manually locating task boundaries is often easy: a
-request tends to begin after an \v{accept()} of a client connection and ends
+developers annotate these boundaries using \vv{begin\_task()} and
+\vv{end\_task()}.  Manually locating task boundaries is often easy: a
+request tends to begin after an \vv{accept()} of a client connection and ends
 after the server sends out a reply.
 
 \para{Exposing hidden states.}  The assumption of windowing is that a
@@ -53,14 +53,14 @@ These state changes may affect schedules.  In the example above, Apache
 will perform different synchronizations for the two runs.  Thus, for
 \tern to accurately select a schedule to reuse, it must know the hidden
 states that affect schedules.  Currently \tern lets developers annotate
-such hidden states using \v{symbolic()}.  Doing so is often
-straightforward.  For instance, we inserted a \v{symbolic()} call to mark
-the return of Apache's \v{cache\_find()} as symbolic.
+such hidden states using \vv{symbolic()}.  Doing so is often
+straightforward.  For instance, we inserted a \vv{symbolic()} call to mark
+the return of Apache's \vv{cache\_find()} as symbolic.
 
 Exposing hidden states may not always be easy.  We thus created a
-technique to tolerate missed \v{symbolic()} annotations.  The basic idea
+technique to tolerate missed \vv{symbolic()} annotations.  The basic idea
 is to store backup schedules under the same set of input constraints to
-tolerate annotation inaccuracy.  For instance, suppose a \v{symbolic()}
+tolerate annotation inaccuracy.  For instance, suppose a \vv{symbolic()}
 had not been missed, \tern would have memoized two different
 constraint-schedule tuples $\langle C_1, S_1 \rangle$ and $\langle C_2,
 S_2 \rangle$.  However, because of the missed annotation, \tern missed the
@@ -78,14 +78,14 @@ matches the hidden state of the program.
 %% rates.
 
 %% Currently \tern lets developers annotate such hidden states using
-%% \v{symbolic()}.  Doing so is often straightforward.  For instance, we
-%% inserted only one \v{symbolic()} to expose the return of Apache's
-%% \v{cache\_find()} function.
+%% \vv{symbolic()}.  Doing so is often straightforward.  For instance, we
+%% inserted only one \vv{symbolic()} to expose the return of Apache's
+%% \vv{cache\_find()} function.
 
-%% Moreover, \tern has a mechanism to tolerate missed \v{symbolic()}
+%% Moreover, \tern has a mechanism to tolerate missed \vv{symbolic()}
 %% annotations.  The basic idea is to store backup schedules under the same
 %% set of input constraints to tolerate annotation inaccuracy.  Specifically,
-%% suppose a \v{symbolic()} had not been missed, \tern would have memoized
+%% suppose a \vv{symbolic()} had not been missed, \tern would have memoized
 %% two different constraint-schedule tuples $\langle C_1, S_1 \rangle$ and
 %% $\langle C_2, S_2 \rangle$.  However, because of the missed annotation,
 %% \tern missed the corresponding constraints, wrongly collapsing $C_1$ and
@@ -98,7 +98,7 @@ matches the hidden state of the program.
 
 %% Server programs complicates
 %% constraint tracking and checking as well.  During the memoization run of a
-%% window, the data marked as symbolic (by \v{symbolic()} calls) may flow
+%% window, the data marked as symbolic (by \vv{symbolic()} calls) may flow
 %% into the server's internal state.  If the server runs for a long time,
 %% this symbolic data may be examined in many branch statements, generating
 %% an explosion of constraints.  Moreover, this approach mixes constraints
@@ -115,15 +115,15 @@ matches the hidden state of the program.
 %% constraints of the current window.  This way, the symbolic data and
 %% constraints do not flow into the next window.  If a later request does
 %% depend on a previous request, developers can resurrect the lost
-%% constraints on demand by calling \v{symbolic()} at program points where
+%% constraints on demand by calling \vv{symbolic()} at program points where
 %% the program's internal state is observed.  Locating these program points
-%% tend to be easy.  For instance, we insert only one such \v{symbolic()}
-%% call for Apache by marking the return of \v{cache\_find()} symbolic.
+%% tend to be easy.  For instance, we insert only one such \vv{symbolic()}
+%% call for Apache by marking the return of \vv{cache\_find()} symbolic.
 
-%% Moreover, \tern has a mechanism to tolerate missed \v{symbolic()}
+%% Moreover, \tern has a mechanism to tolerate missed \vv{symbolic()}
 %% annotations.  The basic idea is to store backup schedules under a set of
 %% input constraints to tolerate the inaccuracy in annotations.
-%% Specifically, suppose if a \v{symbolic()} had not been missed, \tern would
+%% Specifically, suppose if a \vv{symbolic()} had not been missed, \tern would
 %% have memoized two different constraint-schedule tuples $\langle C_1, S_1
 %% \rangle$ and $\langle C_2, S_2 \rangle$.  But because of the missed
 %% annotation, \tern could not collect the constraints rooted from this
@@ -197,16 +197,16 @@ matches the hidden state of the program.
 %% %% exits because thread pools.  Thus, 
 
 %% %% Currently \tern lets developers annotate the beginning and end of
-%% %% request processing using \v{begin\_task()} and \v{end\_task()}.  Doing
-%% %% so is typically easy: place \v{begin\_task(}) after an \v{accept()} of
-%% %% client connection and \v{end\_task()} sends back the reply.  Developers
+%% %% request processing using \vv{begin\_task()} and \v{end\_task()}.  Doing
+%% %% so is typically easy: place \vv{begin\_task(}) after an \v{accept()} of
+%% %% client connection and \vv{end\_task()} sends back the reply.  Developers
 %% %% can also configure the window size by setting a \tern option (default to
 %% %% the number of CPUs).
 
 %% %% \subsection{Constraint Tracking and Checking} \label{sec:window-check}
 
 %% %% Server programs complicates constraint tracking and checking as well.  The
-%% %% data marked by \v{symbolic()} may flow into a server program's internal
+%% %% data marked by \vv{symbolic()} may flow into a server program's internal
 %% %% state (\eg, cache), making all values subsequently compared to them
 %% %% symbolic.  This ``symbolic creep'' may lead to an explosion of
 %% %% constraints~\cite{yang:malicious-disk:oakland06}.  Moreover, these
@@ -216,7 +216,7 @@ matches the hidden state of the program.
 %% %% current request into a web server's cache, which \tern must check before it
 %% %% determines the right schedule for the current request.
 
-%% %% \tern avoids symbolic creep as follows.  In \v{end\_task()}, it concretizes
+%% %% \tern avoids symbolic creep as follows.  In \vv{end\_task()}, it concretizes
 %% %% all symbolic values created by the current request to prevent the symbolic
 %% %% data from flowing into the server's internal state.
 %% %% % into a server's internal state.  
@@ -224,17 +224,17 @@ matches the hidden state of the program.
 %% %% \S\ref{sec:track-constraints}) and removing the associated constraints
 %% %% from the constraints it tracks.  If a later request depends on this
 %% %% request, developers can ``resurrect'' the lost constraints on demand by
-%% %% calling \v{symbolic()} at program points where the program's internal
+%% %% calling \vv{symbolic()} at program points where the program's internal
 %% %% state is observed.  For instance, in the web server example in previous
 %% %% paragraph, developers can mark the return of the cache lookup as symbolic.
-%% %% % by calling \v{symbolic()}.
+%% %% % by calling \vv{symbolic()}.
 %% %% %  so that \tern considers the return when deciding a schedule.  
 %% %% Locating such program points is typically easy.  For
-%% %% instance, we insert only one such \v{symbolic()} call for Apache (making
-%% %% the return of \v{cache\_find()} symbolic).
+%% %% instance, we insert only one such \vv{symbolic()} call for Apache (making
+%% %% the return of \vv{cache\_find()} symbolic).
 
 %% %% %  and XXX such calls for MySQL's key and table
-%% %% % caches (returns of \v{what functions you annotate}).
+%% %% % caches (returns of \vv{what functions you annotate}).
 
 
 %% %% \begin{figure}[t]
