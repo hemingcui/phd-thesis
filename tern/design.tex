@@ -24,49 +24,65 @@ Our design of \tern adheres to the following goals:
 
 \end{enumerate}
 
-The remaining of this section presents \tern's architecture
-(\S\ref{sec:arch}), workflow (\S\ref{sec:example}), deployment scenarios
-(\S\ref{sec:offline}), and limitations (\S\ref{sec:limit}).
+The remaining of this section presents \tern's schedule
+representation~\ref{sec:tern-define-schedule} , architecture
+(\S\ref{sec:tern-arch}), workflow (\S\ref{sec:tern-example}), deployment
+scenarios (\S\ref{sec:tern-offline}), and limitations (\S\ref{sec:tern-limit}).
 
-%% We aim for best-effort determinism because true determinism has a high
-%% cost (\S\ref{sec:schedule-constraints}).  Moreover, input nondeterminism
-%% cannot be fully eliminated anyway, so we may as well tolerate some
-%% scheduling nondeterminism, following the end-to-end
-%% argument~\cite{saltzer:end2end:tocs}.
+\subsection{Schedule Representation}
+\label{sec:tern-define-schedule}
 
-\subsection{Architecture} \label{sec:arch}
+Typical \smt or \dmt systems have considered two types of schedules: (1) a
+deterministic order of shared memory
+accesses~\cite{dmp:asplos09,coredet:asplos10} and (2) a synchronization
+order (\ie, a total order of synchronization operations)~\cite{kendo:asplos09}. 
+The first type of schedules are truly deterministic even if there are races, but
+they are costly to enforce on commodity hardware (\eg, up to 10 times
+overhead~\cite{coredet:asplos10}).  The second type can be efficiently enforced
+(\eg, 16\% overhead~\cite{kendo:asplos09}) because most code is not
+synchronization code and can run in parallel; however, they are deterministic
+only for inputs that lead to race-free runs~\cite{recplay:tocs,kendo:asplos09}.
+
+\tern represents schedules as synchronization orders for efficiency.  An
+additional benefit is that synchronization orders can be reused more
+frequently than memory access orders (cf next subsection).
+Moreover, researchers have found that many concurrency errors
+are not data races, but atomicity and order
+violations~\cite{lu:concurrency-bugs}.  These errors can be
+deterministically reproduced or avoided using only  synchronization orders.
+
+Although data races may still make runs which reuse schedules nondeterministic,
+\tern is less prone to this problem than existing \dmt
+systems~\cite{kendo:asplos09} because it has the flexibility to select
+schedules.  If it detects a race in a memoized schedule, it can simply
+discard this schedule and memoize another.  This selection task is often
+easy because most schedules are race-free.  In rare cases, \tern may be
+unable to find a race-free schedule, resulting in nondeterministic runs.
+However, we argue that input nondeterminism cannot be fully eliminated
+anyway, so we may as well tolerate some scheduling nondeterminism,
+following the end-to-end argument.
+
+\subsection{Architecture} \label{sec:tern-arch}
 
 \begin{figure}[t]
 \begin{center}
 \includegraphics[width=0.48\textwidth]{tern/figures/overview.eps}
 \end{center}
 \caption{\emph{\tern architecture.} Its components are shaded.}
-\label{fig:overview}
+\label{fig:tern-overview}
 \end{figure}
 
-Figure~\ref{fig:overview} shows the architecture of \tern and its five
+Figure~\ref{fig:tern-overview} shows the architecture of \tern and its five
 components: \emph{instrumentor}, \emph{schedule cache}, \emph{proxy},
 \emph{replayer}, and \emph{memoizer}.  To use \tern, developers first
 annotates their application by marking the input data that may affect
 synchronization operations.  They then compile their program with the
 \emph{instrumentor}, which intercepts standard synchronization operations
-such as \v{pthread\_mutex\_lock()} so that at runtime \tern can control
+such as \vv{pthread\_mutex\_lock()} so that at runtime \tern can control
 these operations.  (We describe additional annotations and
-instrumentations that \tern needs in \S\ref{sec:annotations}).  The
+instrumentations that \tern needs in \S\ref{sec:tern-annotations}).  The
 instrumentor runs as a plugin to LLVM~\cite{llvm}, requiring no
 modifications to the compiler.
-%  and avoiding the overhead of dynamic instrumentation.
-
-% overhead, %actually not much.
-
-%% The \emph{instrumentor} runs as a compiler plugin to avoid dynamic
-%% instrumentation overhead.  It takes two types of developer annotations:
-%% (1) the portions of input data that may affect scheduling and (2) custom
-%% synchronizations (\eg, atomic operations) which \tern includes in the
-%% synchronization orders it memoizes.  It intercepts these and other
-%% synchronization operations to call into the replayer and the memoizer.  It
-%% also computes the set of branch statements these operations depend upon
-%% for the memoizer to simplify input constraints (\S\ref{sec:slicing}).
 
 The \emph{schedule cache} stores all memoized schedules and their input
 constraints.  This cache can be marshalled to disk and read back upon
@@ -75,7 +91,7 @@ Each memoized schedule
 is conceptually a tuple $\langle C, S \rangle$, where $S$ is a
 synchronization order and $C$ is the set of input constraints required to reuse
 $S$. (We explain the actual representation in
-\S\ref{sec:track-constraints}).
+\S\ref{sec:tern-track-constraints}).
 
 At runtime, once an input $I$ arrives, the \emph{proxy} intercepts the
 input and queries the schedule cache for a constraint-schedule tuple
@@ -110,28 +126,12 @@ When the window becomes full, or remains partial for a predefined timeout,
 program.  It then lets the server quiesce before moving to the next window to
 avoid interference between windows.
 
-% If the schedule turns out 
-
-%When a new input arrives, \tern searches this schedule cache and reuses an
-%existing schedule if possible, instead of creating a new schedule.
-%\tern shares similarity with deterministic replay systems because it
-%records and ``replays'' schedules.  However, unlike deterministic replay
-%systems, \tern attempts to replay recorded schedules on different inputs.
-
-%A schedule and its constraints collected by the instrumentation code are
-%stored in \tern's schedule cache.  
-
-% (\S\ref{sec:cache} presents the real data structures we use to speed up
-% lookup of the schedule cache.)
-
-
-
-\subsection{Workflow and An Example} \label{sec:example}
+\subsection{Workflow and An Example} \label{sec:tern-example}
 
 \begin{figure}[t]
 \centering \tiny \lgrindfile{tern/code/pbzip2.cpp.lineno}
 \caption{\small Simplified \pbzip code.}
-\label{fig:pbzip2}
+\label{fig:tern-pbzip2}
 \end{figure}
 
 \begin{figure}[t]
@@ -141,7 +141,7 @@ avoid interference between windows.
 %\includegraphics[width=.4\textwidth]{figures/pbzip2-sync-order.eps}
 \end{minipage}
 \caption{\small Synchronization order of a \pbzip run.}
-\label{fig:pbzip2-sync-order}
+\label{fig:tern-pbzip2-sync-order}
 \end{figure}
 
 \begin{figure}[t]
@@ -150,16 +150,18 @@ avoid interference between windows.
 \tiny \lgrindfile{tern/code/pbzip2-constraints.cpp}
 \end{minipage}
 \caption{\small Input constraints of a \pbzip run.}
-\label{fig:pbzip2-constraints}
+\label{fig:tern-pbzip2-constraints}
 \end{figure}
 
 We illustrate how \tern works using \pbzip as an example.
-Figure~\ref{fig:pbzip2} shows the simplified code of \pbzip.  Variables
-\v{nthread} and \v{nblock} affect synchronizations, so developers mark
-them by calling the \tern-provided method \v{symbolic()} (line 3 and line 4).  This
-code spawns \v{nthread} worker threads, splits the file into \v{nblock}
-blocks, and compresses them in parallel by calling \v{compress()}.  To
-coordinate the worker threads, it uses a synchronized work list. (Note \tern tracks
+Figure~\ref{fig:tern-pbzip2} shows the simplified code of \pbzip.  Variables
+\vv{nthread} and \vv{nblock} affect synchronizations, so developers mark
+them by calling the \tern-provided method \vv{symbolic()} (line 3 and line 4). 
+This
+code spawns \vv{nthread} worker threads, splits the file into \vv{nblock}
+blocks, and compresses them in parallel by calling \vv{compress()}.  To
+coordinate the worker threads, it uses a synchronized work list. (Note \tern
+tracks
 low-level synchronizations such as pthread primitives; we use a work list
 here only for clarity.)
 
@@ -169,37 +171,21 @@ schedule.  As \pbzip runs, \tern controls and records the synchronization
 operations (line 9 and line 14).  It also tracks the outcomes of branch
 statements that observe symbolic data (line 5 and line 7).  At the end of the
 run, \tern records a schedule as shown in
-Figure~\ref{fig:pbzip2-sync-order}.  It also collects constraints as shown
-in Figure~\ref{fig:pbzip2-constraints}, which simplify to $nthread=2
+Figure~\ref{fig:tern-pbzip2-sync-order}.  It also collects constraints as shown
+in Figure~\ref{fig:tern-pbzip2-constraints}, which simplify to $nthread=2
 \wedge nblock=2$.\footnote{Although in this example the constraints are
   collected from one thread, \tern can actually collect constraints from
   multiple threads.}  It stores the schedule and the input constraints
 into the schedule cache.
 
 If we run \pbzip again with two threads on a different two-block file,
-\tern will check if variable \v{nthread} and \v{nblock} satisfy any set of
+\tern will check if variable \vv{nthread} and \vv{nblock} satisfy any set of
 constraints in the schedule cache.  In this case, \tern will succeed.  It
-will then reuse the schedule (Figure~\ref{fig:pbzip2-sync-order}) to
+will then reuse the schedule (Figure~\ref{fig:tern-pbzip2-sync-order}) to
 compress the file, even though the file data may differ completely.
 
-%The synchronization order in this sub-figure can be reused to compress
-%many different files, as long as the number of threads and the number of
-%blocks remain the same, regardless of the file contents.
 
-
-%% \begin{figure*}[t]
-%% \centering
-%% \includegraphics[width=.9\textwidth]{figures/pbzip2-sync-order.eps}
-%% \caption{{\em pbzip2 example}.  Sub-figure (a) shows the simplified pbzip2 code.
-%%   Sub-figure (b) shows the synchronization order of a run of pbzip2 with
-%%   two threads on a two-chunk file; the arrows (in red) depict the
-%%   execution order.  Sub-figure (c) shows the input constraints of the run;
-%%   the branches taken are solid arrows (in red) and those not taken are
-%%   dashed.}
-%% \label{fig:pbzip2}
-%% \end{figure*}
-
-\subsection{Deployment Scenarios} \label{sec:offline}
+\subsection{Deployment Scenarios} \label{sec:tern-offline}
 
 We anticipate three ways users may deploy \tern to make their programs
 stable and deterministic.
@@ -254,12 +240,12 @@ we recommend the first and the third modes.
 %% forking a process and dropping all file and network output. (Better
 %% sandboxes can of course be built.)
 
-\subsection{Limitations} \label{sec:limit}
+\subsection{Limitations} \label{sec:tern-limit}
 
 % We discuss \tern's limitations in this subsection.
 
 \para{Determinism.} \tern aims for best-effort determinism for reasons
-discussed in \S\ref{sec:define-schedule}.  If \tern is unable to find a
+discussed in \S\ref{sec:tern-define-schedule}.  If \tern is unable to find a
 race-free schedule for an input, the run may be nondeterministic.  We
 foresee several strategies to handle this corner case while adhering to
 the other goals of \tern.  For instance, we can instrument the program to
@@ -287,15 +273,16 @@ reuses, and programs whose schedules depend on floating point inputs
 %floating points.
 
 \para{Manual annotation.} \tern requires manual annotations.  However, this
-annotation overhead tends to be small.  (See \S\ref{sec:slicing} for how
-\tern reduces this overhead and \S\ref{sec:ease-of-use} for an evaluation
-of this overhead).  This overhead may be further reduced using simple static analysis.
+annotation overhead tends to be small.  (See \S\ref{sec:tern-slicing} for how
+\tern reduces this overhead and \S\ref{sec:tern-ease-of-use} for an evaluation
+of this overhead).  This overhead may be further reduced using simple static
+analysis.
 % a concurrently published technique~\cite{syncfinder:osdi10}, which we
 % have not yet implemented.
 
 
 
-\section{Interface}  \label{sec:annotations}
+\section{Interface}  \label{sec:tern-annotations}
 
 \begin{table*}[t]
 \small
@@ -313,7 +300,7 @@ checks this data against the memoized constraints. \\ \hline
 begin\_task() & \multirow{2}{*}{Developer} & \multirow{2}{4.1in}{Mark the
   beginning and end of a logical task.  Often used to divide the
   executions of threads in a pool into separate tasks
-  (\S\ref{sec:window}).  }\\
+  (\S\ref{sec:tern-window}).  }\\
 
 end\_task() & & \\
 
@@ -343,24 +330,24 @@ after\_blocking() & & \\
   developers, and others are inserted by the instrumentor, indicated by
   Column {\bf Inserted By}.  Both the memoizer and the replayer use this
   interface, but they implement this interface differently
-  (\S\ref{sec:batch}).} \label{tab:interface}
+  (\S\ref{sec:tern-batch}).} \label{tab:tern-interface}
 \end{table*}
 
-Table~\ref{tab:interface} shows \tern's annotation interface which
+Table~\ref{tab:tern-interface} shows \tern's annotation interface which
 developers and the instrumentor use to annotate multithreaded programs.
-The annotations fall into four categories: (1) \v{symbolic()} for marking
+The annotations fall into four categories: (1) \vv{symbolic()} for marking
 data that may affect schedules; (2) task boundary annotations for marking
 the beginning and end of logical tasks, in case threads get reused for
-different logical tasks (\S\ref{sec:window}); (3) wrappers to
+different logical tasks (\S\ref{sec:tern-window}); (3) wrappers to
 synchronization operations (more examples in the next paragraph); and (4) hook
 functions inserted around blocking system calls, which \tern memoizes
 because blocking systems calls are natural scheduling points.
 
-Currently \tern hooks 28 pthread operations (\eg, \v{pthread\_mutex\_lock()},
-\v{pthread\_create()}, and \v{pthread\_cond\_wait()}).  It also handles
-common atomic operations such as \v{atomic\_dec()} and \v{atomic\_inc()}.
-It hooks eight blocking system calls (\eg, \v{sleep()}, \v{accept()},
-\v{recv()}, \v{select()}, and \v{read()}). These hooks are sufficient to
+Currently \tern hooks 28 pthread operations (\eg, \vv{pthread\_mutex\_lock()},
+\vv{pthread\_create()}, and \vv{pthread\_cond\_wait()}).  It also handles
+common atomic operations such as \vv{atomic\_dec()} and \vv{atomic\_inc()}.
+It hooks eight blocking system calls (\eg, \vv{sleep()}, \vv{accept()},
+\vv{recv()}, \vv{select()}, and \vv{read()}). These hooks are sufficient to
 run the programs evaluated, and we can easily add more.
 
 Developers manually insert annotations in the first two categories.  They
