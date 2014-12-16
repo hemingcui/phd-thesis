@@ -1,13 +1,13 @@
-\section{Schedule Memoization}  \label{sec:batch}
+\section{Schedule Memoization}  \label{sec:tern-batch}
 
 This section presents the idea of schedule memoization in the context of
 batch programs.  We describe how \tern memoizes schedules
-(\S\ref{sec:derive-schedule}), tracks input constraints
-(\S\ref{sec:track-constraints}), merges a schedule into the schedule cache
-(\S\ref{sec:schedule-cache}), and reuses schedules
-(\S\ref{sec:reuse-schedule}).
+(\S\ref{sec:tern-derive-schedule}), tracks input constraints
+(\S\ref{sec:tern-track-constraints}), merges a schedule into the schedule cache
+(\S\ref{sec:tern-schedule-cache}), and reuses schedules
+(\S\ref{sec:tern-reuse-schedule}).
 
-\subsection{Memoizing Schedules}  \label{sec:derive-schedule}
+\subsection{Memoizing Schedules}  \label{sec:tern-derive-schedule}
 
 To memoize schedules, the memoizer controls and logs synchronization
 operations. By default, it uses a simple round-robin (RR) algorithm that
@@ -18,11 +18,11 @@ program behaviors deterministic and stable across sites.
 \begin{figure}[t]
 \tiny \lgrindfile{tern/code/memoize.cpp.lineno}
 \caption{\small \emph{The memoizer's round-robin scheduling algorithm.}}
-\label{fig:memoizer}
+\label{fig:tern-memoizer}
 \end{figure}
 
 The memoizer implements this algorithm by implementing the wrapper
-functions in Table~\ref{tab:interface}.  Figure~\ref{fig:memoizer} shows
+functions in Table~\ref{tab:tern-interface}.  Figure~\ref{fig:tern-memoizer} shows
 the wrappers to \vv{pthread\_mutex\_lock()} and
 \vv{pthread\_mutex\_unlock()}.  The memoizer maintains a queue of active
 threads.  Only the thread at the head of the queue ``has the turn'' (line
@@ -56,7 +56,7 @@ first-come first-served (FCFS) algorithm that lets threads run as is.  If
 the memoizer detects a race using RR, it can restart the run and 
 switch to FCFS.  Implementing
 FCFS requires only minor modifications to the algorithm presented in
-Figure~\ref{fig:memoizer}. Specifically, we replace line 4 and line 14
+Figure~\ref{fig:tern-memoizer}. Specifically, we replace line 4 and line 14
 with a lock operation; line 7, line 10, and line 18 with an unlock
 operation; and line 16 a NOP.
 
@@ -72,7 +72,7 @@ operation; and line 16 a NOP.
 %and refer interested readers to our identically titled technical report.
 
 In addition to synchronizations, the memoizer includes the hooks around
-blocking system calls (\S\ref{sec:annotations})
+blocking system calls (\S\ref{sec:tern-annotations})
 in the schedule it memoizes because blocking system calls are natural
 scheduling points.  However, the replayer will only opportunistically
 replay these hooks when reusing a schedule because the returns from
@@ -144,7 +144,7 @@ blocking system calls are driven by the program's environment.
 
 
 
-\subsection{Tracking Input Constraints} \label{sec:track-constraints}
+\subsection{Tracking Input Constraints} \label{sec:tern-track-constraints}
 
 Given the symbolic data marked by developers, the memoizer tracks the
 constraints on this data by tracking (1) what data is derived from the
@@ -155,7 +155,7 @@ data required to reuse the memoized schedule.  That is, if an input
 satisfies these constraints, we can re-run the program in the same way as
 the memoization run.  The constraints collected this way may be
 over-constraining if developers annotate too much data as symbolic.  We
-describe a technique to address this problem in \S\ref{sec:slicing}.
+describe a technique to address this problem in \S\ref{sec:tern-slicing}.
 
 \tern leverages \klee~\cite{klee:osdi08}, an open-source symbolic execution
 engine to track input constraints.  To adapt \klee to \tern, we made two key
@@ -189,14 +189,14 @@ execution paths.
 %% command line arguments as symbolic when in fact most arguments do not
 %% affect schedules.  
 
-\subsection{Merging Schedules into the Schedule Cache} \label{sec:schedule-cache}
+\subsection{Merging Schedules into the Schedule Cache} \label{sec:tern-schedule-cache}
 
 \begin{figure}[t]
 \begin{center}
 \includegraphics[width=0.4\textwidth]{tern/figures/cache.eps}
 \end{center}
 \caption{\emph{Decision tree of \tern's schedule cache.}}
-\label{fig:schedule-tree}
+\label{fig:tern-schedule-tree}
 \end{figure}
 
 Once \tern memoized a schedule $S$ and its constraints $C$, \tern stores the
@@ -204,9 +204,9 @@ tuple into the schedule cache.  Although the schedule cache is
 conceptually a set of $\langle C, S \rangle$ tuples, its actual structure
 is a decision tree because a program may incrementally read inputs from
 its environment, calling \vv{symbolic()} multiple times.  For example, the
-code in Figure~\ref{fig:pbzip2} calls \vv{symbolic()} twice.
+code in Figure~\ref{fig:tern-pbzip2} calls \vv{symbolic()} twice.
 
-Figure~\ref{fig:schedule-tree} illustrates how \tern constructs the
+Figure~\ref{fig:tern-schedule-tree} illustrates how \tern constructs the
 decision tree of the schedule cache.  Given a $\langle C, S \rangle$
 tuple, \tern breaks it down to sub-tuples $\langle C_i, S_i \rangle$
 separated by \vv{symbolic()} calls, where $S_i$ contains the
@@ -242,7 +242,7 @@ the schedule cache is often small.
 %% blocking wait instead of busy wait.  thread-private semaphore.
 %% try lock to check if lock is available.
 
-\subsection{Reusing Schedules} \label{sec:reuse-schedule}
+\subsection{Reusing Schedules} \label{sec:tern-reuse-schedule}
 
 To reuse a schedule, \tern must check that the input satisfies the input
 constraints of the schedule.  To do so, it maintains an iterator to the
@@ -260,7 +260,7 @@ a synchronization operation, a thread has to wait on its semaphore for its
 turn.  Once it is done with the operation, it passes the turn to the next
 thread in the schedule by signaling the semaphore of the next thread.
 Compared to an approach using locks or condition variables, semaphore
-relay avoids unnecessary lock contentions.  Figure~\ref{fig:replayer}
+relay avoids unnecessary lock contentions.  Figure~\ref{fig:tern-replayer}
 illustrates semaphore relay using the replayer's
 \vv{pthread\_mutex\_lock()} wrapper.
 
@@ -269,13 +269,13 @@ illustrates semaphore relay using the replayer's
 \tiny \lgrindfile{tern/code/replay.cpp.lineno}
 \end{minipage}
 \caption{\small \emph{Pseudo code of the replayer}.}
-\label{fig:replayer}
+\label{fig:tern-replayer}
 \vspace{-.2in}
 \end{figure}
 
 We note several subtleties of the pseudo code in
-Figure~\ref{fig:replayer}.  First, we do not use non-blocking lock
-operations (line 3) as in Figure~\ref{fig:memoizer} because the memoizer only logs successful lock
+Figure~\ref{fig:tern-replayer}.  First, we do not use non-blocking lock
+operations (line 3) as in Figure~\ref{fig:tern-memoizer} because the memoizer only logs successful lock
 acquisitions.  Second, the replayer maintains internal thread IDs the same
 way as the memoizer to avoid mismatches.  Lastly, the \vv{down()} (line 2)
 is actually a timed wait (with a default 0.1ms timeout), so that a

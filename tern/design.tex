@@ -343,11 +343,11 @@ synchronization operations (more examples in the next paragraph); and (4) hook
 functions inserted around blocking system calls, which \tern memoizes
 because blocking systems calls are natural scheduling points.
 
-Currently \tern hooks 28 pthread operations (\eg, \vv{pthread\_mutex\_lock()},
-\vv{pthread\_create()}, and \vv{pthread\_cond\_wait()}).  It also handles
-common atomic operations such as \vv{atomic\_dec()} and \vv{atomic\_inc()}.
-It hooks eight blocking system calls (\eg, \vv{sleep()}, \vv{accept()},
-\vv{recv()}, \vv{select()}, and \vv{read()}). These hooks are sufficient to
+\tern hooks 28 Pthreads operations (\eg, \vv{pthread\_mutex\_lock},
+\vv{pthread\_create}, and \vv{pthread\_cond\_wait}).  It also handles
+common atomic operations such as \vv{atomic\_dec} and \vv{atomic\_inc}.
+It hooks eight blocking system calls (\eg, \vv{sleep}, \vv{accept},
+\vv{recv}, \vv{select}, and \vv{read}). These hooks are sufficient to
 run the programs evaluated, and we can easily add more.
 
 Developers manually insert annotations in the first two categories.  They

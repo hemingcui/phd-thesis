@@ -1,5 +1,5 @@
 \section{Evaluation}
-\label{sec:evaluation}
+\label{sec:tern-evaluation}
 
 Our \tern implementation consists of 8,934 lines of C++ code, including 827
 lines for the instrumentor implemented as an LLVM pass; 5,451 lines for
@@ -18,8 +18,8 @@ Our main evaluation machine is a 2.66 GHz quad-core Intel machine with 4
 GB memory running Linux 2.6.24.  When evaluating \tern on server programs, we
 ran the server on this machine and the client on another to avoid
 unnecessary contention.  These machines are connected via 1Gbps LAN.  We
-compiled all programs down to machine code using \vv{llvm-gcc -O2} and
-LLVM's bitcode compiler \vv{llc}.
+compiled all programs down to machine code using \v{llvm-gcc -O2} and
+LLVM's bitcode compiler \v{llc}.
 
 We focused our evaluation on four key questions:
 \begin{enumerate}
@@ -74,7 +74,7 @@ We focused our evaluation on four key questions:
 %% We used two evaluation machines: a 2.66 GHz single-CPU quad-core Intel
 %% machine with 4 GB memory and 32-bit Linux 2.6.24 and a 1.9 GHZ 4-CPU
 %% 12-core AMD machine with 64 GB memory and 64-bit Linux 2.6.24. We
-%% compiled programs down to machine instructions using \vv{llvm-gcc -O2}
+%% compiled programs down to machine instructions using \v{llvm-gcc -O2}
 %% and LLVM's bitcode compiler.  We measured overall execution time for
 %% batch programs and throughput (short as TPUT) and response time (short
 %% as RESP) for server programs.  We reported \tern's nomalized overhead,
@@ -108,16 +108,16 @@ cholesky      & 3,683  & 3  & N/A &  1  & 4  \\
 \caption{\small {\em Statistics of programs evaluated.} {\bf Size}
   counts the lines of code for each program.  {\bf Symbolic} counts the
   symbolic variables we marked.  {\bf Task} counts the task boundary
-  annotations (\vv{begin\_task()} and \v{end\_task()}) we inserted.  {\bf
+  annotations (\v{begin\_task()} and \v{end\_task()}) we inserted.  {\bf
     Sync} counts the annotations for custom synchronizations we inserted.
   The numbers in parenthesis under {\bf Total} count miscellaneous
-  changes.} \label{table:apps}
+  changes.} \label{table:tern-apps}
 \end{table}
 
 Table~\ref{table:apps} summarizes the modifications we made to make the
 programs work with \tern.  For each program but MySQL, we modified only 3-10
 lines.  For Apache, we marked the HTTP command, URL, HTTP version, and the
-return of \vv{cache\_find()} as symbolic (\S\ref{sec:window}).  For MySQL,
+return of \v{cache\_find()} as symbolic (\S\ref{sec:window}).  For MySQL,
 we marked the SQL query.  For \pbzip, we marked the number of threads and
 file blocks.  (The number of file blocks is set in two places,
 contributing two symbolic annotations.)  For all these scientific programs, we
@@ -128,7 +128,7 @@ verbosity.\footnote{Note that we could have used a two-line loop to mark
 synchronization operations in three \splash programs.  We made two
 miscellaneous changes to Apache and MySQL.  The line counts are shown in
 parenthesis under the Total column.  For Apache, we had to fix an
-uninitialized memory read in \vv{ap\_signal\_server()} to make it work with
+uninitialized memory read in \v{ap\_signal\_server()} to make it work with
 \klee.  For MySQL, we wrote a 28-line function to mark the numbers in each
 SQL query as concrete (\ie, not affecting schedules) to avoid making the
 input constraints too specific.
@@ -146,14 +146,14 @@ input constraints too specific.
 % For all the performance numbers reported in this section, we repeat the
 % experiment XX times and take the average.
 
-\subsection{Stability} \label{sec:stability}
+\subsection{Stability} \label{sec:tern-stability}
 
 We evaluated \tern's stability via two sets of experiments.  The first set
 compares it to an existing \dmt system (\S\ref{sec:bug-stable}). The
 second quantifies how frequently it can reuse schedules on real and
 synthetic workloads (\S\ref{sec:reuse-rate}).
 
-\subsubsection{Bug Stability} \label{sec:bug-stable}
+\subsubsection{Bug Stability} \label{sec:tern-bug-stable}
 
 %%\newcommand{\bug}{\ding{54}\xspace}
 %%\newcommand{\nobug}{\ding{52}\xspace}
@@ -183,12 +183,12 @@ synthetic workloads (\S\ref{sec:reuse-rate}).
            & {\bf -m10} & {\bf 12} & {\bf 14}
            & {\bf -m10} & {\bf 12} & {\bf 14} \\
 \end{tabular}
-\caption{{\em Bug stability results on \splash \vv{fft}.}  The leftmost
+\caption{{\em Bug stability results on \splash \v{fft}.}  The leftmost
   column and the bottommost row show the command line arguments.  Option
   {\bf -p} specifies the number of threads, and {\bf -m} the amount of
   computation (matrix size).  Symbol \bug indicates that the bug occured,
   and \nobug the bug never occured. }
-\label{tab:coredet}
+\label{tab:tern-coredet}
 \end{table}
 
 We compared \tern to \coredet~\cite{coredet:asplos10} in terms of \emph{bug
@@ -220,7 +220,7 @@ thread count.
 %% before the printf() event, which printed the value of this variable in
 %% the parent thread),
 
-\subsubsection{Reuse Rates} \label{sec:reuse-rate}
+\subsubsection{Reuse Rates} \label{sec:tern-reuse-rate}
 
 We also quantified how frequently \tern could reuse schedules.
 Specifically, we measured the overall reuse rate, defined as the number of
@@ -247,7 +247,7 @@ We used four workloads to evaluate overall reuse rates:
 \item[{\bf SysBench-tx}:] SysBench in transaction mode.  This synthetic
   workload consists of random select, update, delete, and insert queries.
 
-\item[{\bf PBZip2-usr}:] a random selection of 10,000 files from \vv{/usr}
+\item[{\bf PBZip2-usr}:] a random selection of 10,000 files from \v{/usr}
   on our evaluation machine.
 
 \end{enumerate}
@@ -271,7 +271,7 @@ SysBench-tx            &   44.2\%    &    109      \\
 \end{tabular}
 \caption{\small{\em \tern stability.} Column {\bf Schedules} indicates the number
   of schedules in the schedule cache.}
-\label{tab:stability}
+\label{tab:tern-stability}
 \end{table}
 
 Table~\ref{tab:stability} shows the results.  For three out of the four
@@ -367,7 +367,7 @@ of schedules.
 %% transaction mode, we were not able to get higher finish rate even we
 %% increased this number due to complexity of arriving queries.
 
-%% For \pbzip, we randomly selected 10,000 files from \vv{/usr} directory on
+%% For \pbzip, we randomly selected 10,000 files from \v{/usr} directory on
 %% the 4-core machine, and randomly compressed each file into 2-100 blocks,
 %% regardless of its file size. Compressing a file into 100 blocks requires
 %% to specify more than 90 threads (the actual number of threads needed is
@@ -406,7 +406,7 @@ of schedules.
 %% (\eg, at least three caches) which \tern has not tracked yet.  Nonetheless,
 %% we believe our initial results on MySQL are promising because \tern can
 %% process 44.2\% of the SQL requests using only 109 schedules and a single
-%% \vv{symbolic()} call. Our schedule cache used little memory.
+%% \v{symbolic()} call. Our schedule cache used little memory.
 
 %% The overhead of programs in stability experiments except SysBench complex mode has
 %% been shown in Table~\ref{tab:overhead}, while the SysBench complex mode experiment
@@ -479,7 +479,7 @@ of schedules.
 %% % 7583.0
 
 
-\subsection{Overhead} \label{sec:overhead}
+\subsection{Overhead} \label{sec:tern-overhead}
 
 We used the following workloads to evaluate \tern's overhead.  For Apache, we
 used ApacheBench~\cite{apachebench} to repeatedly download a 50KB webpage.
@@ -529,7 +529,7 @@ server programs.  All numbers reported in this section were averaged over
 
 \caption{\small {\em Relative overhead of the replayer over
     nondeterministic execution.} Negative overhead means speedup.}
-\label{fig:overhead}
+\label{fig:tern-overhead}
 \end{figure}
 
 %% \begin{table}[t]
@@ -556,7 +556,7 @@ unnecessary synchronizations, discussed in the next paragraph.  \tern's overhead
 for MySQL, volrend, raytrace, water-nsquared, and choleskey is relatively
 large because these programs performed many synchronization operations
 over a short period of time.  For instance, water-nsquared and cholesky
-both call \vv{pthread\_mutex\_lock()} and \v{pthread\_mutex\_unlock()} in a
+both call \v{pthread\_mutex\_lock()} and \v{pthread\_mutex\_unlock()} in a
 tight loop.
 
 % The replayer's performance degrades with dense synchronization because
@@ -573,7 +573,7 @@ tight loop.
 \includegraphics[width=0.5\textwidth]{tern/figures/opt-overhead}
 \caption{\small {\em Overhead reduction by skipping unnecessary
     synchronizations.} ``no opt'' indicates the baseline overhead.}
-\label{fig:opt-remove-sync}
+\label{fig:tern-opt-remove-sync}
 \end{figure}
 
 We also measured the effects of skipping unnecessary synchronizations
@@ -592,7 +592,7 @@ negligible and thus not shown.
   time. ``simplify'' refers to the optimization in
   \S\ref{sec:simplify}. ``slice'' refers to the optimization in
   \S\ref{sec:slicing}.}
-\label{fig:opt-remove-constraints}
+\label{fig:tern-opt-remove-constraints}
 \end{figure}
 
 \begin{table}[t]
@@ -608,7 +608,7 @@ MySQL-RESP    & 0.6 ms       & 61 ms             &   100.6\\
 \pbzip        & 0.18 s        & 15.19 s           &   83.4\\
 \end{tabular}
 \caption{\small{\em Overhead of the memoizer.}}
-\label{tab:memoization-overhead}
+\label{tab:tern-memoization-overhead}
 \end{table}
 
 To reuse a schedule on an input, \tern must check the input against
@@ -661,10 +661,10 @@ our future work.
 
 %% Heming: Figure~\ref{fig:overhead} shows the normalized performance of \tern over all the 14 applications, 
 %% and six of them (Apache, lu, radix, fmm, ocean, water-spt) have neglible overhead. 
-%% \pbzip and barnes have been speed up significantly, since we have removed \vv{usleep()} and \v{pthread\_barrier\_wait()} from 
+%% \pbzip and barnes have been speed up significantly, since we have removed \v{usleep()} and \v{pthread\_barrier\_wait()} from 
 %% them, respectively. This removal is safe and we will discuss it at section X. 
 %% Figure~\ref{fig:opt-overhead} shows the speed up after we remove these synchronization operations.
-%% In Volrend, the \vv{pthread\_barrier\_wait()} operation has also been removed, but it still has a positive overhead (18.5\%).
+%% In Volrend, the \v{pthread\_barrier\_wait()} operation has also been removed, but it still has a positive overhead (18.5\%).
 %% For MySQL, we meaured its overhead and finish rate (shown in Table\ref{tab:stability}) with SysBench simple mode, and the overhead is 69.8\% 
 %% (degradation is 30.2\%) and 37.5\% in throughtput and response time. The reason is
 %% there are 11.6M synchronization operations within 200,000 sql queries. \tern's overhead is propotional to the number of synchronizations.
@@ -721,11 +721,11 @@ our future work.
 %% \end{figure}
 
 %% We have also investigated the effects of removing synchronization operations in \tern. Since \tern has enforced deterministic order
-%% in the \vv{before\_landmark()} and \v{after\_landmark()} functions inserted to each synchronization operation, removing synchronization function
-%% calls from source code become possible. We have tried to removed \vv{usleep()} in the file writer thread from \pbzip and \v{pthread\_barrier\_wait()} from barnes, volrend and water-nsquared,
-%% and the speed up is significant. Please note that \vv{usleep()} in \pbzip is supposed to reduce contention to acquire pthread mutexes,
+%% in the \v{before\_landmark()} and \v{after\_landmark()} functions inserted to each synchronization operation, removing synchronization function
+%% calls from source code become possible. We have tried to removed \v{usleep()} in the file writer thread from \pbzip and \v{pthread\_barrier\_wait()} from barnes, volrend and water-nsquared,
+%% and the speed up is significant. Please note that \v{usleep()} in \pbzip is supposed to reduce contention to acquire pthread mutexes,
 %% if we remove them, native exeucutions become more time consuming. Since \tern enforces total order accesses to synchronization objects, it inherently
-%% reduces contention, so removing \vv{usleep()} can speed up \pbzip. We leave the systermatic investigation of removing synchronization operations in \tern to future work.
+%% reduces contention, so removing \v{usleep()} can speed up \pbzip. We leave the systermatic investigation of removing synchronization operations in \tern to future work.
 
 %% \subsection{Scalability}
 
@@ -767,7 +767,7 @@ our future work.
 %% \end{table}
 
 
-\subsection{Determinism}\label{sec:determinism}
+\subsection{Determinism}\label{sec:tern-determinism}
 
 We evaluated \tern's determinism via three sets of experiments.  The first
 set checked the memoized schedules for races (\S\ref{sec:race-results}).
@@ -776,7 +776,7 @@ bugs (\S\ref{sec:bug-determinism}).  The third measured how deterministic
 memory accesses are with and without
 \tern (\S\ref{sec:memory-determinism}).
 
-\subsubsection{Race Detection Results}\label{sec:race-results}
+\subsubsection{Race Detection Results}\label{sec:tern-race-results}
 
 When memoizing schedules for each of the 14 programs, we turned on \tern's
 race detector.  We found that except for radix and cholesky, the schedules
@@ -788,7 +788,7 @@ that reuse the memoized schedules of all programs but radix and cholesky,
 \tern ensures determinism, barring the assumption discussed in
 \S\ref{sec:detect-race}.
 
-\subsubsection{Bug Determinism}\label{sec:bug-determinism}
+\subsubsection{Bug Determinism}\label{sec:tern-bug-determinism}
 
 %\hspace{-.1in}
 \begin{table}[t]
@@ -803,29 +803,29 @@ that reuse the memoized schedules of all programs but radix and cholesky,
 
 Apache & Reference count decrement and check against 0 are not atomic.\\
 
-\pbzip & Variable \vv{fifo} is used in one thread after being freed by another.\\
+\pbzip & Variable \v{fifo} is used in one thread after being freed by another.\\
 
 
 % Mozilla-73761 & Accessing the property cache array and its flag are not
 % atomic.  \\
 
 % Mozilla-201134 & Accumulative updates to a security flag called
-% \vv{nsCertType} are atomic. \\
+% \v{nsCertType} are atomic. \\
 
 % Mozilla-133773 & A hash table in a global variable called
-% \vv{atomState} is used after 
-fft & \vv{initdonetime} and  \v{finishtime} are read
+% \v{atomState} is used after 
+fft & \v{initdonetime} and  \v{finishtime} are read
 before assigned the correct values.\\
 
-lu & Variable \vv{rf} is read before assigned the  correct
+lu & Variable \v{rf} is read before assigned the  correct
 value. \\
 
-barnes & Variable \vv{tracktime} is read before assigned the
+barnes & Variable \v{tracktime} is read before assigned the
 correct value.\\
 
 \end{tabular}}
 \end{center}
-\caption{{\em Concurrency errors used in evaluation}.} \label{table:races}
+\caption{{\em Concurrency errors used in evaluation}.} \label{table:tern-races}
 \end{table}
 
 We also evaluated how deterministically \tern could reproduce or avoid
@@ -834,14 +834,14 @@ We selected them because they were frequently used in previous
 studies~\cite{avio:asplos06,ctrigger:asplos09,lu:concurrency-bugs,pres:sosp09}
 and we could reproduce them on our evaluation machine.  To measure bug
 determinism, we first memoized schedules for programs listed in
-Table~\ref{table:races}.  We then manually inserted \vv{usleep()} to these
+Table~\ref{table:races}.  We then manually inserted \v{usleep()} to these
 programs to get alternate schedules.  We then ran the buggy programs
 again, reusing the memoized schedules.  We also injected random delays
 into the reuse runs to perturb timing.  We found that, \tern consistently
 reproduced or avoided all five bugs.  We verified this result
 by inspecting the memoized schedules.
 
-\subsubsection{Memory Access Determinism}\label{sec:memory-determinism}
+\subsubsection{Memory Access Determinism}\label{sec:tern-memory-determinism}
 
 \tern enforces synchronization orders, which should make memory access
 orders more deterministic.  We quantified this effect over Apache and
@@ -870,7 +870,7 @@ Apache & 148,058 & 86,215 & 10,821 & 7.97 \\
 \end{tabular}
 \caption{\small{\em Memory access determinism.}  We traced memory accessed
   only from \pbzip, not the external BZip2
-  library.} \label{tab:memory-determinism}
+  library.} \label{tab:tern-memory-determinism}
 \end{table}
 
 
@@ -955,11 +955,11 @@ Apache & 148,058 & 86,215 & 10,821 & 7.97 \\
 
 %% evaluate the bug repeatability of \tern.  For \pbzip, the default
 %% schedule \tern selects exposes the error.  For each of the other errors, we
-%% have to manually insert 2-4 \vv{sleep(0)} calls in the corresponding
+%% have to manually insert 2-4 \v{sleep(0)} calls in the corresponding
 %% program to expose the error.  We let \tern memoize these buggy schedules.
-%% We then remove the bogus \vv{sleep(0)} calls we insert from the programs.
-%% We also remove the \vv{before\_blocking()} and \v{after\_blocking()} calls
-%% due to the bogus \vv{sleep(0)} calls from the memoized schedules.  We rerun
+%% We then remove the bogus \v{sleep(0)} calls we insert from the programs.
+%% We also remove the \v{before\_blocking()} and \v{after\_blocking()} calls
+%% due to the bogus \v{sleep(0)} calls from the memoized schedules.  We rerun
 %% the programs with the memoized schedules and observe that the bugs can
 %% always be reproduced.  
 
