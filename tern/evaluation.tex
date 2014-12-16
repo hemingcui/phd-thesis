@@ -24,15 +24,15 @@ LLVM's bitcode compiler \v{llc}.
 We focused our evaluation on four key questions:
 \begin{enumerate}
 
-\item Is \tern easy to use (\S\ref{sec:ease-of-use})?
+\item Is \tern easy to use (\S\ref{sec:tern-ease-of-use})?
 
 \item Does \tern make multithreaded programs stable across different inputs
-  (\S\ref{sec:stability})?
+  (\S\ref{sec:tern-stability})?
 
-\item Does \tern incur high overhead (\S\ref{sec:overhead})?
+\item Does \tern incur high overhead (\S\ref{sec:tern-overhead})?
 
 \item Does \tern make multithreaded programs deterministic on the same
-  input (\S\ref{sec:determinism})?
+  input (\S\ref{sec:tern-determinism})?
 
 \end{enumerate}
 
@@ -81,7 +81,7 @@ We focused our evaluation on four key questions:
 %% the smaller the better.  For all the performance numbers reported, we
 %% repeated the experiment 100 times and took an average.
 
-\subsection{Ease of Use}\label{sec:ease-of-use}
+\subsection{Ease of Use}\label{sec:tern-ease-of-use}
 
 \begin{table}
 \centering
@@ -114,10 +114,10 @@ cholesky      & 3,683  & 3  & N/A &  1  & 4  \\
   changes.} \label{table:tern-apps}
 \end{table}
 
-Table~\ref{table:apps} summarizes the modifications we made to make the
+Table~\ref{table:tern-apps} summarizes the modifications we made to make the
 programs work with \tern.  For each program but MySQL, we modified only 3-10
 lines.  For Apache, we marked the HTTP command, URL, HTTP version, and the
-return of \v{cache\_find()} as symbolic (\S\ref{sec:window}).  For MySQL,
+return of \vv{cache\_find()} as symbolic (\S\ref{sec:tern-window}).  For MySQL,
 we marked the SQL query.  For \pbzip, we marked the number of threads and
 file blocks.  (The number of file blocks is set in two places,
 contributing two symbolic annotations.)  For all these scientific programs, we
@@ -149,9 +149,9 @@ input constraints too specific.
 \subsection{Stability} \label{sec:tern-stability}
 
 We evaluated \tern's stability via two sets of experiments.  The first set
-compares it to an existing \dmt system (\S\ref{sec:bug-stable}). The
+compares it to an existing \dmt system (\S\ref{sec:tern-bug-stable}). The
 second quantifies how frequently it can reuse schedules on real and
-synthetic workloads (\S\ref{sec:reuse-rate}).
+synthetic workloads (\S\ref{sec:tern-reuse-rate}).
 
 \subsubsection{Bug Stability} \label{sec:tern-bug-stable}
 
@@ -204,7 +204,7 @@ For each program, execution mode, and input combination, we ran
 the program 100 times, and recorded whether the corresponding bug occurred.
 
 We present only the fft results; the results of the other programs are
-similar.  Table~\ref{tab:coredet} shows the buggy behaviors of fft.
+similar.  Table~\ref{tab:tern-coredet} shows the buggy behaviors of fft.
   In nondeterministic mode, the bug never
 occurred, despite that each run almost always yielded a new
 synchronization order. With \coredet, slight changes in computation made the
@@ -274,13 +274,13 @@ SysBench-tx            &   44.2\%    &    109      \\
 \label{tab:tern-stability}
 \end{table}
 
-Table~\ref{tab:stability} shows the results.  For three out of the four
+Table~\ref{tab:tern-stability} shows the results.  For three out of the four
 workloads, \tern could reuse a small number of schedules to process over
 90\% of the inputs.  For MySQL-tx, \tern had a lower overall reuse rate.
 The reasons are two fold.  First, this workload makes it unlikely to reuse
 schedules because it mixes many randomly generated queries with different
 types and parameters.  Second, we annotated only the SQL command as
-symbolic without exposing the hidden states of MySQL (\S\ref{sec:window})
+symbolic without exposing the hidden states of MySQL (\S\ref{sec:tern-window})
 so that we could measure \tern's performance in an adversarial setting.
 Nonetheless, \tern managed to process 44.2\% of inputs with a small number
 of schedules.
@@ -547,7 +547,7 @@ server programs.  All numbers reported in this section were averaged over
 
 The most performance-critical component is the replayer because it
 operates during the normal execution of a program.
-Figure~\ref{fig:overhead} shows the relative overhead of the replayer over
+Figure~\ref{fig:tern-overhead} shows the relative overhead of the replayer over
 nondeterministic execution, the smaller the better.  For seven out of
 the fourteen programs, the replayer performed almost identically to
 nondeterministic execution. For \pbzip and barnes, \tern performed
@@ -577,7 +577,7 @@ tight loop.
 \end{figure}
 
 We also measured the effects of skipping unnecessary synchronizations
-(\S\ref{sec:skip-waits}).  Figure~\ref{fig:opt-remove-sync} shows the
+(\S\ref{sec:tern-skip-waits}).  Figure~\ref{fig:tern-opt-remove-sync} shows the
 results.  This optimization significantly reduced the replayer's overhead
 for four programs.  Specifically, it made \pbzip and barnes run faster
 than nondeterministic execution, and reduced the overhead of
@@ -590,8 +590,8 @@ negligible and thus not shown.
 \caption{\small {\em Optimizations to speed up constraint checking.} Note
   the y-axis is broken. ``no opt'' indicates the baseline constraint checking
   time. ``simplify'' refers to the optimization in
-  \S\ref{sec:simplify}. ``slice'' refers to the optimization in
-  \S\ref{sec:slicing}.}
+  \S\ref{sec:tern-simplify}. ``slice'' refers to the optimization in
+  \S\ref{sec:tern-slicing}.}
 \label{fig:tern-opt-remove-constraints}
 \end{figure}
 
@@ -613,8 +613,8 @@ MySQL-RESP    & 0.6 ms       & 61 ms             &   100.6\\
 
 To reuse a schedule on an input, \tern must check the input against
 memoized constraints.  Constraint checking can be costly, and \tern provides
-two optimizations to speed it up (\S\ref{sec:simplify} and
-\S\ref{sec:slicing}).  Figure~\ref{fig:opt-remove-constraints} shows these
+two optimizations to speed it up (\S\ref{sec:tern-simplify} and
+\S\ref{sec:tern-slicing}).  Figure~\ref{fig:tern-opt-remove-constraints} shows these
 optimizations can effectively speed up constraint checking for Apache,
 fft, lu, and radix.  In particular, they reduced the constraint checking
 time for lu by 16x.
@@ -633,7 +633,7 @@ time for lu by 16x.
 %% \end{figure}
 
 Compared to the replayer, the memoizer can run offline, thus its
-performance is not as critical.  Table~\ref{tab:memoization-overhead}
+performance is not as critical.  Table~\ref{tab:tern-memoization-overhead}
 shows that this slowdown can sometimes exceed 200x.  The main reason
 is that \klee, the symbolic engine used, interprets programs instead of
 running them natively.  An instrumentation-based approach can greatly
@@ -770,11 +770,11 @@ our future work.
 \subsection{Determinism}\label{sec:tern-determinism}
 
 We evaluated \tern's determinism via three sets of experiments.  The first
-set checked the memoized schedules for races (\S\ref{sec:race-results}).
+set checked the memoized schedules for races (\S\ref{sec:tern-race-results}).
 The second evaluated \tern's ability to deterministically reproduce or avoid
-bugs (\S\ref{sec:bug-determinism}).  The third measured how deterministic
+bugs (\S\ref{sec:tern-bug-determinism}).  The third measured how deterministic
 memory accesses are with and without
-\tern (\S\ref{sec:memory-determinism}).
+\tern (\S\ref{sec:tern-memory-determinism}).
 
 \subsubsection{Race Detection Results}\label{sec:tern-race-results}
 
@@ -782,11 +782,11 @@ When memoizing schedules for each of the 14 programs, we turned on \tern's
 race detector.  We found that except for radix and cholesky, the schedules
 \tern memoized for all other programs were free of schedule races and
 symbolic races with respect to the symbolic data we annotated
-(\S\ref{sec:detect-race}).  Our race detection result is not surprising
+(\S\ref{sec:tern-detect-race}).  Our race detection result is not surprising
 because most schedules are indeed race free.  It implies that, for runs
 that reuse the memoized schedules of all programs but radix and cholesky,
 \tern ensures determinism, barring the assumption discussed in
-\S\ref{sec:detect-race}.
+\S\ref{sec:tern-detect-race}.
 
 \subsubsection{Bug Determinism}\label{sec:tern-bug-determinism}
 
@@ -829,12 +829,12 @@ correct value.\\
 \end{table}
 
 We also evaluated how deterministically \tern could reproduce or avoid
-bugs.  Table~\ref{table:races} lists five real concurrency bugs we used.
+bugs.  Table~\ref{table:tern-races} lists five real concurrency bugs we used.
 We selected them because they were frequently used in previous
 studies~\cite{avio:asplos06,ctrigger:asplos09,lu:concurrency-bugs,pres:sosp09}
 and we could reproduce them on our evaluation machine.  To measure bug
 determinism, we first memoized schedules for programs listed in
-Table~\ref{table:races}.  We then manually inserted \v{usleep()} to these
+Table~\ref{table:tern-races}.  We then manually inserted \v{usleep()} to these
 programs to get alternate schedules.  We then ran the buggy programs
 again, reusing the memoized schedules.  We also injected random delays
 into the reuse runs to perturb timing.  We found that, \tern consistently
@@ -853,7 +853,7 @@ of memory accesses.  We then repeated this experiment 20 times to collect
 distance~\cite{edit-distance}.  We then measured the same edit distance
 for Apache in nondeterministic execution mode and compared the two.  We
 did the same comparison for \pbzip with a decompression workload of 2MB.  
-Table~\ref{tab:memory-determinism} shows the result.  For Apache,
+Table~\ref{tab:tern-memory-determinism} shows the result.  For Apache,
 runs with \tern were 7.97 times more deterministic than those without.  For
 \pbzip, \tern was 2.33 times more deterministic, but the memory trace had
 only 1,234 accesses on average.
