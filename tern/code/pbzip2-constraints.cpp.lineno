@@ -1,7 +1,6 @@
-1: 3: 0 < nthread ?  true
-2: 3: 1 < nthread ?  true
-3: 3: 2 < nthread ?  false
-4: 5: 0 < nthread ?  true
-5: 5: 1 < nthread ?  true
-6: 5: 2 < nthread ?  false
-7: 16: ... // constraints collected from @compress()@
+1: 5: 0 < nthread ?  true
+2: 5: 1 < nthread ?  true
+3: 5: 2 < nthread ?  false
+4: 7: 0 < nblock  ?  true
+5: 7: 1 < nblock  ?  true
+6: 7: 2 < nblock  ?  false

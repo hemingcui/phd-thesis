@@ -1,11 +1,11 @@
 This chapter describes \tern, our first \smt system that
 addresses the first challenge on building \smt: how to compute highly reusable
 schedules for different inputs? The more reusable a schedule is, the fewer
-schedules are needed. \tern is also built as a \dmt system, because determinism
-is useful in testing and debugging multithreaded programs. Building a
-system that is both \smt and \dmt is challenging, because as we described in
-Chapter~\ref{sec:smt-motivation}, the instability problem in typical \dmt
-systems destabilizes program behaviors on input perturbations,
+schedules are needed for all inputs. \tern is also built as a \dmt system,
+because determinism is especially useful in testing and debugging multithreaded
+programs. Building a system that is both \smt and \dmt is challenging, because
+as we described in Chapter~\ref{sec:smt-motivation}, the instability problem in
+typical \dmt systems destabilizes program behaviors on input perturbations,
 defeating the stability benefit brought by \smt. Therefore, this chapter
 also describes our solution on addressing this instability problem.
 
@@ -25,8 +25,8 @@ Second, how to combine \dmt with \smt? Existing \dmt
 systems~\cite{dmp:asplos09,coredet:asplos10,kendo:asplos09} constrain a
 multithreaded program to always use the same thread schedule for the same input,
 greatly increaseing testing confidence and making bug reproduction much more
-easier. Unfortunately, these \dmt systems have no jurisdiction if the input or
-program changes however slightly: when scheduling the threads to process an
+easier. Unfortunately, these \dmt systems may be defeat the input stability
+benefit in \smt: when scheduling the threads to process an
 input, they consider only this input and ignore previous similar inputs.  This
 stateless design makes schedules over-dependent on inputs, so that a slight
 change to inputs may force a program to (ad)venture into a vastly different,
@@ -50,12 +50,12 @@ schedule.  If it finds one, it simply runs the program while enforcing
 this schedule.  Otherwise, it runs the program to memoize a schedule and
 the input constraints of this schedule for future reuse. This schedule-centric
 approach maps as many as inputs that satisfy the input constraints to each
-schedule, greatly reducing the number of possible schedules for all inputs, a
-key goal of \smt. This stateful approach stabilizes program behaviors
+schedule, greatly reducing the number of schedules required for all inputs, the
+central goal of \smt. This stateful approach stabilizes program behaviors
 on input perturbations and avoids the instability problem. In sum, \tern's
-schedule memoization approach combines \dmt with \smt, greatly reducing the
-number of schedules on all inputs as well as the number of schdules on each
-input (down to one).
+schedule memoization is the first approach that implements \smt, and the first
+approach that combines \smt and \dmt, greatly reducing the number of schedules
+on all inputs as well as the number of schdules on each input (down to one).
 
 \tern's schedule memoization approach has two major benefits on software
 reliability. First, by reusing schedules shown to work, \tern can avoid
@@ -104,15 +104,15 @@ the decisions of the OS scheduler and synchronization library.  It
 memoizes and reuses synchronization orders as schedules to increase
 performance and reuse rates. It tracks input constraints using
 \klee~\cite{klee:osdi08}, a symbolic execution engine.  Our implementation
-is software-only, works with general C/C++ programs using threads, and
+is software-only, works with general C/C++ programs using \pthread, and
 requires no kernel modifications and only a few lines of modification to
 applications, thus simplifying deployment.
 
 We evaluated \tern on a diverse set of 14 programs, including two server
-programs Apache~\cite{apache} and MySQL~\cite{mysql}, a parallel
+programs \apache~\cite{apache} and \mysql~\cite{mysql}, a parallel
 compression utility \pbzip~\cite{pbzip2}, and 11 scientific programs in
 \splash~\cite{splash2}.  Our workload included a Columbia CS web trace and
-benchmarks used by Apache and MySQL developers.  Our results show that
+benchmarks used by \apache and \mysql developers.  Our results show that
 
 \begin{enumerate}
 
@@ -137,7 +137,7 @@ benchmarks used by Apache and MySQL developers.  Our results show that
 \end{enumerate}
 
 Our main conceptual contributions are that we addressed the two research
-challenges on building a system that is both \smt and \dmt with a new idea
+challenges on building a both \smt and \dmt system with a new idea
 called schedule memoization. To make \tern practically support server programs
 that have input timing nondeterminism and infinite schedules, we proposed
 another new idea called windowing. Our engineering contributions include the
@@ -146,9 +146,8 @@ another new idea called windowing. Our engineering contributions include the
 nondeterminism, and the first shown to work on programs as large, complex, and
 nondeterministic as \apache and \mysql.
 
-This chapter is organized as follows.  We first present a analytical background
-(\S\ref{sec:tern-background}) and an high-level design of \tern
-(\S\ref{sec:tern-design}). We then describe \tern's interface
+This chapter is organized as follows.  We first present a high-level design of
+\tern (\S\ref{sec:tern-design}). We then describe \tern's interface
 (\S\ref{sec:tern-annotations}), schedule memoization for batch programs
 (\S\ref{sec:tern-batch}), and windowing to extend \tern to server programs
 (\S\ref{sec:tern-window}).  We then present refinements we made to optimize

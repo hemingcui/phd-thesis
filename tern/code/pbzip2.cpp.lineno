@@ -1,18 +1,17 @@
 1 :   main(int argc, char *argv[]) {
-2 :     int i, nthread = atoi(argv[1]);
-3 :     for(i=0; i<nthread; ++i)
-4 :       pthread_create(worker); // create worker threads
+2 :     int i, nthread = argv[1], nblock = argv[2];
+3 :     symbolic(&nthread, sizeof(int)); // mark input data 
+4 :     symbolic(&nblock, sizeof(int)); // that affects schedules
 5 :     for(i=0; i<nthread; ++i)
-6 :       worklist.add(read_block(i)); // add block to work list
-7 :     // Error: missing @pthread_join()@ operations
-8 :     worklist.clear(); // clear work list
-9 :     ...
-10:   }
-11:   worker() { // worker threads for compressing file blocks
-12:     block = worklist.get(); // get a file block from work list
-13:     compress(block);
-14:   }
-15:   compress(block_t block) {
-16:     if(block.data[0] == block.data[1])
-17:       ...
-18:   }
+6 :   	  pthread_create(worker); // create worker threads
+7 :     for(i=0; i<nblock; ++i) {
+8 :       block = read_block(i); // read i'th file block
+9 :       worklist.add(block); // add block to work list
+10:     }
+11:   }
+12:   worker() { // worker threads for compressing file blocks
+13:     for(;;) {
+14:       block = worklist.get(); // get a file block from work list
+15:       compress(block);
+16:     }
+17:   }

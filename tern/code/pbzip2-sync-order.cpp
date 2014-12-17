@@ -1,8 +1,5 @@
-// main                 // worker 1          // worker 2
-4: pthread_create(worker);
-4: pthread_create(worker);
-6: worklist.add();
-                    12: worklist.get();
-6: worklist.add();
-                                        12: worklist.get();
-8: worklist.clear();
+// main            worker 1          worker 2
+9: worklist.add();
+                14: worklist.get();
+9: worklist.add();
+                                14: worklist.get();
