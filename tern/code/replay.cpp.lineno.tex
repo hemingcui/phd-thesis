@@ -1,0 +1,10 @@
+% Remember to use the lgrind style
+
+\Head{}
+\File{replay.cpp.lineno}{2014}{12}{9}{1:07}{236}
+\index{pthread\_mutex\_lock\_wrapper}\Proc{pthread\_mutex\_lock\_wrapper}\L{\LB{\N{1}:}\Tab{5}{\V{pthread\_mutex\_lock\_wrapper}(\V{mutex})_\{}}
+\L{\LB{\N{2}:}\Tab{7}{\V{down}(\V{sem}[\V{self}()]);_//_\V{wait}_\K{for}_\V{our}_\V{turn}}}
+\L{\LB{\N{3}:}\Tab{7}{\V{pthread\_mutex\_lock}(\V{mutex});}}
+\L{\LB{\N{4}:}\Tab{7}{\V{next}_=_\V{shift}_\V{schedule};_//_\V{find}_\V{next}_\V{thread}_\V{in}_\V{schedule}}}
+\L{\LB{\N{5}:}\Tab{7}{\V{up}(\V{sem}[\V{next}]);_//_\V{wake}_\V{up}_\V{next}_\V{thread}}}
+\L{\LB{\N{6}:}\Tab{5}{\}}}
