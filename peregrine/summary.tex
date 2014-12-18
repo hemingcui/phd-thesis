@@ -1,0 +1,36 @@
+\section{Summary} \label{sec:peregrine-summary}
+
+\peregrine is one of the first efficient and fully deterministic multithreading systems.
+Leveraging the insight that races are rare, \peregrine combines sync-schedules
+and mem-schedules into hybrid schedules, getting the benefits of both.
+\peregrine reuses schedules across different inputs, amortizing the cost of
+computing hybrid schedules and making program behaviors repeatable
+across inputs.  It further improves
+efficiency using two new techniques: determinism-preserving slicing to
+generalize a schedule to more inputs while preserving determinism, and
+schedule-guided simplification to precisely analyze a program according
+to a dynamic schedule.  Our evaluation on a diverse set of programs
+shows that \peregrine is both deterministic and efficient, and can frequently
+reuse schedules for half of the evaluated programs.
+
+%% We have presented \peregrine, an efficient deterministic multithreading system
+%% designed for general multithreaded programs and commodity hardware.  The
+%% key insight in \peregrine is that although programs have races, these races tend
+%% to occur only for minor portions of an execution, and the majority of the
+%% execution is still race-free.  Based on this insight, \peregrine enforces a
+%% mem-schedule only for the racy portions of an execution and a
+%% sync-schedule otherwise, thus combining the efficiency of sync-schedules
+%% and determinism of mem-schedules.  \peregrine computes a hybrid schedule by
+%% relaxing a fine-grained execution trace, and reuses this schedule on
+%% future inputs when possible.  
+
+
+\peregrine's system and ideas have broad applications.  Our immediate future
+work is to build applications on top of \peregrine, such as fast deterministic replay,
+replication, and diversification systems.  We will also extend our
+approach to system-wide deterministic execution by computing inter-process
+communication schedules and preconditions.  \peregrine enables precise program
+analysis according to a set of inputs and dynamic schedules.  We will
+leverage this capability to accurately detect concurrency errors and
+verify concurrency-error-freedom for real programs.
+
