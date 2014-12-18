@@ -1,0 +1,8 @@
+% Remember to use the lgrind style
+
+\Head{}
+\File{multitargets.cpp}{2014}{12}{17}{17:23}{96}
+\L{\LB{\V{lock}();_\C{}//_in_schedule\CE{}}}
+\index{if}\Proc{if}\L{\LB{\K{if}(.\,.\,.)_}}
+\L{\LB{}\Tab{2}{\V{pthread\_create}();_\C{}//_not_in_schedule\CE{}}}
+\L{\LB{\V{unlock}();_\C{}//_in_schedule\CE{}}}

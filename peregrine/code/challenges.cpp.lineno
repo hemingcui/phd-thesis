@@ -1,0 +1,11 @@
+1 :    // variables @x@ and @y@ are from input
+2 :    int a[10], b, *p;
+3 :    
+4 :    // thread t1           // thread t2
+5 :    lock(l1);                   
+6 :    p = &a[0];
+7 :    if(!x)              4: if(y)
+8 : 1:     p = &a[1];             b++;      
+9 :    *p++;                  lock(l2);
+10:    unlock(l1);         2: a[1] ++;
+11: 3: b++;                   unlock(l2);       

@@ -1,0 +1,15 @@
+% Remember to use the lgrind style
+
+\Head{}
+\File{challenges.cpp}{2014}{12}{17}{17:23}{342}
+\L{\LB{}\Tab{3}{\C{}//_variables_\CE{}\V{x}\C{}_and_\CE{}\V{y}\C{}_are_from_input\CE{}}}
+\L{\LB{}\Tab{3}{\K{int}_\V{a}[\N{10}],_\V{b},_*\V{p};}}
+\L{\LB{}\Tab{3}{}}
+\L{\LB{}\Tab{3}{\C{}//_thread_t1}\Tab{26}{//_thread_t2\CE{}}}
+\L{\LB{}\Tab{3}{\V{lock}(\V{l1});}\Tab{31}{}}
+\L{\LB{}\Tab{3}{\V{p}_=_\&\V{a}[\N{0}];}}
+\index{if}\Proc{if}\L{\LB{}\Tab{3}{\K{if}(!\V{x})}\Tab{23}{\N{4}\V{:}_\K{if}(\V{y})}}
+\L{\LB{\N{1}\V{:}}\Tab{7}{\V{p}_=_\&\V{a}[\N{1}];}\Tab{30}{\V{b}++;}\Tab{40}{}}
+\L{\LB{}\Tab{3}{*\V{p}++;}\Tab{26}{\V{lock}(\V{l2});}}
+\L{\LB{}\Tab{3}{\V{unlock}(\V{l1});}\Tab{23}{\N{2}\V{:}_\V{a}[\N{1}]_++;}}
+\L{\LB{\N{3}\V{:}_\V{b}++;}\Tab{26}{\V{unlock}(\V{l2});}\Tab{44}{}}

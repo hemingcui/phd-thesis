@@ -1,0 +1,48 @@
+1 : #include <stdio.h>
+2 : #include <assert.h>
+3 : #include <malloc.h>
+4 : #include <string.h>
+5 : #include <stdlib.h>
+6 : #include <pthread.h>
+7 : 
+8 : #define MAX_THREADS (100)
+9 : pthread_barrier_t barrier;
+10: pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
+11: pthread_t threads[MAX_THREADS];
+12: void* worker(void *arg);
+13: 
+14: char data[100];
+15: int size; // size of @data@
+16: int nthread; // total number of threads
+17: unsigned long result = 0;
+18: 
+19: int main(int argc, char *argv[]) {
+20:   nthread = atoi(argv[1]);
+21:   size = atoi(argv[2]);
+22:   assert(nthread>0 && size>=nthread);
+23:   pthread_barrier_init(&barrier, NULL, nthread);
+24:   for(long i=1; i<nthread;++i)
+25:     pthread_create(&threads[i], NULL, worker, (void*)i);
+26:   worker(0); // participate in computation
+27:   // missing @pthread_join()@
+28:   if(atoi(argv[3]) == 1)
+29:     result += 10; // race with line 15
+30:   printf("result = %lu\n", result);
+31:   return 0;
+32: }
+33: void* worker(void *arg) {
+34:   int start = size/nthread * (long)arg;
+35:   int end = size/nthread * ((long)arg+1);
+36:   printf("start=%d, end=%d\n", start, end);
+37:   for(int i=start; i<=end; ++i)
+38:     data[i] = data[i] * 50; // race with line 8 and 9
+39:   pthread_mutex_lock(&m);
+40:   result += 10000;
+41:   pthread_mutex_unlock(&m);
+42: }
+43: int atoi(const char *str) {
+44:   int number = 0, i = 0;
+45:   for(i=0; str[i]>='0'&&str[i]<='9'; ++i)
+46:     number = number * 10 + (str[i]-'0');
+47:   return number;
+48: }

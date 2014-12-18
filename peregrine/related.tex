@@ -1,0 +1,129 @@
+\section{Related Work} \label{sec:related}
+
+\para{Deterministic execution.}
+By reusing schedules, \peregrine mitigates input nondeterminism and makes
+program behaviors repeatable across inputs.  This method is based on the
+\emph{schedule-memoization} idea in our previous work
+\tern~\cite{cui:tern:osdi10}, but \peregrine largely eliminates manual annotations,
+and provides stronger determinism guarantees than \tern.  To our
+knowledge, no other DMT systems mitigate input nondeterminism; some
+actually aggravate it, potentially creating ``input-heisenbugs.''
+
+\peregrine and other DMT systems can be complementary: \peregrine can use an
+existing DMT algorithm when it runs a program on a new input
+so that it may compute the same schedules at different sites;
+existing DMT systems can speed up their pathological cases using the
+schedule-relaxation idea.
+
+Determinator~\cite{determinator:osdi10}
+advocates a new, radical programming model that converts all races,
+including races on memory and other shared resources, into exceptions, to
+achieve pervasive determinism.  This programming model is not designed to
+be backward-compatible.  dOS~\cite{dos:osdi10} provides similar pervasive
+determinism with backward compatibility, using a \dmt algorithm first
+proposed in~\cite{dmp:asplos09} to enforce mem-schedules.  While \peregrine
+currently focuses on multithreaded programs, the ideas in \peregrine can be
+applied to other shared resources to provide pervasive determinism.
+\peregrine's hybrid schedule idea may help
+reduce dOS's overhead.  Grace~\cite{grace:oopsla09} makes multithreaded
+programs with fork-join parallelism behave like sequential programs.  It
+detects memory access conflicts efficiently using hardware page
+protection.  Unlike Grace, \peregrine aims to make general multithreaded
+programs, not just fork-join programs, repeatable.  
+
+Concurrent to our work, \dthreads~\cite{dthreads:sosp11} is another
+efficient DMT system.  It tracks memory modifications using hardware page
+protection and provides a protocol to deterministically commit these
+modifications.  In contrast to \dthreads, \peregrine is software-only and does not
+rely on page protection hardware which may be expensive and suffer from
+false sharing; \peregrine records and reuses schedules, thus it can handle
+programs with ad hoc synchronizations~\cite{syncfinder:osdi10} and make
+program behaviors stable.
+
+\para{Program analysis.}  Program slicing~\cite{Tip:slicing} is a general
+technique to prune irrelevant statements from a program or trace.
+Recently, systems researchers have leveraged or invented slicing
+techniques to block malicious input~\cite{castro:bouncer}, synthesize
+executions for better error diagnosis~\cite{esd:eurosys10}, infer source
+code paths from log messages for postmortem
+analysis~\cite{sherlog:asplos10}, and identify critical inter-thread reads
+that may lead to concurrency errors~\cite{conseq:asplos11}.  
+Our determinism-preserving slicing technique produces a correct trace slice for
+multithreaded programs and supports multiple ordered targets.  It thus has
+the potential to benefit existing systems that use slicing.  
+
+Our schedule-guided simplification technique shares similarity with
+SherLog~\cite{sherlog:asplos10} such as the removal of branches
+contradicting a schedule.  However, SherLog starts from log messages and
+tries to compute an execution trace, whereas \peregrine starts with a schedule
+and an execution trace and computes a simplified yet runnable program.
+\peregrine can thus transparently improve the precision of many existing
+analyses: simply run them on the simplified program.
+
+%% Moreover, our scheduled-guided analysis helps compute
+%% accurate alias results by simplifying a program based on a sequence of
+%% dynamic events, thus it may improve the precision of systems that also
+%% have this need, such as Bouncer~\cite{castro:bouncer} and
+%% SherLog~\cite{sherlog:asplos10}.
+% In addition, the simplified programs our technique computes can be used
+% for other analysis.
+
+
+%%   some of existing slicing also uses alias, but rather generic alias.  our
+%%   schedule guided alias will improve their precision
+
+%%   sherlog: tied to analysis.  they didn't use alias or use off the shell
+%%   alias.
+  
+%%   log messages: more sparse than sync.  we start with detailed trace.
+
+%%   we generate a program so that can run arbitrary analysis.
+
+%%   enhancer may help.
+
+
+\para{Replay and re-execution.}  Deterministic
+replay~\cite{r2:osdi,friday2007,srinivasan:flashback,revirt,dejavu,vmware-record-replay,smp-revirt:vee08,pres:sosp09,scribe:sigmetrics10,odr:sosp09,capo:asplos09}
+aims to replay the exact recorded executions, whereas \peregrine ``replays''
+schedules on different inputs.  Some recent deterministic replay systems
+include Scribe, which tracks page ownership to enforce deterministic
+memory access~\cite{scribe:sigmetrics10}; Capo, which defines a novel
+software-hardware interface and a set of abstractions for efficient
+replay~\cite{capo:asplos09}; PRES and ODR, which systematically search for
+a complete execution based on a partial one~\cite{pres:sosp09,odr:sosp09};
+SMP-ReVirt, which uses page protection for recording the
+order of conflicting memory accesses~\cite{smp-revirt:vee08}; and
+Respec~\cite{respec:asplos10}, which uses online replay to keep multiple
+replicas of a multithreaded program in sync.  Several
+systems~\cite{pres:sosp09,respec:asplos10} share the same insight as \peregrine:
+although many programs have races, these races tend to occur infrequently.
+
+\peregrine can help these systems reduce CPU, disk, or network bandwidth
+overhead, because for inputs that hit \peregrine's schedule cache, these systems
+do not have to record a schedule.
+
+Retro~\cite{retro:osdi10} shares some similarity with \peregrine because it also
+supports ``mutated'' replay.  When repairing a compromised system, Retro
+can replay legal actions while removing malicious ones using a novel
+dependency graph and \emph{predicates} to detect when changes to an object
+need not be propagated further.  \peregrine's determinism-preserving slicing
+algorithm may be used to automatically compute these predicates, so that
+Retro does not have to rely on programmer annotations. 
+% Similarly, \peregrine may leverage Retro's system architecture to implement
+% pervasive determinism across the OS.
+
+\para{Concurrency errors.} The complexity in developing multithreaded
+programs has led to many concurrency errors~\cite{lu:concurrency-bugs}.
+Much work exists on concurrency error
+detection, diagnosis, and correction (\eg,~\cite{yu:racetrack:sosp,racerx:sosp03,lu:muvi:sosp,conmem:asplos10,conseq:asplos11,2ndstrike:asplos11,linearizable:eurosys11,ctrigger:asplos09}).  \peregrine aims to make the
+%% detection~\cite{yu:racetrack:sosp,savage:eraser,racerx:sosp03,lu:muvi:sosp,avio:asplos06,conmem:asplos10,conseq:asplos11,2ndstrike:asplos11,linearizable:eurosys11},
+%% diagnosis~\cite{racefuzzer:pldi08,ctrigger:asplos09,atomfuzzer:fse08}, and
+%% correction~\cite{dimmunix:osdi08,gadara:osdi08}.  \peregrine aims to make the
+executions of multithreaded programs repeatable, and is complementary to
+existing work on concurrency errors.  \peregrine may use existing
+work to detect and fix the errors in the schedules it computes.
+Even for programs free of concurrency errors, \peregrine still provides value by
+making their behaviors repeatable.
+
+
+

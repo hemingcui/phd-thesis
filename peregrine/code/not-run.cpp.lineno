@@ -1,0 +1,2 @@
+1: // thread t1  // thread t2
+2: a[input1]++;  a[input2] = 0;

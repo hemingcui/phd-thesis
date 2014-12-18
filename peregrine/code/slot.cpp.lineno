@@ -1,0 +1,9 @@
+1: void slot(int sid) { // @sid@ is static instruction id
+2:   if(instruction sid is branch)
+3:     nbr[self()] ++; // increment per-thread branch counter
+4:   // get semaphore operations for current thread at instruction @sid@
+5:   my_actions = actions[sid][self()];
+6:   for action in my_actions
+7:     if nbr[self()] == action.nbr // check branch counter
+8:       actions.do(); // perform @up()@ or @down()@
+9: }

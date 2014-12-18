@@ -1,0 +1,13 @@
+% Remember to use the lgrind style
+
+\Head{}
+\File{slot.cpp}{2014}{12}{17}{17:23}{389}
+\index{slot}\Proc{slot}\L{\LB{\K{void}_\V{slot}(\K{int}_\V{sid})_\{_\C{}//_\CE{}\V{sid}\C{}_is_static_instruction_id\CE{}}}
+\L{\LB{}\Tab{2}{\K{if}(\V{instruction}_\V{sid}_\V{is}_\V{branch})}}
+\L{\LB{}\Tab{4}{\V{nbr}[\V{self}()]_++;_\C{}//_increment_per-thread_branch_counter\CE{}}}
+\L{\LB{}\Tab{2}{\C{}//_get_semaphore_operations_for_current_thread_at_instruction_\CE{}\V{sid}\C{}\CE{}}}
+\L{\LB{}\Tab{2}{\V{my\_actions}_=_\V{actions}[\V{sid}][\V{self}()];}}
+\L{\LB{}\Tab{2}{\K{for}_\V{action}_\V{in}_\V{my\_actions}}}
+\L{\LB{}\Tab{4}{\K{if}_\V{nbr}[\V{self}()]_==_\V{action}.\V{nbr}_\C{}//_check_branch_counter\CE{}}}
+\L{\LB{}\Tab{6}{\V{actions}.\K{do}();_\C{}//_perform_\CE{}\V{up}()\C{}_or_\CE{}\V{down}()\C{}\CE{}}}
+\L{\LB{\}}}

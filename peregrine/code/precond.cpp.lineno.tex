@@ -1,0 +1,10 @@
+% Remember to use the lgrind style
+
+\Head{}
+\File{precond.cpp.lineno}{2014}{12}{18}{0:10}{157}
+\index{if}\Proc{if}\L{\LB{\N{1}\V{:}_\K{if}(\V{x}_==_\N{0})_\{}\Tab{18}{\C{}//_statement_1\CE{}}}
+\L{\LB{\N{2}\V{:}}\Tab{5}{\V{q}_=_\V{foo}();}\Tab{18}{\C{}//_not-taken_branch\CE{}}}
+\L{\LB{\N{3}\V{:}}\Tab{5}{*\V{q}_=_\N{0};}}
+\L{\LB{\N{4}\V{:}_\}}}
+\index{if}\Proc{if}\L{\LB{\N{5}\V{:}_\K{if}(*\V{p})_\C{}//_may_p_and_q_alias?\CE{}}}
+\L{\LB{\N{6}\V{:}}\Tab{5}{\V{slicing\_target};_\C{}//_statement_2\CE{}}}

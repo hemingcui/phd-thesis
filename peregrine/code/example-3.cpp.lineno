@@ -1,0 +1,55 @@
+1 : int *matrix = NULL;
+2 : int size; // size of @matrix@
+3 : int nthread; // total number of threads
+4 : unsigned long finishtime = 0;
+5 : 
+6 : void main(int argc, char *argv[]) {
+7 :     nthread = atoi(argv[1]);
+8 :     size = atoi(argv[2]);
+9 :     matrix = (int*)malloc(size*sizeof(int));
+10:     ... // initialize @matrix
+11:     pthread_create(..., SlaveStart, (void*)1);
+12:     pthread_create(..., SlaveStart2, (void*)2);
+13:     SlaveStart(0);
+14:     // NOTE: missing @pthread_join()@
+15:     printf("finish time: %lu\n", finishtime);
+16: }
+17: 
+18: void* SlaveStart0(void *arg) {
+19:     int *upriv = (int*)malloc(...); // temp buffer
+20:     int start = 0;
+21:     int end = size/nthread;
+22:     for(int i=start; i<=end; ++i) {
+23:         // compute using @upriv@ and @matrix@
+24:         upriv[...] = matrix[i] ...;
+25:         matrix[i] = ...;
+26:     }
+27:     pthread_barrier_wait(...);
+28:     finishtime = ...;
+29: }
+30: 
+31: void* SlaveStart1(void *arg) {
+32:     int *upriv = (int*)malloc(...); // temp buffer
+33:     int start = size/nthread;
+34:     int end = size/nthread * 2;
+35:     for(int i=start; i<=end; ++i) {
+36:         // compute using @upriv@ and @matrix@
+37:         upriv[...] = matrix[i] ...;
+38:         matrix[i] = ...;
+39:     }
+40:     pthread_barrier_wait(...);
+41:     finishtime = ...;
+42: }
+43: 
+44: void* SlaveStart2(void *arg) {
+45:     int *upriv = (int*)malloc(...); // temp buffer
+46:     int start = size/nthread * 2;
+47:     int end = size/nthread * 3;
+48:     for(int i=start; i<=end; ++i) {
+49:         // compute using @upriv@ and @matrix@
+50:         upriv[...] = matrix[i] ...;
+51:         matrix[i] = ...;
+52:     }
+53:     pthread_barrier_wait(...);
+54:     finishtime = ...;
+55: }

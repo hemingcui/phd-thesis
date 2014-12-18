@@ -1,0 +1,75 @@
+#idx name		recording time (rcslab)
+#1. Apache-TPUT		?
+#2. Apache-RESP		?
+#3. pbzip 10k		8.2s
+#4. AGET http://www.cs.columbia.edu/~heming/unlink/llvm-2.7.tgz 	
+			17.9s
+#5. RADIX -n8000	65.7s
+#6. FFT -m16		3046.6
+#7. LU -n200		6036.5
+#8. water_spatial	96.7
+#9. water_nsquared	199.9
+#10. vulrend		1874.8
+#11. ocean		1005.3
+#12. fmm		901.2s
+#13. cholesky		1259.2
+#14. barnes		20.2
+#15. blackscholes
+#16. swaptions
+#17. pfscan
+#18. streamcluster		
+
+#'sync' and 'sync + race' are configured as wait_flag == 1
+#index	#orig	#sync	#sync + race
+#PBZIP, rcslab
+1	100	554.6	555.3
+#AGET, rcslab
+2	100	111.3	111.5
+#RADIX, rcslab
+3	100	76.9	80.1
+#FFT, rcslab
+4	100	91.4	92
+#LU, rcslab
+5	100	69.2	69.1
+#WATER-SPATIAL, rcslab
+6	100	66.2	66.6
+#WATER_NSQUARED, rcslab
+7	100	84.5	89.5
+#VOLREND, rcslab
+8	100	139.0	144.4
+#OCEAN, rcslab
+9	100	49.3	50.6
+#FMM, rcslab
+10	100	105.6	106.8
+#CHOLESKY, rcslab
+11	100	145.5	146.6
+#BARNES, rcslab
+12	100	27.5	31.3
+
+#	
+#idx	#flag==0#flag==1
+#PBZIP
+1	513.9	555.3
+#AGET
+2	104.2	111.5
+#RADIX
+3	206.1	80.1
+#FFT
+4	116.7	92
+#LU
+5	161.7	69.1
+#WATER-SPATIAL
+6	128.2	66.6
+#WATER_NSQUARED
+7	272.2	89.5
+#VOLREND
+8	291.1	144.4
+#OCEAN
+9	138.6	50.6
+#FMM
+10	110.4	106.8
+#CHOLESKY
+11	219.5	146.6
+#BARNES
+12	105.5	31.3
+

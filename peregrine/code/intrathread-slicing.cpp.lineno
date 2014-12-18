@@ -1,0 +1,90 @@
+1 : slice(trace) {
+2 :    cur = remove tail from trace
+3 : 
+4 :    if(cur is phi) {
+5 :       if(value of cur in live) {
+6 :          take cur
+7 :          find immediate predecessor of cur  that is executed
+8 :          take operand of cur corresponding to this predecessor
+9 :          remove cur from live
+10:       }
+11:    } else if(cur is non-mem instruction) {
+12:       if(value of cur in live) {
+13:           take cur
+14:           add operands of cur to live
+15:           remove cur from live
+16:       }
+17:    } else if(cur is load) {
+18:       if (value of cur is in live || cur is already taken in inter-thread step) {
+19:           take cur
+20:           add pointer operand of cur to live
+21:       }
+22:    } else if(cur is store) {
+23:       if (cur is already taken in inter-thread step) {
+24:           take cur
+25:           // note: don't add value since we only need to fix memory
+26:           // address to avoid race
+27:           add pointer operand of cur to live
+28:       }
+29:       for each load in live {
+30:          if (pointer operand of cur == pointer operand of load) {
+31:              take cur if it is not taken yet
+32:              // below code corresponds to updatebetween in bouncer
+33:              if(both are concrete) {
+34:                 // this removal is safe since the control dependencies for
+35:                 // cur and load are fixed by taking them into the slice
+36:                 remove load from live
+37:              } else {
+38:                 // Also possible: can leave the load in live without
+39:                 // adding constraints
+40:                 add constraints to make the two pointer operands equal
+41:                 remove load from live
+42:              }
+43:              add value and pointer operand of cur to live
+44:          } else if(pointer operand of cur may alias operand of load) {
+45:              take cur if it is not taken yet
+46:              add value and pointer operand of cur to live
+47:              // bouncer has an additional optimization: if cur is
+48:              // determined by concrete values in live, don't take it.
+49:              // since next run, the concrete values in live will get the
+50:              // same value, so cur will get the same pointer operand value
+51:          }
+52:       }
+53:    } else if(cur is branch) {
+54:      if(!postdominate(slice.head, cur)
+55:         || writtenbetween(cur, slice.head)
+56:         || syncbetween(cur, slice.head)) {
+57:       }
+58:    } else if(cur is ret) {
+59:      call = trace.findcall(cur);
+60:      if(maywriteF(calledFunc(call), live)
+61:        || maysync(calledFunc(call))) {
+62:        take cur
+63:      } else
+64:        jump to call
+65:    } else if(cur is call) {
+66:      take cur
+67:      take arg setup
+68:    }
+69: }
+70: 
+71: maywriteF(function, live) {
+72:    for each store reachable from function {
+73:       for each load in live {
+74:           if pointer operand of load may alias pointer operand of store
+75:               return true;
+76:       }
+77:    }
+78:    return false;
+79: }
+80: 
+81: writtenbetween(cur, head) {
+82:   postdom = postdominator of (cur.true, cur.false)
+83:   for each store in [cur, postdom]
+84:      if pointer operand of load may alias pointer operand of store
+85:         return true;
+86:   for each value in liveset
+87:      if value is defined in [cur, postdom]
+88:         return true;
+89:   return false;
+90: }

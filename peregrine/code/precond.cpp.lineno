@@ -1,0 +1,6 @@
+1: if(x == 0) {   // statement 1
+2:   q = foo();   // not-taken branch
+3:   *q = 0;
+4: }
+5: if(*p) // may p and q alias?
+6:   slicing_target; // statement 2

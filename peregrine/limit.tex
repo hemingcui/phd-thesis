@@ -1,0 +1,79 @@
+\subsection{Assumptions} \label{sec:limitations}
+
+At a design level, we anticipate the schedule-relaxation approach to work
+well for many programs/workloads as long as (1) they can benefit from
+repeatability, (2) their schedules can be frequently reused, (3) their
+races are rare, and (4) their nondeterminism comes from the sources
+tracked by \peregrine.  This approach is certainly not designed for every
+multithreaded program. For instance, like other DMT systems, \peregrine should
+not be used for parallel simulators that desire nondeterminism for
+statistical confidence.  For programs/workloads that rarely reuse
+schedules, \peregrine may be unable to amortize the cost of recording and
+analyzing execution traces.  For programs full of races, enforcing hybrid
+schedules may be as slow as mem-schedules.  \peregrine addresses nondeterminism
+due to thread scheduling and data races.  It mitigates input
+nondeterminism by reusing schedules on different inputs.  It currently
+considers command line arguments, data read from a file or a socket, and
+the values returned by \v{random()}-variants as inputs.  \peregrine ensures that
+schedule-reuses are fully deterministic if a program contains only these
+nondeterminism sources, an assumption met by typical programs.  If a
+program is nondeterministic due to other sources, such as functions that
+query physical time (\eg, \v{gettimeofday()}), pointer addresses returned
+by \v{malloc()}, and nondeterminism in the kernel or external libraries,
+\peregrine relies on developers to annotate these sources.
+
+
+%\peregrine leverages a set of techniques such as symbolic execution, program
+% slicing, and alias analysis.  
+The underlying techniques that \peregrine leverages make assumptions as well.
+\peregrine computes preconditions from a trace slice using the symbolic
+execution engine \klee, which does not handle floating point operations;
+though recent work~\cite{klee-fp} has made advances in symbolic execution
+of floating point programs.  (Note
+that floating point operations not in trace slices are not an issue.)  We
+explicitly designed \peregrine's slicing technique to compute sufficient
+preconditions, but these preconditions may still include unnecessary ones,
+because computing the \emph{weakest} (most relaxed) preconditions in general is
+undecidable~\cite{aho:dragon:06}.  The alias analysis \peregrine uses makes a
+few assumptions about the analyzed programs~\cite{alias:icse05};
+a ``sounder'' alias analysis~\cite{alias:fse06} would remove these
+assumptions.  These analyses may all get expensive for large
+programs.  For server programs, \peregrine borrows the
+windowing idea from our previous work~\cite{cui:tern:osdi10}; it is thus
+similarly limited (\S\ref{sec:window}).
+
+At an implementation level, \peregrine uses the LLVM framework, thus requiring
+that a program is in either source (so we can compile using LLVM) or LLVM
+IR format.  \peregrine ignores inline x86 assembly or calls to external
+functions it does not know.  For soundness, developers have to lift x86
+assembly to LLVM IR and provide summaries for external functions.  (The
+external function problem is alleviated because \klee comes with a
+\v{Libc} implementation.)  Currently \peregrine works only with a single process,
+but previous work~\cite{dos:osdi10} has demonstrated how \dmt systems can
+be extended to multiple processes.
+
+%The preconditions \peregrine computes are not the \emph{weakest
+%  preconditions}~\cite{aho:dragon:06} (\ie, most relaxed preconditions),
+
+
+%relies on developers to annotate the boundaries of request processing and
+%the functions that observe the internal state of the servers.
+
+%% For instance, a parallel quick sort program may rarely reuse schedules
+%% because it nondeterministically partitions data based on randomly chosen
+%% pivots.  Fortunately, for performance, most parallel programs use
+%% deterministic partitions of data, such as commonly used parallel sort with
+%% sorting networks~\cite{sorting-networks} and 
+%% all programs we have evaluated except \apache (because it does no
+%% partitioning: it processes each client request with only one worker
+%% thread).
+
+% boundary: proxy process like dos
+
+%% includes only the instructions dependent by the events
+%% in the schedule.  control, data-dependency may not be widely
+%% understood.  It does so by computing control- and data-dependencies,
+%% within the same thread for reachability and across different threads for
+%% determinism.  
+
+

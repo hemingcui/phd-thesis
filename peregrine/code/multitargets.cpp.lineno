@@ -1,0 +1,4 @@
+1: lock(); // in schedule
+2: if(...) 
+3:   pthread_create(); // not in schedule
+4: unlock(); // in schedule

@@ -1,0 +1,240 @@
+\section{Determinism-Preserving Slicing} \label{sec:slice}
+
+\peregrine uses determinism-preserving slicing to (1) compute sufficient
+preconditions to avoid new races and ensure that a schedule is feasible,
+and (2) filter many unnecessary preconditions to increase schedule-reuse
+rates.  It does so using inter- and intra-thread steps.  In the
+inter-thread step (\S\ref{sec:interthread-slice}), it detects and avoids
+\emph{input-dependent} races that do not occur in the execution trace, but
+may occur if we reuse the schedule on a different input.
+% It avoids these races by adding relevant instructions into the trace slice or adding additional preconditions.  
+In the intra-thread step (\S\ref{sec:interthread-slice}), the analyzer
+computes a \emph{path slice} per thread by including instructions that may
+affect the events in the schedule or the instructions identified in the
+inter-thread step.
+
+%% This technique works in an inter-thread %%
+%% (\S\ref{sec:interthread-slice}) and intra-thread %%
+%% (\S\ref{sec:intrathread-slice}) step.
+
+%% As discussed in \S\ref{sec:intro}, the preconditions \peregrine computes for
+%% reusing a schedule must satisfy the determinism and feasibility
+%% requirements: (1) if an input satisfies the preconditions, the execution
+%% on the input should not introduce new races and (2) the execution should
+%% reach all events (synchronization operations and instructions involved in
+%% execution order constraints) in the same deterministic order as in the
+%% schedule.  If we na\"ively conjunct all input-dependent conditionals in an
+%% execution trace as the preconditions, we would unnecessary preclude legal
+%% schedule reuses.  Thus, we would like to prune the conditionals that
+%% affect neither determinism or reachability of schedule events.  (Ideally
+%% we would like the weakest preconditions possible, but computing the
+%% weakest preconditions is undecidable for programs with loops or
+%% recursion~\cite{aho:dragon:06}.)
+
+%% \peregrine uses determinism-preserving slicing to prune conditionals from an
+%% execution trace.  
+
+% the instructions that may race if we change the input,
+
+\subsection{Inter-thread Step} \label{sec:interthread-slice}
+
+In the inter-thread step, \peregrine detects and avoids input-dependent races
+with respect to a hybrid schedule.  An example input-dependent race is the
+one between lines L8 and L15 in Figure~\ref{fig:example}, which occurs when
+\v{atoi(argv[3])} returns 1 causing the true branch of L7 to be taken.
+Figure~\ref{fig:input-race-examples} shows two more types of input-dependent races.
+
+\begin{figure}[b]
+\vspace{-.1in}
+\centering
+\hspace{\stretch{1}}
+\begin{minipage}[b]{.225\textwidth}
+  \lgrindfile{peregrine/code/not-run.cpp.tex}
+  \center{\vskip -3mm \hskip -5mm \scriptsize \bf (a)}
+\end{minipage}
+\hspace{\stretch{1}}
+\begin{minipage}[b]{.225\textwidth}
+  \lgrindfile{peregrine/code/br-br.cpp.tex}
+  \center{\vskip -3mm \hskip -5mm \scriptsize \bf (b)}
+\end{minipage}
+\hspace{\stretch{1}}
+\vspace{-.1in}
+\caption{{\em Input-dependent races.} Race (a) occurs when
+  \v{input1} and \v{input2} are the same; Race (b) occurs when
+  both true branches are taken.} \label{fig:input-race-examples}
+\end{figure}
+
+To detect such races, \peregrine starts by refining the logical clocks computed
+based on the sync-schedule (\S\ref{sec:compute-schedule}) with
+execution order constraints because it will also enforce these
+constraints.  \peregrine then iterates through all pairs
+of concurrent \emph{regions}, where a region is a set of instructions with an identical
+logical clock.  For each pair, it detects input-dependent races, and adds
+the racy instructions to a list of \emph{slicing targets} used by the
+intra-thread step.
+
+\begin{figure}[t]
+\centering
+\begin{minipage}[t]{.5\textwidth}
+  \lgrindfile{peregrine/code/input-race.cpp.tex}
+\end{minipage}
+\vspace{-.2in}
+\caption{{\em Input-dependent race detection
+    algorithm.}} \label{fig:detect-input-race}
+\vspace{-.1in}
+\end{figure}
+
+Figure~\ref{fig:detect-input-race} shows the algorithm to detect
+input-dependent races for two concurrent regions.  The algorithm iterates
+through each pair of instructions respectively from the
+two regions, and handles three types of input-dependent races.  First, if
+neither instruction is a branch instruction, it queries alias analysis to
+determine whether the instructions \emph{may} race.  If so, it adds both
+instructions to \v{slicing\_targets} and adds additional
+preconditions to ensure that the pointers dereferenced are different, so
+that reusing the schedule on a different input does not cause the may-race
+to become a real race.  Figure~\ref{fig:input-race-examples}(a) shows
+a race of this type.
+%% when we reuse the schedule on a different input, this may-race does
+%% not become a real race.
+%  For instance, to avoid the race on left of Figure~\ref{fig:input-race},
+%  \peregrine add preconditions to make the two input variables different.
+
+Second, if exactly one of the instructions is a branch instruction, the
+algorithm checks whether the instructions contained in the not-taken
+branch\footnote{\peregrine computes instructions contained in a not-taken
+  branch using an interprocedural \emph{post-dominator
+    analysis}~\cite{aho:dragon:06}.} of this instruction may race with the
+other instruction.
+% and if so, it adds the taken branch to \v{slicing\_targets}.
+It must check the not-taken branch because a new
+execution may well take the not-taken branch and cause a race.  To avoid such a
+race, \peregrine adds the taken branch into the trace slice so that executions
+reusing the schedule always go down the taken branch.  For instance, to
+avoid the input-dependent race between lines L8 and L15
+in Figure~\ref{fig:example}, \peregrine includes
+the false branch of L7 in the trace slice.
+%L7:false in the trace slice.
+% (\peregrine need not check races for a branch instruction itself because in
+% LLVM, a branch instruction does not access memory.)
+
+Third, if both instructions are branch instructions, the algorithm checks
+whether the not-taken branches of the instructions may race, and if so, it
+adds either taken branch to \v{slicing\_targets}.
+% because if both not-taken branches are taken, a race may occur
+For instance, to avoid the race in Figure~\ref{fig:input-race-examples}(b),
+\peregrine includes one of the false branches in the trace slice.
+
+For efficiency, \peregrine avoids iterating through all pairs of instructions
+from two concurrent regions because instructions in one region often
+repeatedly access the same memory locations.  Thus, \peregrine computes memory
+locations read or written by all instructions in one region, then checks
+whether instructions in the other region also read or write these memory
+locations.  These locations are static operands, not dynamic
+addresses~\cite{rwset:tacas08}, so that \peregrine can aggressively cache them
+per static function or branch.  The complexity of our algorithm thus drops from
+$O(MN)$ to $O(M+N)$ where $M$ and $N$ are the numbers of memory
+instructions in the two regions respectively.
+
+% is this still true if we do range analysis?
+
+\subsection{Intra-thread Step} \label{sec:intrathread-slice}
+
+%% \begin{figure}[t]
+%% \centering
+%% \begin{minipage}{.5\linewidth}
+%% \lgrindfile{code/multitargets.cpp.tex}
+%% \end{minipage}
+%% \caption{{\em Multi-target slicing example.}} \label{fig:multitargets}
+%% \end{figure}
+
+In the intra-thread step, \peregrine leverages a previous
+algorithm~\cite{castro:bouncer} to compute a per-thread path slice,
+by including instructions required for the thread to reach the
+\v{slicing\_targets} identified in the inter-thread step and the events in
+the hybrid schedule.  To do so, \peregrine first prepares a per-thread ordered
+target list by splitting \v{slicing\_targets} and events in the hybrid
+schedule and sorting them based on their order in the execution trace.
+% (Each dynamic instruction instance occurs only once in per-thread target
+% lists.)
+
+\peregrine then traverses the execution trace backwards to compute path slices.
+When it sees a target, it adds the target to the path slice of the
+corresponding thread, and starts to track the control- and
+data-dependencies of this target.\footnote{For readers familiar with
+  precondition slicing, \peregrine does not always track data-dependencies for
+  the operands of a target.  For instance, consider instruction
+  L9 of thread $t_0$ in Figure~\ref{fig:trace}.  \peregrine's goal is
+  to deterministically resolve the race involving L9 of $t_0$, but it
+  allows the value of \v{result} to be different.  Thus, \peregrine does not
+  track dependencies for the value of \v{result}; L15 of $t_0$ is elided
+  from the slice for this reason.}  \peregrine adds a branch
+instruction to the path slice if taking the opposite branch may cause the
+thread not to reach any instruction in the current (partial) path slice;
+L3 in Figure~\ref{fig:trace} is added for this reason.
+%   For instance, when slicing the trace in Figure~\ref{fig:trace}, \peregrine
+%   adds $4_{t_0}^T$ to thread $t_0$'s path slice because the not-taken
+%   branch would not lead to target $\underline{5_{t_0}}$, the
+%   \v{pthread\_create()} call.  \peregrine
+It adds a non-branch instruction to the path slice if the result of this
+instruction may be used by instructions in the current path slice;
+L1 in Figure~\ref{fig:trace} is added for this reason.
+
+A ``\v{load p}'' instruction may depend on an earlier ``\v{store q}'' if
+\v{p} and \v{q} may alias even though \v{p} and \v{q} may not be the
+same in the execution trace, because an execution on a different input
+may cause \v{p} and \v{q} to be the same.  Thus, \peregrine queries alias
+analysis to compute such \emph{may}-dependencies and include the depended-upon
+instructions in the trace slice.
+
+%  For instance, \peregrine adds $1_{t_0}$ because \v{nthread} is used by $3_{t_0}^T$.
+
+Our main modification to~\cite{castro:bouncer} is to slice toward multiple
+ordered targets.  To illustrate this need, consider branch L4:false of
+$t_0$ in Figure~\ref{fig:trace}.  \peregrine must add this branch  to thread
+$t_0$'s slice, because otherwise, the thread would reach another
+\v{pthread\_create()}, a different synchronization operation than the
+\v{pthread\_mutex\_lock()} operation in the schedule.
+
+%\subsection{Discussion}
+
+The choice of LLVM IR has considerably simplified our slicing
+implementation.  First, LLVM IR limits memory access to only two
+instructions, \v{load} and \v{store}, so that our
+algorithms need consider only these
+instructions.  Second, LLVM IR uses an unlimited number of virtual registers,
+so that our analysis does not get poisoned by stack spilling instructions.
+Third, each virtual register is defined exactly once, and multiple
+definitions to a variable are merged using a special instruction.  This
+representation (\emph{static single assignment}) simplifies
+control- and data-dependency tracking.  Lastly, the type information LLVM IR
+preserves helps improving the precision of the alias analysis.
+
+%% For efficiency, \peregrine uses two optimizations to the algorithm in
+%% Figure~\ref{fig:detect-input-race}.  First, it skips instructions that do not
+%% access memory.  It turns out this simple optimization skips roughly three
+%% quarters of LLVM instructions because LLVM IR is designed to access memory
+%% through only a narrow set of instructions.  
+
+%% instead of branch count, can look at cycle count (loops or recursive
+%%       function call cycles).  since race show up rarely, haven't done.
+
+%%       say that cannot use just branches in the path slice.
+%%       give examples
+
+
+%% Once \peregrine computes a trace slice from an execution trace based on a
+%% schedule, it conjuncts the remaining input-dependent
+%% conditionals together to compute the preconditions of the schedule
+%% using symbolic execution.  \peregrine also adds
+%% additional preconditions to prevent the first type of input-dependent
+%% races (\ie, neither instruction is a branch instruction).  In addition,
+
+%% When \peregrine sees an indirect call or branch instruction with an address
+%% data-dependent on the input,
+%% it adds a precondition to ensure that the address is
+%% always the same as the address occurred during recording to simplify reasoning.
+
+
+%% We also use $[m,n)$ to denote the \emph{region} of of
+%%       instructions with this clock.  

@@ -1,0 +1,52 @@
+1 : // detect input-dependent races, and add involved dynamic instruction
+2 : // instances to @slicing_targets@ used by the inter-thread step. @r1@ and
+3 : // @r2@ are two concurrent regions
+4 : void detect_input_dependent_races(r1, r2) {
+5 :   // iterate through all instruction pairs in r1, r2
+6 :   for (i1, i2) in (r1, r2) {
+7 :     if (neither i1 nor i2 is a branch instruction) {
+8 :       if(mayrace(i1, i2)) {
+9 :         slicing_targets.add(i1); // add @i1@ to slicing targets
+10:         slicing_targets.add(i2); // add @i2@ to slicing targets
+11:       }
+12:     } else if (exactly one of i1, i2 is a branch instruction) {
+13:       br = branch instruction in i1, i2;
+14:       inst = the other instruction in i1, i2;
+15:       nottaken = the not taken branch of br in the execution trace;
+16:       if(mayrace_br(br, nottaken, inst)) {
+17:         // add the taken branch of @br@ to slicing targets
+18:         taken = the taken branch of br in trace;
+19:         slicing_targets.add_br(br, taken);
+20:       }
+21:     } else { // both @i1@, @i2@ are branches
+22:       nottaken1 = the not taken branch of i1 in trace;
+23:       nottaken2 = the not taken branch of i2 in trace;
+24:       if(mayrace_br_br(i1, nottaken1, i2, nottaken2) {
+25:         taken1 = the taken branch of i1 in trace;
+26:         slicing_targets.add_br(i1, taken1);
+27:       }
+28:     }
+29:   }
+30: }
+31: // return true if instructions @i1@ and @i2@ may race
+32: bool mayrace(i1, i2) {
+33:   // query alias analysis
+34:   return mayalias(i1, i2) && ((i1 is a store) || (i2 is a store));
+35: }
+36: // return true if the not-taken branch of @br@ may race with @inst@
+37: bool mayrace_br(br, nottaken, inst) {
+38:   for i in (instructions in the nottaken branch of br) {
+39:     if(mayrace(i, inst))
+40:       return true;
+41:   }
+42:   return false;
+43: }
+44: // return true if the not-taken branch of @br1@ may race with the
+45: // not-taken branch of @br2@
+46: bool mayrace_br_br(br1, nottaken1, br2, nottaken2) {
+47:   for inst in (instructions in the nottaken2 branch of br2) {
+48:     if(mayrace_br(br1, nottaken1, inst))
+49:       return true;
+50:   }
+51:   return false;
+52: }

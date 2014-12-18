@@ -1,0 +1,180 @@
+\section{Implementation Issues} \label{sec:impl}
+
+%% This section discusses implementation issues not covered by previous
+%% sections.
+
+\subsection{Recording an Execution} \label{sec:record}
+
+To record an execution trace, \peregrine can use one of the existing
+deterministic record-replay
+systems~\cite{scribe:sigmetrics10,smp-revirt:vee08,idna:vee06} provided
+that \peregrine can extract an instruction trace.  For simplicity, we have built
+a crude recorder on top of the LLVM interpreter in \klee.  When an program
+calls the \peregrine-provided wrapper to \v{pthread\_create(..., func, args)},
+the recorder spawns a thread to run \v{func(args)}
+within an interpreter instance.  These interpreter instances log
+each instruction interpreted into a central file.
+For simplicity, \peregrine does symbolic execution during recording because it
+already runs \klee when recording an execution and pays the high overhead
+of interpretation.  A faster recorder would enable \peregrine to
+symbolically execute only the trace slices instead of the typically larger
+execution traces.  Since deterministic record-replay is a well
+studied topic, we have not focused our efforts on optimizing the recorder.
+
+%% It currently runs about five times slower than the state of the art
+%% deterministic replay tools due to the overhead of IR interpretation and
+%% central logging, but this overhead is mainly due to our crude
+%% implementation and existing techniques~\cite{idna:vee06} can directly
+%% speed up our recorder.
+
+%% During recording, \peregrine can schedule a program using various algorithms,
+%% such as one of the existing \dmt algorithms.  Current \peregrine supports two
+%% scheduling algorithms: a simple round-robin (RR) algorithm that forces
+%% each thread to do synchronizations in turn, and a first-come first-served
+%% (FCFS) algorithm that lets threads run as is~\cite{cui:tern:osdi10}.  RR
+%% may make the program behaviors more repeatable across sites, whereas FCFS
+%% may be more efficient.
+
+% \subsection{Symbolic Execution}
+
+%% \subsection{Reusing a Schedule} \label{sec:instrument}
+
+%% To reuse a schedule on an input, \peregrine must check that the input satisfies
+%% the precondition of the schedule.  It does so using the constraint
+%% checking utility provided by \klee.
+
+%% \subsection{Alias Analysis}
+
+%% We have adapted the \v{bddbddb} alias analysis~\cite{bddbddb}, one of the
+%% best alias analysis engines available, to our system.  It is \emph{context
+%%   sensitive}: intuitively, it distinguishes different calling contexts
+%% when analyzing a function.  It is also \emph{inclusion based}:
+%% intuitively, it distinguishes the assigner and the assignee in an
+%% assignment instruction.  To port \v{bddbddb} to \peregrine, we have built an
+%% LLVM frontend that analyzes a program in LLVM IR and outputs binary
+%% decision diagrams for \v{bddbddb} to analyze.
+
+% Our port of bddbddb can either run together with \peregrine's analyzer.
+
+\subsection{Handling Blocking System Calls}
+
+Blocking system calls are natural scheduling points, so \peregrine includes them
+in the schedules~\cite{cui:tern:osdi10}.  It currently considers eight
+blocking system calls, % as synchronization operations, 
+such as \v{sleep()},
+\v{accept()}, and \v{read()}.  For each blocking system call, the recorder
+logs when the call is issued and when the call is returned.  When \peregrine
+computes a schedule, it includes these blocking system call and return
+operations.  When reusing a schedule, \peregrine attempts to enforce the same
+call and return order.  This method works well for blocking system calls
+that access local state, such as \v{sleep()} or \v{read()} on local file
+descriptors.  However, other blocking system calls receive input from
+the external world, which may or may not arrive each time a
+schedule is reused.  Fortunately, programs that use these operations tend to be
+server programs, and \peregrine handles this class of programs differently.
+
+\subsection{Handling Server Programs} \label{sec:window}
+
+Server programs present two challenges for \peregrine.  First, they are more
+prone to timing nondeterminism than batch programs because their inputs
+(client requests) arrive nondeterministically.  Second, they often run
+continuously, making their schedules too specific to reuse.  
+
+\peregrine addresses these challenges with the \emph{windowing} idea from our
+previous work~\cite{cui:tern:osdi10}.  The insight is that server programs
+tend to return to the same quiescent states.  Thus, instead of processing
+requests as they arrive, \peregrine\ breaks a continuous request stream down into
+windows of requests.  Within each window, it admits requests only at fixed
+points in the current schedule.  If no requests arrive at an admission
+point for a predefined timeout, \peregrine\ simply proceeds with the partial
+window.  While a window is running, \peregrine\ buffers newly arrived requests
+so that they do not interfere with the running window.  With windowing,
+\peregrine can record and reuse schedules across windows.
+
+\peregrine requires developers to annotate points at which request processing begins and
+ends.  It also assumes that after a server processes all current requests,
+it returns to the same quiescent state.  That is, the input from
+the requests does not propagate further after the requests are processed.
+The same assumption applies to the data read from local files.
+For server programs not meeting this assumption, developers can manually
+annotate the functions that observe the changed server state, so that \peregrine
+can consider the return values of these functions as input.
+For instance, since \apache caches client requests, we made it work with \peregrine
+by annotating the return of \v{cache\_find()} as input.
+
+One limitation of applying our \peregrine prototype to server programs is that our current
+implementation of schedule-guided simplification does not work well with
+thread pooling.  To give each thread a copy of the corresponding thread
+function, \peregrine identifies \v{pthread\_create(...,func,...)} operations in
+a program and clones function \v{func}.  Server programs that use
+thread pooling tend to create worker threads to run generic thread
+functions during program initialization, then repeatedly use the threads
+to process client requests.  Cloning these generic thread functions thus
+helps little with precision.  One method to solve this problem is to clone
+the relevant functions for processing client requests.  We have not
+implemented this method because the programs we evaluated include only one server
+program, \apache, on which slicing already performs reasonably well
+without simplification (\S\ref{sec:stable}).
+
+
+\subsection{Skipping Wait Operations} \label{sec:nowait}
+
+When reusing a schedule, \peregrine enforces a total order of synchronization
+operations, which subsumes the execution order enforced by the original
+synchronization operations.  Thus, for speed, \peregrine can actually skip the
+original synchronization operations as in~~\cite{cui:tern:osdi10}.
+\peregrine currently skips sleep-related operations
+such as \v{sleep()} and wait-related operations such as
+\v{pthread\_barrier\_wait()}.  These operations often unconditionally block
+the calling thread, incurring context switch overhead, yet this blocking
+is unnecessary as \peregrine already enforces a correct execution order.  Our
+evaluation shows that skipping blocking operations significantly speeds
+up executions.
+
+\subsection{Manual Annotations} \label{sec:func-summary}
+
+\peregrine works automatically for most of the programs we evaluated.  However,
+as discussed in \S\ref{sec:window}, it requires manual annotations for
+server programs.  In addition, if a program has nondeterminism sources
+beyond what \peregrine automatically tracks, developers should annotate these
+sources with \v{input(void* addr, size\_t nbyte)} to mark \v{nbyte} of
+data starting from \v{addr} as input, so that \peregrine can track this
+data.
+
+Developers can also supply optional annotations to improve \peregrine's
+precision in four ways.  First, for better alias results, developers can
+add custom memory allocators and \v{memcpy}-like functions to a
+configuration file of \peregrine.  Second, they can help \peregrine better track
+ranges by adding \v{assert()} statements.  For instance, a function in the
+FFT implementation we evaluated uses bit-flip operations to transform an
+array index into another, yet both indexes have the same range.  The range
+analysis we implemented cannot precisely track these bit-flip operations,
+so it assumes the resultant index is unbounded.  Developers can fix this
+problem by annotating the range of the index with an assertion
+``\v{assert(index<bound)}.''  Third, they can provide \emph{symbolic
+  summaries} to help \peregrine compute more relaxed constraints.  For instance,
+consider Figure~\ref{fig:precond} and a typical implementation of
+\v{atoi()} that iterates through all characters in the input string and
+checks whether each character is a digit.  Without a summary of \v{atoi()},
+\peregrine would symbolically execute the body of \v{atoi()}.  The preconditions
+it computes for \v{argv[3]} would be $ (argv_{3,0} \neq 49) \wedge
+(argv_{3,1} < 48 \vee argv_{3,1} > 57)$, where $argv_{3,i}$ is the $i$th
+byte of \v{argv[3]} and 48, 49, and 57 are ASCII codes of `0', `1', and
+`9'.  These preconditions thus unnecessarily constrain \v{argv[3]} to
+have a valid length of one.  Another example is string search.  When a
+program calls \v{strstr()}, it often concerns whether there exists a
+match, not specifically where the match occurs.  Without a symbolic
+summary of \v{strstr()}, the preconditions from \v{strstr()} would
+constrain the exact location where the match occurs.  Similarly, if a
+trace slice contains complex code such as a decryption function, users can
+provide a summary of this function to mark the decrypted data as symbolic
+when the argument is symbolic.  Note that complex code not included in
+trace slices, such as the \v{read()} in Figure~\ref{fig:example}, is not an
+issue.
+% because the effects are recorded and replayed or ignored.
+
+%% consider the preconditions on \v{argv[3]} in Figure~\ref{fig:precond},
+%% which constrains the string to have a valid length of one.  Developers can
+%% relax this constraint by annotating \v{atoi()} as returning input if its
+%% argument is from input.  
+
