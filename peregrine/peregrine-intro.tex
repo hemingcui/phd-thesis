@@ -7,6 +7,20 @@ overhead.
 
 \section{Introduction} \label{sec:intro}
 
+%% Why multithreading is so difficult to get right. Too many schedules.
+%% All inputs, each input (define nondeterminism). Must refer to Chapter 2: motivation.
+
+%% Two complementary techniques have been proposed to address this difficulty.
+%% SMT and DMT. However, it is still an open challenge to enforce a highly reusable and fully deterministic schedules efficiently.
+
+%% Why hard. Introduce two forms of schedules
+%%(1) synch schedule can be made stable and efficient, but not fully determnistic.
+%%(2) Mem schedule can be made fully determinsitic, but not stable and efficient.
+
+%% Our core technique. Schedule relaxation.
+%%And why it can be stable, deterministic, and efficient.
+
+
 Different runs of a multithreaded program may show different behaviors,
 depending on how the threads interleave.  This \emph{nondeterminism} makes
 it difficult to write, test, and debug multithreaded programs.  For
