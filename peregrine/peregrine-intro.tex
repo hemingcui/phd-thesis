@@ -1,6 +1,12 @@
+The last chapter presents \tern, the first \smt and \dmt system. However, \tern
+enforces best-effort determinism, and its executions may be nondeterministic
+when data races exist. To overcome this limitation, this chapter presents
+\peregrine, our second \smt and \dmt system that can still frequently reuse
+schedules on many inputs, and can effoce fully determinism with reasonable
+overhead.
+
 \section{Introduction} \label{sec:intro}
 
-% Even when processing the same input, 
 Different runs of a multithreaded program may show different behaviors,
 depending on how the threads interleave.  This \emph{nondeterminism} makes
 it difficult to write, test, and debug multithreaded programs.  For
@@ -11,8 +17,8 @@ difficulties have resulted in many ``heisenbugs'' in widespread
 multithreaded programs~\cite{lu:concurrency-bugs}.
 
 Recently, researchers have pioneered a technique called
-\emph{deterministic multithreading
-  (\dmt)}~\cite{cui:tern:osdi10,dmp:asplos09,kendo:asplos09,coredet:asplos10,dos:osdi10,grace:oopsla09}.  DMT systems ensure that the same input
+\emph{Deterministic Multithreading (\dmt)} \cite{cui:tern:osdi10,dmp:asplos09,kendo:asplos09,coredet:asplos10, dos:osdi10,grace:oopsla09}.
+DMT systems ensure that the same input
 is always processed with the same deterministic schedule, thus eliminating
 heisenbugs and problems due to nondeterminism.  Unfortunately,
 despite these efforts, an open challenge~\cite{wodet11} well recognized by
@@ -20,12 +26,6 @@ the DMT community remains: how to build \emph{both deterministic
   and efficient} DMT systems for general multithreaded programs on
 commodity multiprocessors.  Existing DMT systems either incur prohibitive
 overhead, or are not fully deterministic if there are data races.
-
-%% achieve both efficiency and determinism for general multithreaded programs
-%% on commodity multiprocessors. The large overhead to achieve determinism
-%% (e.g., 5-15 times slowdown) has forced researchers to settle for weaker
-%% determinism by assuming race-free programs, when, in fact, real programs
-%% are full of races.
 
 Specifically, existing DMT systems enforce two forms of schedules: (1) a
 \emph{mem-schedule} is a deterministic schedule of shared memory
@@ -56,14 +56,9 @@ multithreading system to address the aforementioned open challenge.
 When a program first runs on an input, \peregrine
 records a detailed execution trace
 including memory accesses in case the execution runs into races.
-%\footnote{It has to conservatively record a detailed trace with memory accesses
-%because it does not know beforehand whether this execution has races.}
-%, including memory accesses and synchronization
-% operations, and additional data for later analysis.  \peregrine
 \peregrine then \emph{relaxes} this detailed trace into a hybrid schedule,
 including (1) a total order of synchronization operations and (2) a set of
 execution order constraints to
-% make one dynamic instruction instance always happen before another, so that \peregrine can 
 deterministically resolve each occurred race.  When the same input is provided 
 again, \peregrine can reuse this schedule deterministically and efficiently.
 
@@ -78,10 +73,6 @@ schedules, \peregrine makes program behaviors more \emph{stable} across
 different inputs, so that slight input changes do not lead to vastly
 different schedules~\cite{cui:tern:osdi10} and thus ``\emph{input-heisenbugs}''
 where slight input changes cause concurrency bugs to appear or disappear.
-
-% JOHN - not a fan of input-heisenbugs
-% Moreover, by reusing schedules, \peregrine can a program repeat familiar
-% behaviors for not only the same, but also different inputs
 
 Before reusing a schedule on an input, \peregrine must check that the input
 satisfies the \emph{preconditions} of the schedule, so that (1) the
@@ -124,36 +115,17 @@ so that we can compute more relaxed preconditions.  However, previous
 work~\cite{castro:bouncer} does not compute correct trace slices for
 multithreaded programs or handle multiple targets; our slicing
 technique correctly handles both cases.
-%  because it ignores instruction dependencies across threads; nor does it
-%  compute a slice reaching more than one targets.  In contrast, our
-%  slicing technique correctly handles both issues.
-
-%  because it ignores instruction dependencies across threads; nor does it
-%  compute a slice reaching more than one targets.  In contrast, our
-%  slicing technique correctly handles both issues.
-
-
-% tracks instruction dependencies within a thread and, more crucially,
-% across threads.
-%% captures the instructions required to avoid new races and reach all
-%% events in the schedule into a \emph{trace slice} by trackin
-
-% Compared to a previous technique called \emph{precondition
-% slicing}~\cite{castro:bouncer}, ours understands concurrency and
-% preserves determinism.
 
 Our slicing technique often needs to determine whether two pointer
-variables
-% in the program
-may point to the same object.  \emph{Alias
+variables may point to the same object.  \emph{Alias
   analysis} is the standard static technique to answer these queries.
-% \footnote{To answer alias queries, \peregrine cannot   rely on pointer addresses recorded in the execution trace, because   executions reusing a schedule may use different memory addresses.}
-Unfortunately, one of the best alias analyses~\cite{bddalias:pldi04} yields overly
-imprecise results for 30\% of the evaluated programs, forcing \peregrine to reuse
+Unfortunately, one of the best alias analyses~\cite{bddalias:pldi04} yields
+overly
+imprecise results for 30\% of the evaluated programs, forcing \peregrine to
+reuse
 schedules only when the input matches almost exactly.  The reason is that
 standard
 alias analysis has to be conservative and assume all possible executions,
-%when answering an alias query, 
 yet \peregrine cares about alias results
 according only to the executions that reuse a specific schedule.  To
 improve precision, \peregrine uses \emph{schedule-guided simplification} to
@@ -163,76 +135,6 @@ instance, if the schedule dictates eight threads, \peregrine can clone
 the corresponding thread function eight times, so that alias analysis can
 separate the results for each thread, instead of imprecisely merging
 results for all threads.
-% Our method yields times more accurate results than standard alias
-% analysis (\S\ref{sec:eval}).
-
-%% \peregrine faces two key intermingled challenges.  First, how does \peregrine
-%% automatically relax a schedule to more inputs for efficiency and
-%% stability?  To reuse a schedule on a new input, \peregrine must check that the
-%% input satisfies the \emph{preconditions} of the schedule, \ie, it can make
-%% all events in the schedule occur according to the schedule.  A na\"ive
-%% approach is to check that this input satisfies all input-dependent
-%% conditionals occurred during the recorded execution, so that when running
-%% on this new input, the program can go down the same paths for all threads,
-%% thus making the schedule feasible.
-
-%% Unfortunately,
-%% % this approach is both too weak and too strong because (1) even if all conditionals are met, threads may still race, causing nondeterminism; and (2) 
-%% many of these conditionals unnecessarily constrain the input.  For
-%% instance, consider the code on the left of Figure~\ref{fig:challenges}
-%% where $x$ comes from input.  Once we enforce the same synchronization
-%% order as shown in the figure, the two $a++$ statements never race with
-%% each other.  Thus, the conditional on $x$ is unnecessary, and we can
-%% compute a schedule with just the two \v{lock()} operations and reuse it on
-%% any $x$.  \emph{Precondition slicing}~\cite{castro:bouncer} can help
-%% filter unnecessary conditionals, but it does not address issues related to
-%% races and determinism.  For instance, it will compute wrong results for
-%% the code on the left of Figure~\ref{fig:challenges}.
-
-%% Second, how does \peregrine ensure determinism while relaxing a schedule to more
-%% inputs?  \peregrine must detect races occurred in the recorded execution and add
-%% execution order constraints to the schedule it computes.  Moreover, when
-%% reusing a schedule on a different input, the program may execute code not
-%% executed during the recorded execution, introducing races.  For instance,
-%% consider the code on the left of Figure~\ref{fig:challenges}.  Variable
-%% $x$ comes from input and is zero during the recorded execution, so that
-%% \peregrine observes no race.  However, when running on a non-zero $x$, this code
-%% has a race on variable $a$.  For determinism, \peregrine must correctly detect
-%% and handle such \emph{potential} races.
-
-
-%% \peregrine addresses these challenges using three ideas.  In its design, a
-%% schedule includes a total order of synchronization operations, as well as
-%% additional execution order constraints to make one dynamic instruction
-%% instance always happen before another, so that \peregrine can resolve races
-%% deterministically.  \peregrine enforces a schedule using only software
-%% instrumentation techniques without relying on special hardware or the OS.
-%% For instance, to enforce an execution order constraint, \peregrine inserts
-%% semaphore \v{up()} and \v{down()} operations to a program.  For
-%% efficiency, \peregrine keeps its schedule minimal so that no order constraint
-%% implies another.
-
-
-% turn on instrumentation only when necessary, decision is local to each
-% thread
-
-%% \peregrine addresses these challenges using two new program analysis techniques.
-%% It uses \emph{determinism-preserving slicing} to automatically relax a
-%% schedule to more inputs while preserving determinism.  This technique
-%% extends precondition slicing to multithreaded programs.  It automatically
-%% filters out unnecessary conditionals that do not affect determinism, \ie,
-%% they do not make races appear or disappear.  This technique tracks
-%% inter-thread control- and data-dependencies.
-
-%% A race here refers to a pair of dynamic instruction instances that access
-%% the same memory location with at least one \v{store} and that can run
-%% concurrently with respect to the total order of synchronization
-%% operations.
-
-%% For a pair of
-%% racy instructions not pruned by this total order of synchronization
-%% operations, it includes in the schedule an execution order constraint that
-%% makes one racy instruction always happen before the other.
 
 We have built a prototype of \peregrine that runs in user-space.
 It automatically tracks \v{main()}
@@ -240,13 +142,10 @@ arguments, data read from files and sockets, and values
 returned by \v{random()}-variants as input.  It handles long-running servers by
 splitting their executions into \emph{windows} and
 reusing schedules across windows~\cite{cui:tern:osdi10}.
-% It leverages \bddbddb~\cite{bddbddb} to compute alias results and \klee~\cite{klee:osdi08} to compute preconditions from a trace slice.  
 The hybrid schedules it computes are fully deterministic for programs that
 (1) have no nondeterminism sources beyond thread scheduling, data races, and
-inputs tracked by \peregrine and (2) adhere to the assumptions of the tools \peregrine
-uses.
-% leverages.
-%  (\S\ref{sec:limitations}).
+inputs tracked by \peregrine and (2) adhere to the assumptions of the tools
+\peregrine uses.
 
 We evaluated \peregrine on a diverse set of \nprog programs, including the
 \apache web server~\cite{apache}; three desktop programs, such as
@@ -258,7 +157,8 @@ systems.  Our results show that \peregrine is both deterministic and efficient
 (executions reusing schedules range from 68.7\% faster to 46.6\% slower
 than nondeterministic executions); it can frequently reuse schedules for
 half of the programs (\eg, two schedules cover all possible inputs to
-\pbzip compression as long as the number of threads is the same); both its slicing and
+\pbzip compression as long as the number of threads is the same); both its
+slicing and
 simplification techniques are crucial for increasing schedule-reuse rates,
 and have reasonable overhead when run offline; its recording overhead
 is relatively high, but can be reduced using existing
@@ -280,51 +180,3 @@ determinism-preserving slicing (\S\ref{sec:slice}), and schedule-guided
 simplification (\S\ref{sec:guide}).  We then present implementation issues
 (\S\ref{sec:impl}) and evaluation (\S\ref{sec:eval}).  We finally discuss
 related work (\S\ref{sec:related}) and conclude (\S\ref{sec:conclusion}).
-
-
-%% \peregrine stores this hybrid schedule into a schedule cache.  When another
-%% input arrives, \peregrine looks up this cache for a compatible schedule.  If it
-%% finds one, it simply reuses the schedule.  Otherwise,
-
-%% with a mem-schedule for the racy portions and a sync-schedule for the rest of the
-%% execution.  As an additional benefit, this relaxation enables reusing this
-%% schedule on other inputs.  \peregrine then stores this schedule in a cache, so
-%% that it can reuse the schedule on future compatible inputs with both
-%% determinism and efficiency.
-
-
-%% A key challenge facing \peregrine is the design of hybrid schedules.  This
-%% design should allow \peregrine to easily compute hybrid schedules, as well as
-%% seamlessly and efficiently switch at runtime between a mem-schedule and a
-%% sync-schedule.  Moreover, we prefer this design to be software-only and in
-%% user-space because dependencies on special hardware (\eg, inaccurate and
-%% non-portable hardware branch counters~\cite{jinx:corensic}) or
-%% modifications to the OS lead to deployment headaches.
-
-
-%% \peregrine addresses these challenges using three ideas.  In its design, a
-%% schedule includes a total order of synchronization operations, as well as
-%% additional execution order constraints to make one dynamic instruction
-%% instance always happen before another, so that \peregrine can resolve races
-%% deterministically.  \peregrine enforces a schedule using only software
-%% instrumentation techniques without relying on special hardware or the OS.
-%% For instance, to enforce an execution order constraint, \peregrine inserts
-%% semaphore \v{up()} and \v{down()} operations to a program.  For
-%% efficiency, \peregrine keeps its schedule minimal so that no order constraint
-%% implies another.
-
-%% To illustrate the challenges \peregrine faces, consider the example in
-%% Figure~\ref{fig:challenges}.  Both $x$ and $y$ are input variables.
-%% Thread $t_1$ and $t_2$ acquire different locks and can run concurrently.
-%% Supposed in the recorded execution, both $x$ and $y$ are non-zero, and
-%% \peregrine records a sync-schedule with the four lock operations in the order
-%% shown,
-
-% \emph{preconditions} for the schedule to be feasible.
-
-%% However, previous work relied heavily
-%% on programmer annotations to increase reuse rates, and did not guarantee
-%% determinism when reusing schedules for programs with races.
-
-%% On the flip side, the more restrictive the preconditions of a schedule
-%% are, the less likely \peregrine can reuse the schedule on new inputs.  
