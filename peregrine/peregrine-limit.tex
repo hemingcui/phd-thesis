@@ -1,4 +1,4 @@
-\subsection{Assumptions} \label{sec:limitations}
+\subsection{Assumptions} \label{sec:peregrine-limitations}
 
 At a design level, we anticipate the schedule-relaxation approach to work
 well for many programs/workloads as long as (1) they can benefit from
@@ -14,12 +14,12 @@ schedules may be as slow as mem-schedules.  \peregrine addresses nondeterminism
 due to thread scheduling and data races.  It mitigates input
 nondeterminism by reusing schedules on different inputs.  It currently
 considers command line arguments, data read from a file or a socket, and
-the values returned by \vv{random()}-variants as inputs.  \peregrine ensures that
+the values returned by \v{random()}-variants as inputs.  \peregrine ensures that
 schedule-reuses are fully deterministic if a program contains only these
 nondeterminism sources, an assumption met by typical programs.  If a
 program is nondeterministic due to other sources, such as functions that
-query physical time (\eg, \vv{gettimeofday()}), pointer addresses returned
-by \vv{malloc()}, and nondeterminism in the kernel or external libraries,
+query physical time (\eg, \v{gettimeofday()}), pointer addresses returned
+by \v{malloc()}, and nondeterminism in the kernel or external libraries,
 \peregrine relies on developers to annotate these sources.
 
 
@@ -48,7 +48,7 @@ IR format.  \peregrine ignores inline x86 assembly or calls to external
 functions it does not know.  For soundness, developers have to lift x86
 assembly to LLVM IR and provide summaries for external functions.  (The
 external function problem is alleviated because \klee comes with a
-\vv{Libc} implementation.)  Currently \peregrine works only with a single process,
+\v{Libc} implementation.)  Currently \peregrine works only with a single process,
 but previous work~\cite{dos:osdi10} has demonstrated how \dmt systems can
 be extended to multiple processes.
 

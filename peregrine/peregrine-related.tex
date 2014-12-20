@@ -1,4 +1,4 @@
-\section{Related Work} \label{sec:related}
+\section{Related Work} \label{sec:peregrine-related}
 
 \para{Deterministic execution.}
 By reusing schedules, \peregrine mitigates input nondeterminism and makes
@@ -60,27 +60,6 @@ and an execution trace and computes a simplified yet runnable program.
 \peregrine can thus transparently improve the precision of many existing
 analyses: simply run them on the simplified program.
 
-%% Moreover, our scheduled-guided analysis helps compute
-%% accurate alias results by simplifying a program based on a sequence of
-%% dynamic events, thus it may improve the precision of systems that also
-%% have this need, such as Bouncer~\cite{castro:bouncer} and
-%% SherLog~\cite{sherlog:asplos10}.
-% In addition, the simplified programs our technique computes can be used
-% for other analysis.
-
-
-%%   some of existing slicing also uses alias, but rather generic alias.  our
-%%   schedule guided alias will improve their precision
-
-%%   sherlog: tied to analysis.  they didn't use alias or use off the shell
-%%   alias.
-  
-%%   log messages: more sparse than sync.  we start with detailed trace.
-
-%%   we generate a program so that can run arbitrary analysis.
-
-%%   enhancer may help.
-
 
 \para{Replay and re-execution.}  Deterministic
 replay~\cite{r2:osdi,friday2007,srinivasan:flashback,revirt,dejavu,vmware-record-replay,smp-revirt:vee08,pres:sosp09,scribe:sigmetrics10,odr:sosp09,capo:asplos09}
@@ -109,16 +88,12 @@ dependency graph and \emph{predicates} to detect when changes to an object
 need not be propagated further.  \peregrine's determinism-preserving slicing
 algorithm may be used to automatically compute these predicates, so that
 Retro does not have to rely on programmer annotations. 
-% Similarly, \peregrine may leverage Retro's system architecture to implement
-% pervasive determinism across the OS.
+
 
 \para{Concurrency errors.} The complexity in developing multithreaded
 programs has led to many concurrency errors~\cite{lu:concurrency-bugs}.
 Much work exists on concurrency error
 detection, diagnosis, and correction (\eg,~\cite{yu:racetrack:sosp,racerx:sosp03,lu:muvi:sosp,conmem:asplos10,conseq:asplos11,2ndstrike:asplos11,linearizable:eurosys11,ctrigger:asplos09}).  \peregrine aims to make the
-%% detection~\cite{yu:racetrack:sosp,savage:eraser,racerx:sosp03,lu:muvi:sosp,avio:asplos06,conmem:asplos10,conseq:asplos11,2ndstrike:asplos11,linearizable:eurosys11},
-%% diagnosis~\cite{racefuzzer:pldi08,ctrigger:asplos09,atomfuzzer:fse08}, and
-%% correction~\cite{dimmunix:osdi08,gadara:osdi08}.  \peregrine aims to make the
 executions of multithreaded programs repeatable, and is complementary to
 existing work on concurrency errors.  \peregrine may use existing
 work to detect and fix the errors in the schedules it computes.

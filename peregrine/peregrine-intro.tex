@@ -127,7 +127,7 @@ satisfies the input constrints (or \emph{preconditions}) of the schedule, so
 that (1) the schedule is feasible, \ie, the execution on the input will reach
 all events in the same deterministic order as in the schedule and (2) the
 execution will not introduce new races. (New races may occur if they are
-\emph{input-dependent}; see \S\ref{sec:interthread-slice}.)  A na\"ive
+\emph{input-dependent}; see \S\ref{sec:peregrine-interthread-slice}.)  A na\"ive
 approach is to collect preconditions from all input-dependent branches in
 an execution trace.  For instance, if a branch instruction inspects
 input variable \vv{X} and goes down the true branch, we collect a

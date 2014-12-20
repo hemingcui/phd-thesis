@@ -30,7 +30,7 @@ races because it considers the original synchronization
 constraints of the program, whereas \peregrine wants to detect races according
 to a sync-schedule~\cite{pres:sosp09,recplay:tocs}.  To illustrate,
 consider Figure~\ref{fig:peregrine-concurrent-intervals}, a modified sync-schedule
-based on the one in Figure~\ref{fig:trace}.  Suppose the two threads
+based on the one in Figure~\ref{fig:peregrine-trace}.  Suppose the two threads
 acquire different mutex variables, and thread $t_1$ acquires and releases
 its mutex before $t_0$.  Typical lockset-based~\cite{savage:eraser}
 or happens-before-based~\cite{lamportclock} race detectors would flag a
