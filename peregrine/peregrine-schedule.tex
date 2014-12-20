@@ -1,14 +1,13 @@
-\section{Hybrid Schedules} \label{sec:schedule}
+\section{Hybrid Schedules} \label{sec:peregrine-schedule}
 
-This section describes how \peregrine computes (\S\ref{sec:compute-schedule})
-and enforces (\S\ref{sec:enforce-schedule}) hybrid schedules.
+This section describes how \peregrine computes (\S\ref{sec:peregrine-compute-schedule})
+and enforces (\S\ref{sec:peregrine-enforce-schedule}) hybrid schedules.
 
-\subsection{Computing Hybrid Schedules} \label{sec:compute-schedule}
+\subsection{Computing Hybrid Schedules} \label{sec:peregrine-compute-schedule}
 
 To compute a hybrid schedule, \peregrine first extracts a total order of
 synchronization operations from an execution trace.  Currently, it
-%\peregrine
-considers 28 \vv{pthread} operations, such as \v{pthread\_mutex\_lock()}
+considers 28 \vv{pthread} operations, such as \vv{pthread\_mutex\_lock()}
 and \vv{pthread\_cond\_wait()}.  It also considers
 the entry and exit of a thread as synchronization operations so that it can
 order these events together with other synchronization operations.  These
@@ -21,7 +20,7 @@ efficient~\cite{cui:tern:osdi10,kendo:asplos09}.
 \centering
 \includegraphics[width=.9\columnwidth]{peregrine/figures/concurrent-intervals.eps}
 \caption{{\em No \peregrine race with respect to this
-    schedule.}} \label{fig:concurrent-intervals}
+    schedule.}} \label{fig:peregrine-concurrent-intervals}
 \end{figure}
 
 For determinism, \peregrine must detect races that occurred during the recorded
@@ -30,7 +29,7 @@ resolve the races.  An off-the-shelf race detector would flag too many
 races because it considers the original synchronization
 constraints of the program, whereas \peregrine wants to detect races according
 to a sync-schedule~\cite{pres:sosp09,recplay:tocs}.  To illustrate,
-consider Figure~\ref{fig:concurrent-intervals}, a modified sync-schedule
+consider Figure~\ref{fig:peregrine-concurrent-intervals}, a modified sync-schedule
 based on the one in Figure~\ref{fig:trace}.  Suppose the two threads
 acquire different mutex variables, and thread $t_1$ acquires and releases
 its mutex before $t_0$.  Typical lockset-based~\cite{savage:eraser}
@@ -41,25 +40,6 @@ Sync-schedules anecdotally reduced the number of
 possible races greatly, in one extreme case, from more than a million to
 four~\cite{pres:sosp09}.
 
-
-%% For instance, consider the sync-schedule in
-%% Figure~\ref{fig:concurrent-intervals}.  We use $T_{m,n}$ to denote the
-%% region of an execution trace executed by thread $T_m$ between this
-%% thread's $(n-1)^{th}$ and $n^{th}$ synchronization operation.  By
-%% enforcing the sync-schedule between unrelated operations on lock \vv{l1}
-%% and \vv{l2}, we effectively make region $T_{1,1}$ happens-before $T_{2,2}$
-%% and $T_{2,1}$ happens-before $T_{1,3}$.  Thus, we do not need to detect
-%% races for these regions.  Such sync-schedules can vastly reduce the number
-%% of possible races, in one extreme case, from more than a million to
-%% four~\cite{pres:sosp09}.
-
-%% \peregrine constructs a happens-before graph,
-%% such as the graph in Figure~\ref{fig:concurrent-intervals}, by adding a
-%% directed edge for each pair of adjacent synchronization operations in a
-%% sync-schedule.  It then iterates through each pair of concurrent regions
-%% defined by the happens-before graph, and flags two instructions from these
-%% regions respectively as a race if they access the same memory location and
-%% at least one is write.
 
 Mechanically, \peregrine detects occurred races using a happens-before-based
 algorithm.  It flags two memory accesses as a race iff (1) they access the
@@ -74,7 +54,7 @@ Specifically, given two adjacent synchronization operations within one
 thread with relative positions $m$ and $n$ in the sync-schedule, \peregrine uses $[m,n)$ as
   the logical clock of all instructions executed by the thread between the
   two synchronization operations.  For instance, in
-  Figure~\ref{fig:trace}, all instructions run by thread $t_0$
+  Figure~\ref{fig:peregrine-trace}, all instructions run by thread $t_0$
   between the \vv{pthread\_mutex\_unlock()} operation and the thread exit have
   clock $[4, 8)$.
 %  where $4$ and $8$ are the relative positions of the    \vv{pthread\_mutex\_unlock()} operation and the thread exit in the sync-schedule.
@@ -94,7 +74,7 @@ always starts from zero and increments deterministically upon each
 instructions (branch, call, and return) locally executed within the thread
 from the last synchronization to instruction $inst_i$.  For instance, \peregrine
 represents the execution order constraint in
-Figure~\ref{fig:trace} as $\langle L15,t_1,0\rangle \rightarrow
+Figure~\ref{fig:peregrine-trace} as $\langle L15,t_1,0\rangle \rightarrow
 \langle L9,t_0,2 \rangle$, where the branch count $2$ includes the return
 from \vv{worker} and the branch L7 of thread $t_0$.
 We must distinguish different dynamic instances of a static instruction
@@ -106,20 +86,15 @@ synchronization operation because the partial schedule preceding this
 operation is already made deterministic.
 
 
-%% These branch instructions include LLVM instructions \vv{br} (direct conditional
-%% or unconditional branch), \vv{switch}, \v{indirectbr}, \v{call}, and
-%% \vv{invoke} (like call instruction, but with a callee that may throw
-%% exceptions).  
-
 \begin{figure}[t]
 \centering
 \includegraphics[width=.65\columnwidth]{peregrine/figures/pruned-order}
 \caption{{\em Example subsumed execution order
-    constraint.}} \label{fig:subsumed}
+    constraint.}} \label{fig:peregrine-subsumed}
 \end{figure}
 
 If one execution order constraint subsumes another, \peregrine does not add the
-subsumed one to the schedule.  Figure~\ref{fig:subsumed} shows a subsumed
+subsumed one to the schedule.  Figure~\ref{fig:peregrine-subsumed} shows a subsumed
 constraint example.  Algorithmically, \peregrine considers an execution order
 constraint $inst_1 \rightarrow inst_4$ subsumed by $inst_2 \rightarrow
 inst_3$ if (1) $inst_1$ and $inst_2$ have the same logical clock (so they
@@ -127,15 +102,13 @@ must be executed by the same thread) and $inst_2$ occurs no earlier than
 $inst_1$ in the recorded execution trace; (2) $inst_3$ and $inst_4$ have
 the same logical clock and $inst_3$ occurs no later than $inst_4$ in the
 trace.  This algorithm ignores
-%considers only direct order constraints and 
 transitive order constraints, so it may miss some subsumed constraints.
 For instance, it does not consider $inst_1 \rightarrow inst_4$ subsumed if
 we replace constraint $inst_2 \rightarrow inst_3$ with $inst_2 \rightarrow
 inst_{other}$ and $inst_{other} \rightarrow inst_3$ where $inst_{other}$
 is executed by a third thread.
-% and keep other things unchanged.
 
-\subsection{Enforcing Hybrid Schedules} \label{sec:enforce-schedule}
+\subsection{Enforcing Hybrid Schedules} \label{sec:peregrine-enforce-schedule}
 
 To enforce a synchronization order, \peregrine uses a technique called
 \emph{semaphore relay}~\cite{cui:tern:osdi10} that orders synchronization
@@ -145,49 +118,27 @@ At runtime, a synchronization wrapper
 control) waits on the semaphore of the current thread.  Once it is woken
 up, it proceeds with the actual synchronization operation, then wakes up
 the next thread according to the synchronization order.  
-% Compared to an approach using locks or condition variables, semaphore
-% relay avoids unnecessary lock contentions.
 For programs that frequently do synchronization operations, the overhead
 of semaphore may be large because it may cause a thread to block.  Thus,
 \peregrine also provides a spin-wait version of
 semaphore relay called \emph{flag relay}.
-%% Specifically, a synchronization wrapper spin-waits on a
-%% cache-aligned integer flag dedicated for the current thread, and sets the
-%% flag for the next thread when its done.  Flag relay 
 This technique turns out to be very
-fast for many programs evaluated (\S\ref{sec:efficient}).
+fast for many programs evaluated (\S\ref{sec:peregrine-efficient}).
 
-%% For an execution order constraint, \peregrine uses a more involved method
-%% because one static instruction may have many dynamic instances.  Recall
-%% that an execution order constraint has the form $inst_1 \rightarrow
-%% inst_2$ where $inst_i$ are the two dynamic instruction instances
-%% identified by thread ID, branch count, and static instruction ID
-%% (\S\ref{sec:schedule}).  Thread ID is a deterministic thread ID maintained
-%% by \peregrine.  Branch count counts locally within the thread the number of
-%% branch instructions from the last synchronization operation to $inst_i$.  
-
-% if we have space, include the slot function.
 
 To enforce an execution order constraint, \peregrine uses program
 instrumentation, avoiding the need for special hardware, such as the often
 imprecise hardware branch counters~\cite{smp-revirt:vee08}.
-% a more involved method to ensure that the order constraint is enforced
-% on the right dynamic instance of a static instruction.
 Specifically, given a dynamic instruction instance $\langle sid, tid, nbr \rangle$, \peregrine
 instruments the static instruction $sid$ with a semaphore \vv{up()} or
 \vv{down()} operation. 
-%(It cannot use mutex operations because it has to deterministically
-%resolve the race.)
 It also instruments the branch instructions counted in $nbr$ so that when
 each of these branch instructions runs, a per-thread branch counter is
 incremented.  \peregrine activates the inserted semaphore operation for thread
 $tid$ only when the thread's branch counter matches $nbr$.  To avoid
 interference and unnecessary contention when there are multiple order
 constraints, \peregrine assigns a unique semaphore to each constraint.
-% To handle the special case that a semaphore operation is inserted before
-% a thread does any synchronization, \peregrine considers the entry of a thread
-% a synchronization operation, so that it can start branch-counting and
-% activate semaphore operations from the entry of a thread.
+
 
 \begin{figure}[t]
 \centering
@@ -196,7 +147,7 @@ constraints, \peregrine assigns a unique semaphore to each constraint.
 \end{minipage}
 \vspace{-.1in}
 \caption{\emph{Instrumentation to enforce execution order
-    constraints.}} \label{fig:slot}
+    constraints.}} \label{fig:peregrine-slot}
 \vspace{-.1in}
 \end{figure}
 
@@ -204,16 +155,12 @@ constraints, \peregrine assigns a unique semaphore to each constraint.
 previously built~\cite{wu:loom:osdi10}.  It keeps two versions of each
 basic block: a normally compiled, fast version, and a slow backup
 padded with calls to a \vv{slot()} function before each instruction.  As
-shown in Figure~\ref{fig:slot}, the \vv{slot()} function interprets the
+shown in Figure~\ref{fig:peregrine-slot}, the \vv{slot()} function interprets the
 actions (semaphore \vv{up/down}) to be taken at each instruction.  To
 instrument an instruction, \peregrine simply updates the actions for that 
 instruction.  This instrumentation may be expensive, but fortunately, \peregrine
 leaves it off most of the time and turns it on only at the last
 synchronization operation before an inserted semaphore operation.
-%% instruction.  This instrumentation may be expensive, but fortunately, \peregrine
-%% can leave it off most of the time: \peregrine turns it on only at the last
-%% synchronization operation before an inserted semaphore operation, and
-%% turns it off immediately after the inserted semaphore operation is done.
 
 \peregrine turns on/off this instrumentation by switching a per-thread flag.
 Upon each function entry, \peregrine inserts code to check this flag and
@@ -222,31 +169,12 @@ determine whether to run the normal or slow version of the basic blocks.
 callee has switched the per-thread flag.  The overhead of these checks
 tend to be small because the flags are rarely switched 
 and hardware branch predication works well in this case~\cite{wu:loom:osdi10}.
-% hardware branch predication can predicates their 
-
-%% To turn on this instrumentation,
-%%  and switches the execution to the backup by flipping a
-%% per-thread switch flag.
-%% \peregrine flips switch flags at the last
-%% synchronization before and the first synchronization after an inserted
-%% semaphore operation.  \peregrine checks switch flags to determine whether it
-%% should run the fast or slow versions of a basic block at function entries
-%% and call returns.
 
 One potential issue with branch-counting is that \peregrine has to
-``fix'' the partial path from the last synchronization to the dynamic
+``fix" the partial path from the last synchronization to the dynamic
 instruction instance involved in a race so that the branch-counts match
 between the recorded execution and all executions
 reusing the extracted hybrid schedule, potentially reducing schedule-reuse rates.
 Fortunately, races are rare, so this issue has not reduced \peregrine's
 schedule-reuse rates based on our evaluation.
-
-%% from the last synchronization to the dynamic instruction instance
-%% involved in an execution order constraint, the same exact branches
-%% occur in the , so that
-
-
-% Although a better method exists (\S\ref{sec:slice}), we have not
-% implemented it because
-
 
