@@ -8,8 +8,8 @@ and enforces (\S\ref{sec:enforce-schedule}) hybrid schedules.
 To compute a hybrid schedule, \peregrine first extracts a total order of
 synchronization operations from an execution trace.  Currently, it
 %\peregrine
-considers 28 \v{pthread} operations, such as \v{pthread\_mutex\_lock()}
-and \v{pthread\_cond\_wait()}.  It also considers
+considers 28 \vv{pthread} operations, such as \v{pthread\_mutex\_lock()}
+and \vv{pthread\_cond\_wait()}.  It also considers
 the entry and exit of a thread as synchronization operations so that it can
 order these events together with other synchronization operations.  These
 operations are sufficient to run the programs evaluated, and more can be
@@ -35,8 +35,8 @@ based on the one in Figure~\ref{fig:trace}.  Suppose the two threads
 acquire different mutex variables, and thread $t_1$ acquires and releases
 its mutex before $t_0$.  Typical lockset-based~\cite{savage:eraser}
 or happens-before-based~\cite{lamportclock} race detectors would flag a
-race on \v{result}, but our race detector does not: the sync-schedule
-in the figure deterministically resolves the order of accesses to \v{result}.  
+race on \vv{result}, but our race detector does not: the sync-schedule
+in the figure deterministically resolves the order of accesses to \vv{result}.  
 Sync-schedules anecdotally reduced the number of
 possible races greatly, in one extreme case, from more than a million to
 four~\cite{pres:sosp09}.
@@ -46,8 +46,8 @@ four~\cite{pres:sosp09}.
 %% Figure~\ref{fig:concurrent-intervals}.  We use $T_{m,n}$ to denote the
 %% region of an execution trace executed by thread $T_m$ between this
 %% thread's $(n-1)^{th}$ and $n^{th}$ synchronization operation.  By
-%% enforcing the sync-schedule between unrelated operations on lock \v{l1}
-%% and \v{l2}, we effectively make region $T_{1,1}$ happens-before $T_{2,2}$
+%% enforcing the sync-schedule between unrelated operations on lock \vv{l1}
+%% and \vv{l2}, we effectively make region $T_{1,1}$ happens-before $T_{2,2}$
 %% and $T_{2,1}$ happens-before $T_{1,3}$.  Thus, we do not need to detect
 %% races for these regions.  Such sync-schedules can vastly reduce the number
 %% of possible races, in one extreme case, from more than a million to
@@ -63,7 +63,7 @@ four~\cite{pres:sosp09}.
 
 Mechanically, \peregrine detects occurred races using a happens-before-based
 algorithm.  It flags two memory accesses as a race iff (1) they access the
-same memory location and at least one is a \v{store} and (2) they are
+same memory location and at least one is a \vv{store} and (2) they are
 \emph{concurrent}.  To determine whether two accesses are concurrent,
 typical happens-before-based detectors use vector
 clocks~\cite{vectorclock} to track logically when the accesses occur.
@@ -75,9 +75,9 @@ thread with relative positions $m$ and $n$ in the sync-schedule, \peregrine uses
   the logical clock of all instructions executed by the thread between the
   two synchronization operations.  For instance, in
   Figure~\ref{fig:trace}, all instructions run by thread $t_0$
-  between the \v{pthread\_mutex\_unlock()} operation and the thread exit have
+  between the \vv{pthread\_mutex\_unlock()} operation and the thread exit have
   clock $[4, 8)$.
-%  where $4$ and $8$ are the relative positions of the    \v{pthread\_mutex\_unlock()} operation and the thread exit in the sync-schedule.
+%  where $4$ and $8$ are the relative positions of the    \vv{pthread\_mutex\_unlock()} operation and the thread exit in the sync-schedule.
     \peregrine considers two accesses with clocks $[m_0, n_0)$
       and $[m_1, n_1)$ concurrent if the two clock ranges overlap, \ie,
         $m_0 < n_1 \wedge m_1 < n_0$.  For instance, $[4, 8)$ and $[5,
@@ -90,13 +90,13 @@ dynamic instruction instance by $\langle sid, tid, nbr \rangle$ where
 $sid$ refers to the unique ID of a static instruction in the executable
 file; $tid$ refers to the internal thread ID maintained by \peregrine, which
 always starts from zero and increments deterministically upon each
-\v{pthread\_create()}; and $nbr$ refers to the number of control-transfer
+\vv{pthread\_create()}; and $nbr$ refers to the number of control-transfer
 instructions (branch, call, and return) locally executed within the thread
 from the last synchronization to instruction $inst_i$.  For instance, \peregrine
 represents the execution order constraint in
 Figure~\ref{fig:trace} as $\langle L15,t_1,0\rangle \rightarrow
 \langle L9,t_0,2 \rangle$, where the branch count $2$ includes the return
-from \v{worker} and the branch L7 of thread $t_0$.
+from \vv{worker} and the branch L7 of thread $t_0$.
 We must distinguish different dynamic instances of a static instruction
 because some of these dynamic instances may be involved in races while others
 are not.  We do so by counting branches because if an instruction is
@@ -106,9 +106,9 @@ synchronization operation because the partial schedule preceding this
 operation is already made deterministic.
 
 
-%% These branch instructions include LLVM instructions \v{br} (direct conditional
-%% or unconditional branch), \v{switch}, \v{indirectbr}, \v{call}, and
-%% \v{invoke} (like call instruction, but with a callee that may throw
+%% These branch instructions include LLVM instructions \vv{br} (direct conditional
+%% or unconditional branch), \vv{switch}, \v{indirectbr}, \v{call}, and
+%% \vv{invoke} (like call instruction, but with a callee that may throw
 %% exceptions).  
 
 \begin{figure}[t]
@@ -174,8 +174,8 @@ imprecise hardware branch counters~\cite{smp-revirt:vee08}.
 % a more involved method to ensure that the order constraint is enforced
 % on the right dynamic instance of a static instruction.
 Specifically, given a dynamic instruction instance $\langle sid, tid, nbr \rangle$, \peregrine
-instruments the static instruction $sid$ with a semaphore \v{up()} or
-\v{down()} operation. 
+instruments the static instruction $sid$ with a semaphore \vv{up()} or
+\vv{down()} operation. 
 %(It cannot use mutex operations because it has to deterministically
 %resolve the race.)
 It also instruments the branch instructions counted in $nbr$ so that when
@@ -203,9 +203,9 @@ constraints, \peregrine assigns a unique semaphore to each constraint.
 \peregrine instruments a program by leveraging a fast instrumentation framework we
 previously built~\cite{wu:loom:osdi10}.  It keeps two versions of each
 basic block: a normally compiled, fast version, and a slow backup
-padded with calls to a \v{slot()} function before each instruction.  As
-shown in Figure~\ref{fig:slot}, the \v{slot()} function interprets the
-actions (semaphore \v{up/down}) to be taken at each instruction.  To
+padded with calls to a \vv{slot()} function before each instruction.  As
+shown in Figure~\ref{fig:slot}, the \vv{slot()} function interprets the
+actions (semaphore \vv{up/down}) to be taken at each instruction.  To
 instrument an instruction, \peregrine simply updates the actions for that 
 instruction.  This instrumentation may be expensive, but fortunately, \peregrine
 leaves it off most of the time and turns it on only at the last

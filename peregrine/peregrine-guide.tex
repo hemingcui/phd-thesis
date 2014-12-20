@@ -3,7 +3,7 @@
 In both the inter- and intra-thread steps of determinism-preserving
 slicing, \peregrine frequently queries alias analysis.  The inter-thread step
 needs alias information to determine whether two instructions may race
-(\v{mayalias()} in Figure~\ref{fig:detect-input-race}).  The intra-thread step
+(\vv{mayalias()} in Figure~\ref{fig:detect-input-race}).  The intra-thread step
 needs alias information to track potential dependencies.
 
 We thus integrated \bddbddb~\cite{bddbddb,bddalias:pldi04}, one of the best alias analyses,
@@ -48,7 +48,7 @@ To illustrate, consider the example in Figure~\ref{fig:example}.  Since the
 number of threads is determined at runtime, static analysis has to abstract
 this unknown number of dynamic thread instances, often coalescing
 results for multiple threads into one.  When \peregrine slices the trace in
-Figure~\ref{fig:trace}, \bddbddb reports that the accesses to \v{data} 
+Figure~\ref{fig:trace}, \bddbddb reports that the accesses to \vv{data} 
 (L13 instances) in different threads may alias.
 \peregrine thus has to add them to the trace slice to avoid new races
 (\S\ref{sec:interthread-slice}).  Since L13 depends 
@@ -58,8 +58,8 @@ as large as the trace itself.  The preconditions from this slice
 constrains the data size to be exactly 2, so \peregrine cannot reuse
 the hybrid schedule in Figure~\ref{fig:trace} on other data sizes.
 
-%% If we change the example slightly and allocate a buffer using \v{malloc()}
-%% within \v{SlaveStart()}, \bddbddb also reports that different buffers
+%% If we change the example slightly and allocate a buffer using \vv{malloc()}
+%% within \vv{SlaveStart()}, \bddbddb also reports that different buffers
 %% allocated in different threads may alias.
 
 %% This imprecision greatly reduces the effectiveness of our slicing
@@ -67,8 +67,8 @@ the hybrid schedule in Figure~\ref{fig:trace} on other data sizes.
 %% $13_1$ and $13_0$ to the trace slice because alias analysis reports that
 %% these instructions may race, 
 
-%% Once we fix the schedule to contain a single \v{lock()} operation,
-%% pointers \v{p} and \v{q} can never alias each other with respect to this
+%% Once we fix the schedule to contain a single \vv{lock()} operation,
+%% pointers \vv{p} and \v{q} can never alias each other with respect to this
 %% schedule.  However, standard alias analysis
 
 %, then runs alias analysis on the simplified program
@@ -83,7 +83,7 @@ Specifically, \peregrine performs three main simplifications:
   each thread in a schedule a copy of the thread function.
 
 \item It unrolls a loop when it can determine the loop bound based on a
-  schedule.  For instance, from the number of the \v{pthread\_create()}
+  schedule.  For instance, from the number of the \vv{pthread\_create()}
   operations in a schedule, it can determine how many times the loop at
   lines L4--L5 in Figure~\ref{fig:example} executes.
 
@@ -121,9 +121,9 @@ or two abstract locations, and reports the accesses as aliases.  Range
 analysis can solve this problem by tracking the lower and upper bounds of
 the integers and pointers.  With range analysis, \peregrine answers alias queries
 as follows.  Given two pointers
-\v{(p+i)} and \v{(q+i)}, it first queries \bddbddb whether \v{p} and \v{q} may alias.
-If so, it queries the more expensive range analysis whether \v{p+i} and
-\v{q+j} may be equal.  It considers the pointers as aliases only when both
+\vv{(p+i)} and \v{(q+i)}, it first queries \bddbddb whether \v{p} and \v{q} may alias.
+If so, it queries the more expensive range analysis whether \vv{p+i} and
+\vv{q+j} may be equal.  It considers the pointers as aliases only when both
 queries are true.  Note that our simplification technique is again key
 to precision because standard range analysis would merge ranges of different threads
 into one.
@@ -157,7 +157,7 @@ program, which we leave for future work.
 %% In addition, the analyzer unrolls
 %% loops whose bounds are fixed by the schedule.  It also removes branches
 %% that contradict the schedule~\cite{sherlog:asplos10}.  For instance, given
-%% a \v{if}-statement ``\v{if(x) lock(); else ...}'' with the \v{lock()}
+%% a \vv{if}-statement ``\v{if(x) lock(); else ...}'' with the \v{lock()}
 %% operation in the schedule, \peregrine removes the false branch of this
-%% \v{if}-statement so that alias analysis has one fewer chance to get
+%% \vv{if}-statement so that alias analysis has one fewer chance to get
 %% confused.

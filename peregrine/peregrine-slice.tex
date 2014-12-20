@@ -41,7 +41,7 @@ inter-thread step.
 In the inter-thread step, \peregrine detects and avoids input-dependent races
 with respect to a hybrid schedule.  An example input-dependent race is the
 one between lines L8 and L15 in Figure~\ref{fig:example}, which occurs when
-\v{atoi(argv[3])} returns 1 causing the true branch of L7 to be taken.
+\vv{atoi(argv[3])} returns 1 causing the true branch of L7 to be taken.
 Figure~\ref{fig:input-race-examples} shows two more types of input-dependent races.
 
 \begin{figure}[b]
@@ -60,7 +60,7 @@ Figure~\ref{fig:input-race-examples} shows two more types of input-dependent rac
 \hspace{\stretch{1}}
 \vspace{-.1in}
 \caption{{\em Input-dependent races.} Race (a) occurs when
-  \v{input1} and \v{input2} are the same; Race (b) occurs when
+  \vv{input1} and \v{input2} are the same; Race (b) occurs when
   both true branches are taken.} \label{fig:input-race-examples}
 \end{figure}
 
@@ -90,7 +90,7 @@ through each pair of instructions respectively from the
 two regions, and handles three types of input-dependent races.  First, if
 neither instruction is a branch instruction, it queries alias analysis to
 determine whether the instructions \emph{may} race.  If so, it adds both
-instructions to \v{slicing\_targets} and adds additional
+instructions to \vv{slicing\_targets} and adds additional
 preconditions to ensure that the pointers dereferenced are different, so
 that reusing the schedule on a different input does not cause the may-race
 to become a real race.  Figure~\ref{fig:input-race-examples}(a) shows
@@ -106,7 +106,7 @@ branch\footnote{\peregrine computes instructions contained in a not-taken
   branch using an interprocedural \emph{post-dominator
     analysis}~\cite{aho:dragon:06}.} of this instruction may race with the
 other instruction.
-% and if so, it adds the taken branch to \v{slicing\_targets}.
+% and if so, it adds the taken branch to \vv{slicing\_targets}.
 It must check the not-taken branch because a new
 execution may well take the not-taken branch and cause a race.  To avoid such a
 race, \peregrine adds the taken branch into the trace slice so that executions
@@ -120,7 +120,7 @@ the false branch of L7 in the trace slice.
 
 Third, if both instructions are branch instructions, the algorithm checks
 whether the not-taken branches of the instructions may race, and if so, it
-adds either taken branch to \v{slicing\_targets}.
+adds either taken branch to \vv{slicing\_targets}.
 % because if both not-taken branches are taken, a race may occur
 For instance, to avoid the race in Figure~\ref{fig:input-race-examples}(b),
 \peregrine includes one of the false branches in the trace slice.
@@ -151,9 +151,9 @@ instructions in the two regions respectively.
 In the intra-thread step, \peregrine leverages a previous
 algorithm~\cite{castro:bouncer} to compute a per-thread path slice,
 by including instructions required for the thread to reach the
-\v{slicing\_targets} identified in the inter-thread step and the events in
+\vv{slicing\_targets} identified in the inter-thread step and the events in
 the hybrid schedule.  To do so, \peregrine first prepares a per-thread ordered
-target list by splitting \v{slicing\_targets} and events in the hybrid
+target list by splitting \vv{slicing\_targets} and events in the hybrid
 schedule and sorting them based on their order in the execution trace.
 % (Each dynamic instruction instance occurs only once in per-thread target
 % lists.)
@@ -166,8 +166,8 @@ data-dependencies of this target.\footnote{For readers familiar with
   the operands of a target.  For instance, consider instruction
   L9 of thread $t_0$ in Figure~\ref{fig:trace}.  \peregrine's goal is
   to deterministically resolve the race involving L9 of $t_0$, but it
-  allows the value of \v{result} to be different.  Thus, \peregrine does not
-  track dependencies for the value of \v{result}; L15 of $t_0$ is elided
+  allows the value of \vv{result} to be different.  Thus, \peregrine does not
+  track dependencies for the value of \vv{result}; L15 of $t_0$ is elided
   from the slice for this reason.}  \peregrine adds a branch
 instruction to the path slice if taking the opposite branch may cause the
 thread not to reach any instruction in the current (partial) path slice;
@@ -175,32 +175,32 @@ L3 in Figure~\ref{fig:trace} is added for this reason.
 %   For instance, when slicing the trace in Figure~\ref{fig:trace}, \peregrine
 %   adds $4_{t_0}^T$ to thread $t_0$'s path slice because the not-taken
 %   branch would not lead to target $\underline{5_{t_0}}$, the
-%   \v{pthread\_create()} call.  \peregrine
+%   \vv{pthread\_create()} call.  \peregrine
 It adds a non-branch instruction to the path slice if the result of this
 instruction may be used by instructions in the current path slice;
 L1 in Figure~\ref{fig:trace} is added for this reason.
 
-A ``\v{load p}'' instruction may depend on an earlier ``\v{store q}'' if
-\v{p} and \v{q} may alias even though \v{p} and \v{q} may not be the
+A ``\vv{load p}'' instruction may depend on an earlier ``\v{store q}'' if
+\vv{p} and \v{q} may alias even though \v{p} and \v{q} may not be the
 same in the execution trace, because an execution on a different input
-may cause \v{p} and \v{q} to be the same.  Thus, \peregrine queries alias
+may cause \vv{p} and \v{q} to be the same.  Thus, \peregrine queries alias
 analysis to compute such \emph{may}-dependencies and include the depended-upon
 instructions in the trace slice.
 
-%  For instance, \peregrine adds $1_{t_0}$ because \v{nthread} is used by $3_{t_0}^T$.
+%  For instance, \peregrine adds $1_{t_0}$ because \vv{nthread} is used by $3_{t_0}^T$.
 
 Our main modification to~\cite{castro:bouncer} is to slice toward multiple
 ordered targets.  To illustrate this need, consider branch L4:false of
 $t_0$ in Figure~\ref{fig:trace}.  \peregrine must add this branch  to thread
 $t_0$'s slice, because otherwise, the thread would reach another
-\v{pthread\_create()}, a different synchronization operation than the
-\v{pthread\_mutex\_lock()} operation in the schedule.
+\vv{pthread\_create()}, a different synchronization operation than the
+\vv{pthread\_mutex\_lock()} operation in the schedule.
 
 %\subsection{Discussion}
 
 The choice of LLVM IR has considerably simplified our slicing
 implementation.  First, LLVM IR limits memory access to only two
-instructions, \v{load} and \v{store}, so that our
+instructions, \vv{load} and \v{store}, so that our
 algorithms need consider only these
 instructions.  Second, LLVM IR uses an unlimited number of virtual registers,
 so that our analysis does not get poisoned by stack spilling instructions.

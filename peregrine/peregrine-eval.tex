@@ -11,25 +11,25 @@
 \apache & Reference count decrement and check against 0 are not atomic,
 resulting in a program crash.\\
 
-\pbzip & Variable \v{fifo} is used by one thread after being freed by
+\pbzip & Variable \vv{fifo} is used by one thread after being freed by
 another thread, resulting in a program crash.\\
 
-\barnes & Variable \v{tracktime} is read by one thread before assigned the
+\barnes & Variable \vv{tracktime} is read by one thread before assigned the
 correct value by another thread.\\
 
-\fft & \v{initdonetime} and \v{finishtime} are read by one thread before
+\fft & \vv{initdonetime} and \v{finishtime} are read by one thread before
 assigned the correct values by another thread.\\
 
-\lun & Variable \v{rf} is read by one thread before assigned the correct
+\lun & Variable \vv{rf} is read by one thread before assigned the correct
 value by another thread. \\
 
 \streamcluster & \parsec has a custom barrier implementation that
-synchronizes using a shared integer flag \v{is\_arrival\_phase}.
+synchronizes using a shared integer flag \vv{is\_arrival\_phase}.
 % One write to the flag is protected by mutex but one read from it is not.
 \\
 
 \racey & Numerous intentional races caused by multiple threads reading and
-writing global arrays \v{sig} and \v{m} without synchronization. \\
+writing global arrays \vv{sig} and \v{m} without synchronization. \\
 
 \end{tabular}}
 \end{center}
@@ -44,13 +44,13 @@ Our \peregrine implementation consists of 29,582 lines of C++ code, including
 1,338 lines for the recorder; 2,277 lines for the replayer; and 25,967 lines
 for the analyzer.  The analyzer further splits into 7,845 lines for
 determinism-preserving slicing, 12,332 lines for schedule-guided
-simplification, and 5,790 lines for our LLVM frontend to \v{bddbddb}.
+simplification, and 5,790 lines for our LLVM frontend to \vv{bddbddb}.
 
 % TODO describe all programs
 We evaluated our \peregrine implementation on a diverse set of \nprog programs,
 including \apache, a popular web server; \pbzip, a parallel compression
-utility; \aget, a parallel \v{wget}-like utility; \pfscan, a parallel
-\v{grep}-like utility; parallel implementations of 13
+utility; \aget, a parallel \vv{wget}-like utility; \pfscan, a parallel
+\vv{grep}-like utility; parallel implementations of 13
 computation-intensive algorithms, 10 in \splash and 3 in \parsec; and
 \racey, a benchmark specifically designed to exercise deterministic
 execution and replay systems~\cite{racy-stress}.  All \splash benchmarks
@@ -66,16 +66,16 @@ machine with 24 GB memory running Linux 2.6.35.  When evaluating \peregrine on
 \apache and \aget, we ran the evaluated program on this machine and the
 corresponding client or server on another to avoid contention
 between the programs.  These machines were connected via 1Gbps LAN.  We
-compiled all programs to machine code using \v{llvm-gcc -O2} and the
-LLVM compiler \v{llc}.  We used eight worker threads for all
+compiled all programs to machine code using \vv{llvm-gcc -O2} and the
+LLVM compiler \vv{llc}.  We used eight worker threads for all
 experiments.
 
 Unless otherwise specified, we used the following workloads in our
 experiments.  For \apache, we used \ab~\cite{apachebench} to repeatedly
 download a 100~KB webpage. For \pbzip, we compressed a 10~MB randomly
 generated text file.
-For \aget, we downloaded a 77~MB file (\v{Linux-3.0.1.tar.bz2}). 
-For \pfscan, we scanned the keyword \v{return} from 100 randomly chosen
+For \aget, we downloaded a 77~MB file (\vv{Linux-3.0.1.tar.bz2}). 
+For \pfscan, we scanned the keyword \vv{return} from 100 randomly chosen
 files in GCC.  For \splash and \parsec programs, 
 we ran workloads which typically completed in 1-100 ms.
 
@@ -115,25 +115,25 @@ In the remainder of this section, we focus on four questions:
 %% \apache & Reference count decrement and check against 0 are not atomic,
 %% resulting in a program crash.\\
 
-%% \pbzip & Variable \v{fifo} is used by one thread after being freed by
+%% \pbzip & Variable \vv{fifo} is used by one thread after being freed by
 %% another, resulting in a program crash.\\
 
-%% \barnes & Variable \v{tracktime} is read by one thread before assigned the
+%% \barnes & Variable \vv{tracktime} is read by one thread before assigned the
 %% correct value by another.\\
 
-%% \fft & \v{initdonetime} and \v{finishtime} are read by one thread before
+%% \fft & \vv{initdonetime} and \v{finishtime} are read by one thread before
 %% assigned the correct values by another thread.\\
 
-%% \lu & Variable \v{rf} is read by one thread before assigned the correct
+%% \lu & Variable \vv{rf} is read by one thread before assigned the correct
 %% value by another thread. \\
 
 %% \streamcluster & \parsec has a custom barrier implementation that
-%% synchronizes using a shared integer flag \v{is\_arrival\_phase}.
+%% synchronizes using a shared integer flag \vv{is\_arrival\_phase}.
 %% % One write to the flag is protected by mutex but one read from it is not.
 %% \\
 
 %% \racey & Numerous intentional races caused by multiple threads reading and
-%% writing global arrays \v{sig} and \v{m} without synchronization. \\
+%% writing global arrays \vv{sig} and \v{m} without synchronization. \\
 
 %% \end{tabular}}
 %% \end{center}
@@ -326,7 +326,7 @@ second group of programs, including \barnes, \lun, \radix, \waters, and
 \ocean, also perform many synchronization operations, so flag relay speeds up
 both groups of programs significantly.  Moreover, among the
 synchronization operations done by the second group of programs, many are
-\v{pthread\_barrier\_wait()} operations, so \peregrine further speeds up these
+\vv{pthread\_barrier\_wait()} operations, so \peregrine further speeds up these
 programs by skipping these wait operations.
 
 %% For programs that do synchronization
@@ -341,7 +341,7 @@ programs by skipping these wait operations.
 %% MySQL, volrend, raytrace, water-nsquared, and choleskey is relatively
 %% large because these programs performed many synchronization operations
 %% over a short period of time.  For instance, water-nsquared and cholesky
-%% both call \v{pthread\_mutex\_lock()} and \v{pthread\_mutex\_unlock()} in a
+%% both call \vv{pthread\_mutex\_lock()} and \v{pthread\_mutex\_unlock()} in a
 %% tight loop.
 
 %% To better understand the replayer overhead, we analyzed the number of
@@ -508,7 +508,7 @@ same scientific algorithm, their data access patterns are very different
 \centering
 \includegraphics[width=.7\columnwidth]{peregrine/figures/new-recorder.eps}
 \vspace{-.25in}
-\caption{{\em Overhead of recording \v{load} and \v{store} instructions.}} \label{fig:new-recorder-overhead}
+\caption{{\em Overhead of recording \vv{load} and \v{store} instructions.}} \label{fig:new-recorder-overhead}
 \end{figure}
 
 As discussed in \S\ref{sec:record}, \peregrine currently runs \klee to record
@@ -518,7 +518,7 @@ the normal execution of a program.  However, this slowdown can be reduced
 to around 10X using existing record-replay
 techniques~\cite{idna:vee06,scribe:sigmetrics10}.  Indeed, we have
 experimented with a preliminary version of a new recorder that records an
-execution by instrumenting \v{load} and \v{store} instructions and saving
+execution by instrumenting \vv{load} and \v{store} instructions and saving
 them into per-thread logs~\cite{idna:vee06}.  Figure~\ref{fig:new-recorder-overhead} shows that
 this new recorder incurs roughly 2-35X slowdown on eight programs,
 comparable to existing record-replay systems.  Due to time
@@ -693,7 +693,7 @@ below.
   preconditions \peregrine computes for \apache fix the URL length; they also
   constrain the page size to be within an 8~KB-aligned range if
     the page is not cached.  The preconditions \peregrine computes for \aget fix
-    the positions of ``\v{/}'' in the URL and narrow down the file size
+    the positions of ``\vv{/}'' in the URL and narrow down the file size
     to be within an 8~KB-aligned range.  These preconditions thus
       unnecessarily reduce the schedule-reuse rates.  Nonetheless, they
       can still match many different inputs, because they do not constrain
@@ -851,7 +851,7 @@ below.
     \peregrine} represents the number of annotations added for \peregrine, and {\bf
     \tern} counts annotations added for \tern.  Programs not included in
   the \tern evaluation are labeled n/a. LOC of \pbzip also includes the
-  lines of code of the compression library \v{libbz2}.} \label{table:apps}
+  lines of code of the compression library \vv{libbz2}.} \label{table:apps}
 \vspace{-.05in}
 \end{table}
 
@@ -862,7 +862,7 @@ common tasks such as memory allocation, so we annotated 21 such
 functions.  We added two annotations to mark the boundaries of client
 request processing and one to expose the hidden state
 in \apache (\S\ref{sec:window}).  \pbzip decompression
-uses a custom search function (\v{memstr}) to scan through the input file
+uses a custom search function (\vv{memstr}) to scan through the input file
 for block boundaries.  We added one annotation for this function to relax
 the preconditions \peregrine computes.  (\peregrine works automatically with \pbzip
 compression.)  We added one assertion to annotate the range of a variable
@@ -877,9 +877,9 @@ data-dependencies between instructions.
 
 % emphasize interesting side effects
 In order to make the evaluated programs work with \peregrine, we had to fix several bugs
-in them.  For \aget, we fixed an off-by-one write in \v{revstr()} which
+in them.  For \aget, we fixed an off-by-one write in \vv{revstr()} which
 prevented us from tracking constraints for the problematic write, and a
-missing check on the return value of \v{pwrite()} which prevented us from
+missing check on the return value of \vv{pwrite()} which prevented us from
 computing precise ranges.  We fixed similar missing checks in \swaptions,
 \streamcluster, and \radix.  We did not count these modifications in
 Table~\ref{table:apps} because they are real bug fixes.  (This interesting

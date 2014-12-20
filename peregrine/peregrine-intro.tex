@@ -5,49 +5,80 @@ when data races exist. To overcome this limitation, this chapter presents
 schedules on many inputs, and can effoce fully determinism with reasonable
 overhead.
 
-\section{Introduction} \label{sec:intro}
+\section{Introduction} \label{sec:peregrine-intro}
 
 %% Why multithreading is so difficult to get right. Too many schedules.
-%% All inputs, each input (define nondeterminism). Must refer to Chapter 2: motivation.
+%% All inputs, each input (define nondeterminism). Must refer to Chapter 2:
+%% motivation.
+As described in Chapter~\ref{sec:smt-motivation}, our research reveals that a
+key reason that multithreaded programs is so difficult to get right is: thes
+programs have \emph{too many} possible thread interleavings (or schedules) at
+runtime. Even running on the same input, the concurrently running threads of a
+program may interleave in too many different ways, depending on such factors as
+hardware timings and OS scheduling. The community calls the phenomenon that
+multithreaded programs may run into different schedules on the same input
+``nondeterminism". Considering all inputs, the number of possible schedules is
+even greater. In this traditional multithreading manner, it is
+extremely challenging to understand, test, analyze, or verify all these
+schedules in a multithreaded program and make sure they are free of concurrency
+bugs. Therefore, a concurency bug within an untested schedule can show up in
+production runs and lead to critical failures and vulnerabilities.
 
 %% Two complementary techniques have been proposed to address this difficulty.
-%% SMT and DMT. However, it is still an open challenge to enforce a highly reusable and fully deterministic schedules efficiently.
+%% SMT and DMT. However, it is still an open challenge to enforce a fully
+%% deterministic schedules efficiently.
+To reduce the number of possible schedules and make multithreading easier to get
+right, two complementary techniques have been invented by reserachers recently.
+Stable Multithreading (\smt)~\cite{determinator:osdi10, cui:tern:osdi10}, which
+is created by my collaborators and me, aims to reduce the number possibles
+schedules on all inputs. Deterministic Multithreading
+(\dmt)~\cite{dmp:asplos09,kendo:asplos09,coredet:asplos10,
+dos:osdi10,grace:oopsla09} addresses the nondeterminism problem, and it focuses
+on reducing the number of possible schedules on each input down to one. Notably,
+our \tern system described in Chapter~\ref{sec:tern} is the first \smt and \dmt
+system. Unfortunately, despite these efforts, an open challenge~\cite{wodet11}
+well recognized by the research community remains: how to build \emph{both
+deterministic and efficient} \dmt systems for general multithreaded programs on
+commodity multiprocessors.  Existing \dmt systems either incur prohibitive
+overhead, or are not fully deterministic if there are data races.
 
 %% Why hard. Introduce two forms of schedules
-%%(1) synch schedule can be made stable and efficient, but not fully determnistic.
-%%(2) Mem schedule can be made fully determinsitic, but not stable and efficient.
+%%(1) synch schedule can be made efficient, but not fully determnistic.
+%%(2) Mem schedule can be made fully determinsitic, but not efficient.
 
 %% Our core technique. Schedule relaxation.
 %%And why it can be stable, deterministic, and efficient.
 
 
-Different runs of a multithreaded program may show different behaviors,
-depending on how the threads interleave.  This \emph{nondeterminism} makes
-it difficult to write, test, and debug multithreaded programs.  For
-instance, testing becomes less assuring because the schedules tested may
-not be the ones run in the field.  Similarly, debugging can be a nightmare
-because developers may have to reproduce the exact buggy schedules.  These
-difficulties have resulted in many ``heisenbugs'' in widespread
-multithreaded programs~\cite{lu:concurrency-bugs}.
+% Different runs of a multithreaded program may show different behaviors,
+% depending on how the threads interleave.  This \emph{nondeterminism} makes
+% it difficult to write, test, and debug multithreaded programs.  For
+% instance, testing becomes less assuring because the schedules tested may
+% not be the ones run in the field.  Similarly, debugging can be a nightmare
+% because developers may have to reproduce the exact buggy schedules.  These
+% difficulties have resulted in many ``heisenbugs'' in widespread
+% multithreaded programs~\cite{lu:concurrency-bugs}.
 
-Recently, researchers have pioneered a technique called
-\emph{Deterministic Multithreading (\dmt)} \cite{cui:tern:osdi10,dmp:asplos09,kendo:asplos09,coredet:asplos10, dos:osdi10,grace:oopsla09}.
-DMT systems ensure that the same input
-is always processed with the same deterministic schedule, thus eliminating
-heisenbugs and problems due to nondeterminism.  Unfortunately,
-despite these efforts, an open challenge~\cite{wodet11} well recognized by
-the DMT community remains: how to build \emph{both deterministic
-  and efficient} DMT systems for general multithreaded programs on
-commodity multiprocessors.  Existing DMT systems either incur prohibitive
-overhead, or are not fully deterministic if there are data races.
+% Recently, researchers have pioneered a technique called
+% \emph{Deterministic Multithreading (\dmt)}
+% \cite{cui:tern:osdi10,dmp:asplos09,kendo:asplos09,coredet:asplos10,
+% dos:osdi10,grace:oopsla09}.
+% DMT systems ensure that the same input
+% is always processed with the same deterministic schedule, thus eliminating
+% heisenbugs and problems due to nondeterminism.  Unfortunately,
+% despite these efforts, an open challenge~\cite{wodet11} well recognized by
+% the DMT community remains: how to build \emph{both deterministic
+%   and efficient} DMT systems for general multithreaded programs on
+% commodity multiprocessors.  Existing DMT systems either incur prohibitive
+% overhead, or are not fully deterministic if there are data races.
 
 Specifically, existing DMT systems enforce two forms of schedules: (1) a
 \emph{mem-schedule} is a deterministic schedule of shared memory
 accesses~\cite{dmp:asplos09,coredet:asplos10,dos:osdi10}, such as
-\v{load/store} instructions, and (2) a \emph{sync-schedule} is a
+\vv{load/store} instructions, and (2) a \emph{sync-schedule} is a
 deterministic order of synchronization
 operations~\cite{kendo:asplos09,cui:tern:osdi10}, such as
-\v{lock()/unlock()}.  Enforcing a mem-schedule is truly deterministic even
+\vv{lock()/unlock()}.  Enforcing a mem-schedule is truly deterministic even
 for programs with data races, but may incur prohibitive overhead (\eg,
 roughly 1.2X-6X~\cite{coredet:asplos10}).  Enforcing a sync-schedule is
 efficient (\eg, average 16\% slowdown~\cite{kendo:asplos09}) because
@@ -65,39 +96,42 @@ sync-schedule otherwise, combining both the efficiency of sync-schedules
 and the determinism of mem-schedules. We call these combined schedules
 \emph{hybrid schedules}.
 
-Based on this insight, we have built \peregrine, an efficient deterministic
-multithreading system to address the aforementioned open challenge.
-When a program first runs on an input, \peregrine
-records a detailed execution trace
-including memory accesses in case the execution runs into races.
+Based on this insight, we have built \peregrine, an efficient \dmt
+system to address the aforementioned open challenge.
+When a program first runs on an input, \peregrine records a detailed execution
+trace including memory accesses in case the execution runs into races.
 \peregrine then \emph{relaxes} this detailed trace into a hybrid schedule,
 including (1) a total order of synchronization operations and (2) a set of
-execution order constraints to
-deterministically resolve each occurred race.  When the same input is provided 
-again, \peregrine can reuse this schedule deterministically and efficiently.
+execution order constraints to deterministically resolve each occurred race. 
+When the same input is provided again, \peregrine can reuse this schedule
+deterministically and efficiently.
 
 Reusing a schedule only when the program input matches exactly is too
-limiting.  Fortunately, the schedules \peregrine computes are often
-``coarse-grained'' and
-reusable on a broad range of inputs.  Indeed, our previous work has shown
-that a small number of sync-schedules can often cover over 90\% of the
-workloads for real programs such as \apache~\cite{cui:tern:osdi10}.  The
-higher the reuse rates, the more efficient \peregrine is.  Moreover, by reusing
-schedules, \peregrine makes program behaviors more \emph{stable} across
-different inputs, so that slight input changes do not lead to vastly
-different schedules~\cite{cui:tern:osdi10} and thus ``\emph{input-heisenbugs}''
-where slight input changes cause concurrency bugs to appear or disappear.
+limiting, and we aim to make \peregrine also a \smt system that can frequently
+reuse schedules on a wide range of inputs.  Fortunately, the schedules
+\peregrine computes are often
+``coarse-grained" and reusable on a broad range of inputs.  Indeed, our
+previous work has shown that a small number of sync-schedules can often cover
+over 90\% of the workloads for real programs such as
+\apache~\cite{cui:tern:osdi10}.  The higher the reuse rates, the more efficient
+\peregrine is.
+
+% Moreover, by reusing schedules, \peregrine makes program
+% behaviors more \emph{stable} across different inputs, so that slight input
+% changes do not lead to vastly different schedules~\cite{cui:tern:osdi10} and
+% thus ``\emph{input-heisenbugs}" where slight input changes cause concurrency
+% bugs to appear or disappear.
 
 Before reusing a schedule on an input, \peregrine must check that the input
-satisfies the \emph{preconditions} of the schedule, so that (1) the
-schedule is feasible, \ie, the execution on the input will reach all
-events in the same deterministic order as in the schedule and (2) the
+satisfies the input constrints (or \emph{preconditions}) of the schedule, so
+that (1) the schedule is feasible, \ie, the execution on the input will reach
+all events in the same deterministic order as in the schedule and (2) the
 execution will not introduce new races. (New races may occur if they are
 \emph{input-dependent}; see \S\ref{sec:interthread-slice}.)  A na\"ive
 approach is to collect preconditions from all input-dependent branches in
 an execution trace.  For instance, if a branch instruction inspects
-input variable \v{X} and goes down the true branch, we collect a
-precondition that \v{X} must be nonzero.  Preconditions collected via
+input variable \vv{X} and goes down the true branch, we collect a
+precondition that \vv{X} must be nonzero.  Preconditions collected via
 this approach ensures that an execution on an input satisfying the
 preconditions will always follow the path of the recorded execution in all
 threads.  However, many of these branches concern thread-local
@@ -122,8 +156,8 @@ programs.  Precondition slicing takes an execution trace and a
 a \emph{trace slice} that captures the instructions required for the
 execution to reach the target with equivalent operand
 values.  Intuitively, these instructions include ``branches whose
-  outcome matters'' to reach the target and ``mutations that affect the
-  outcome of those branches''~\cite{castro:bouncer}.  This trace slice
+  outcome matters" to reach the target and ``mutations that affect the
+  outcome of those branches"~\cite{castro:bouncer}.  This trace slice
 typically has much fewer branches than the original execution trace,
 so that we can compute more relaxed preconditions.  However, previous
 work~\cite{castro:bouncer} does not compute correct trace slices for
@@ -151,9 +185,9 @@ separate the results for each thread, instead of imprecisely merging
 results for all threads.
 
 We have built a prototype of \peregrine that runs in user-space.
-It automatically tracks \v{main()}
+It automatically tracks \vv{main()}
 arguments, data read from files and sockets, and values
-returned by \v{random()}-variants as input.  It handles long-running servers by
+returned by \vv{random()}-variants as input.  It handles long-running servers by
 splitting their executions into \emph{windows} and
 reusing schedules across windows~\cite{cui:tern:osdi10}.
 The hybrid schedules it computes are fully deterministic for programs that
@@ -161,7 +195,7 @@ The hybrid schedules it computes are fully deterministic for programs that
 inputs tracked by \peregrine and (2) adhere to the assumptions of the tools
 \peregrine uses.
 
-We evaluated \peregrine on a diverse set of \nprog programs, including the
+We evaluated \peregrine on a diverse set of \peregrinenprog programs, including the
 \apache web server~\cite{apache}; three desktop programs, such as
 \pbzip~\cite{pbzip2}, a parallel compression utility; implementations of
 12 computation-intensive algorithms in the popular \splash and \parsec
@@ -180,17 +214,17 @@ techniques~\cite{idna:vee06}; and it requires no manual efforts except a
 few annotations for handling server programs and for improving precision.
 
 Our main contributions are the schedule-relaxation approach and \peregrine, an
- efficient DMT system.  Additional contributions include
+ efficient \smt and \dmt system.  Additional contributions include
 the ideas of hybrid schedules, determinism-preserving slicing, and
 schedule-guided simplification.  To our knowledge, our slicing technique
 is the first to compute correct (non-trivial) preconditions for
 multithreaded programs.
-We believe these ideas apply beyond \peregrine (\S\ref{sec:deploy}).
+We believe these ideas apply beyond \peregrine (\S\ref{sec:peregrine-deploy}).
 
-The remainder of this paper is organized as follows.  We first present a
-detailed overview of \peregrine (\S\ref{sec:overview}).  We then describe its
-core ideas: hybrid schedules (\S\ref{sec:schedule}),
-determinism-preserving slicing (\S\ref{sec:slice}), and schedule-guided
-simplification (\S\ref{sec:guide}).  We then present implementation issues
-(\S\ref{sec:impl}) and evaluation (\S\ref{sec:eval}).  We finally discuss
-related work (\S\ref{sec:related}) and conclude (\S\ref{sec:conclusion}).
+The remainder of this chapter is organized as follows.  We first present a
+detailed overview of \peregrine (\S\ref{sec:peregrine-design}).  We then describe its
+core ideas: hybrid schedules (\S\ref{sec:peregrine-schedule}),
+determinism-preserving slicing (\S\ref{sec:peregrine-slice}), and schedule-guided
+simplification (\S\ref{sec:peregrine-guide}).  We then present implementation issues
+(\S\ref{sec:peregrine-impl}) and evaluation (\S\ref{sec:peregrine-eval}).  We finally discuss
+related work (\S\ref{sec:peregrine-related}) and conclude (\S\ref{sec:peregrine-summary}).
