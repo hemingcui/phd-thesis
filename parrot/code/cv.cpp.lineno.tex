@@ -1,0 +1,14 @@
+% Remember to use the lgrind style
+
+\Head{}
+\File{cv.cpp.lineno}{2014}{12}{21}{1:55}{346}
+\index{wrap\_cond\_wait}\Proc{wrap\_cond\_wait}\L{\LB{\N{1}_\V{:}_\K{int}_\V{wrap\_cond\_wait}(\V{pthread\_cond\_t}_*\V{cv},\V{pthread\_mutex\_t}_*\V{mu})\{}}
+\L{\LB{\N{2}_\V{:}}\Tab{6}{\V{scheduler}.\V{get\_turn}();}}
+\L{\LB{\N{3}_\V{:}}\Tab{6}{\V{pthread\_mutex\_unlock}(\V{mu});}}
+\L{\LB{\N{4}_\V{:}}\Tab{6}{\V{scheduler}.\V{signal}(\V{mu});}}
+\L{\LB{\N{5}_\V{:}}\Tab{6}{\V{scheduler}.\V{wait}(\V{cv},_\N{0});}}
+\L{\LB{\N{6}_\V{:}}\Tab{6}{\K{while}(\V{pthread\_mutex\_trylock}(\V{mu}))}}
+\L{\LB{\N{7}_\V{:}}\Tab{8}{\V{scheduler}.\V{wait}(\V{mu},_\N{0});}}
+\L{\LB{\N{8}_\V{:}}\Tab{6}{\V{scheduler}.\V{put\_turn}();}}
+\L{\LB{\N{9}_\V{:}}\Tab{6}{\K{return}_\N{0};_\C{}/*_error_handling_is_omitted_for_clarity._*/\CE{}}}
+\L{\LB{\N{10}\V{:}_\}}}

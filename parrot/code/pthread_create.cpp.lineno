@@ -1,0 +1,20 @@
+1 : static int tid __thread; // logical thread ID
+2 : static void* (*user_func)(void*) __thread;
+3 : static void* wrap_thread_func(void *arg) {
+4 :   sem_wait(&create_sem);
+5 :   tid = scheduler.tidmap[pthread_self()];
+6 :   sem_post(&done_sem);
+7 :   return user_func(arg); // call user-provided thread function
+8 : }
+9 : int wrap_thread_create(pthread_t *th, pthread_attr_t *attr,
+10:   void *(*func)(void*), void *arg) {
+11:   scheduler.get_turn();
+12:   user_func = func; // remember user-provided thread function
+13:   pthread_create(th, attr, wrap_thread_func, arg);
+14:   scheduler.tidmap[*th] = scheduler.next_tid ++;
+15:   scheduler.runq.append(scheduler.tidmap[*th]);
+16:   sem_post(&create_sem);
+17:   sem_wait(&done_sem);
+18:   scheduler.put_turn();
+19:   return 0;
+20: }

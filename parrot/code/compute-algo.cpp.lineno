@@ -1,0 +1,33 @@
+1 : void soba_init(int group_size, void *key, int timeout) {
+2 :   scheduler.get_turn();
+3 :   soba_set[key] = new soba;
+4 :   soba &bar = *soba_set[key];
+5 :   bar.group_size = group_size;
+6 :   bar.timeout = timeout;
+7 :   bar.nactive = 0;
+8 :   bar.phase = ARRIVE;
+9 :   scheduler.put_turn();
+10: }
+11: void soba_wait(void *key) {
+12:   scheduler.get_turn();
+13:   soba &bar = *soba_set[key];
+14:   bar.nactive++;
+15:   if(bar.nactive==bar.group_size){
+16:     if(bar.phase==ARRIVE){
+17:       bar.phase = LEAVE;         // success, wakeup all.
+18:       scheduler.broadcast((void*)&bar);
+19:     }
+20:   }else{
+21:     if(bar.phase==ARRIVE){
+22:       wait((void*)&bar, bar.timeout);
+23:       if(bar.phase==ARRIVE && bar.nactive<bar.group_size){
+24:         bar.phase = LEAVE;       // handle timeout.
+25:         scheduler.broadcast((void*)&bar);
+26:       }
+27:     }
+28:   }
+29:   bar.nactive--;
+30:   if(bar.phase==LEAVE && bar.nactive==0)
+31:     bar.phase = ARRIVE;
+32:   scheduler.put_turn();
+33: }

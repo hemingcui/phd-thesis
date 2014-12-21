@@ -1,0 +1,6 @@
+1: void pcs_enter() {
+2:   scheduler.block();  
+3: }
+4: void pcs_exit() {
+5:   scheduler.wakeup();  
+6: }

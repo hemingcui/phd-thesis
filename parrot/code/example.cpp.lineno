@@ -1,0 +1,26 @@
+1 : int main(int argc, char *argv[]) {
+2 :   ...
+3 :   soba_init(nthreads); /* performance hint */
+4 :   for (i = 0; i < nthreads; ++i)
+5 :     pthread_create(..., NULL, consumer, NULL);
+6 :   for (i = 0; i < nblocks; ++i) {
+7 :     char *block = read_block(i);
+8 :     pthread_mutex_lock(&mu);
+9 :     enqueue(q, block);
+10:     pthread_cond_signal(&cv);
+11:     pthread_mutex_unlock(&mu);
+12:   }
+13:   ...
+14: }
+15: void *consumer(void *arg) {
+16:   while(1) {
+17:     pthread_mutex_lock(&mu);
+18:     while (empty(q)) // termination logic elided for clarity
+19:       pthread_cond_wait(&cv, &mu);
+20:     char *block = dequeue(q);
+21:     pthread_mutex_unlock(&mu);
+22:     ...
+23:     soba_wait(); /* performance hint */
+24:     compress(block);
+25:   }
+26: }

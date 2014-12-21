@@ -1,0 +1,24 @@
+% Remember to use the lgrind style
+
+\Head{}
+\File{pthread\_create.cpp.lineno}{2014}{12}{21}{1:55}{784}
+\L{\LB{\N{1}_\V{:}_\K{static}_\K{int}_\V{tid}_\V{\_\_thread};_\C{}//_logical_thread_ID\CE{}}}
+\L{\LB{\N{2}_\V{:}_\K{static}_\K{void}*_(*\V{user\_func})(\K{void}*)_\V{\_\_thread};}}
+\index{wrap\_thread\_func}\Proc{wrap\_thread\_func}\L{\LB{\N{3}_\V{:}_\K{static}_\K{void}*_\V{wrap\_thread\_func}(\K{void}_*\V{arg})_\{}}
+\L{\LB{\N{4}_\V{:}}\Tab{6}{\V{sem\_wait}(\&\V{create\_sem});}}
+\L{\LB{\N{5}_\V{:}}\Tab{6}{\V{tid}_=_\V{scheduler}.\V{tidmap}[\V{pthread\_self}()];}}
+\L{\LB{\N{6}_\V{:}}\Tab{6}{\V{sem\_post}(\&\V{done\_sem});}}
+\L{\LB{\N{7}_\V{:}}\Tab{6}{\K{return}_\V{user\_func}(\V{arg});_\C{}//_call_user-provided_thread_function\CE{}}}
+\L{\LB{\N{8}_\V{:}_\}}}
+\index{wrap\_thread\_create}\Proc{wrap\_thread\_create}\L{\LB{\N{9}_\V{:}_\K{int}_\V{wrap\_thread\_create}(\V{pthread\_t}_*\V{th},_\V{pthread\_attr\_t}_*\V{attr},}}
+\L{\LB{\N{10}\V{:}}\Tab{6}{\K{void}_*(*\V{func})(\K{void}*),_\K{void}_*\V{arg})_\{}}
+\L{\LB{\N{11}\V{:}}\Tab{6}{\V{scheduler}.\V{get\_turn}();}}
+\L{\LB{\N{12}\V{:}}\Tab{6}{\V{user\_func}_=_\V{func};_\C{}//_remember_user-provided_thread_function\CE{}}}
+\L{\LB{\N{13}\V{:}}\Tab{6}{\V{pthread\_create}(\V{th},_\V{attr},_\V{wrap\_thread\_func},_\V{arg});}}
+\L{\LB{\N{14}\V{:}}\Tab{6}{\V{scheduler}.\V{tidmap}[*\V{th}]_=_\V{scheduler}.\V{next\_tid}_++;}}
+\L{\LB{\N{15}\V{:}}\Tab{6}{\V{scheduler}.\V{runq}.\V{append}(\V{scheduler}.\V{tidmap}[*\V{th}]);}}
+\L{\LB{\N{16}\V{:}}\Tab{6}{\V{sem\_post}(\&\V{create\_sem});}}
+\L{\LB{\N{17}\V{:}}\Tab{6}{\V{sem\_wait}(\&\V{done\_sem});}}
+\L{\LB{\N{18}\V{:}}\Tab{6}{\V{scheduler}.\V{put\_turn}();}}
+\L{\LB{\N{19}\V{:}}\Tab{6}{\K{return}_\N{0};}}
+\L{\LB{\N{20}\V{:}_\}}}

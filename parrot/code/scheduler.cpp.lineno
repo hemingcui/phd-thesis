@@ -1,0 +1,7 @@
+1: void get_turn(void);
+2: void put_turn(void);
+3:  int wait(void *addr, int timeout);
+4: void signal(void *addr);
+5: void broadcast(void *addr);
+6: void nondet_begin(void);
+7: void nondet_end(void);

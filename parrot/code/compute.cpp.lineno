@@ -1,0 +1,2 @@
+1:     void soba_init(int group_size, void *key, int timeout);
+2:     void soba_wait(void *key);

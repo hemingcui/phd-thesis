@@ -1,0 +1,14 @@
+1 : int wrap_mutex_lock(pthread_mutex_t *mu){
+2 :   scheduler.get_turn();
+3 :   while(pthread_mutex_trylock(mu))
+4 :     scheduler.wait(mu, 0);
+5 :   scheduler.put_turn();
+6 :   return 0; /* error handling is omitted for clarity. */
+7 : }
+8 : int wrap_mutex_unlock(pthread_mutex_t *mu){
+9 :   scheduler.get_turn();
+10:   pthread_mutex_unlock(mu);
+11:   scheduler.signal(mu);
+12:   scheduler.put_turn();
+13:   return 0; /* error handling is omitted for clarity. */
+14: }

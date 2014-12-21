@@ -1,0 +1,455 @@
+\section{Performance Hint Abstractions} \label{sec:hints}
+
+\xxx provides two performance-hint abstractions: a \emph{soft barrier} and
+a \emph{performance critical section}.  This section describes these abstractions and
+their usage.
+
+%% These simple hints effectively
+%% improved \xxx's performance (\S\ref{sec:eval}), and have the potential to
+%% benefit other DMT or \smt systems and even classic nondeterministic
+%% schedulers.  
+
+%% \compute and \nondet. \compute marks the starting point of a thread's
+%% computation participating in a parallel computation group.  It lets \xxx
+%% switch to an efficient schedule that runs all computations in the group in
+%% parallel.  It does not affect determinism.  \nondet marks a code region
+%% upon which \xxx should revert back to nondeterministic execution.  This
+%% hint may trade off a small amount of determinism for speed, so it should
+%% be applied with caution, only when (1) the code region, if run
+%% deterministically, has high overhead and (2) the additional schedules have
+%% been thoroughly checked (\eg, by tools or developers inspecting the code
+%% region).  Mixing deterministic and nondeterministic executions is tricky
+%% because they may interfere; we have carefully defined the semantics of our
+%% performance hints to provably avoid interference (\S\ref{sec:hints}).
+
+
+\subsection{Soft Barrier} \label{sec:soft-barrier}
+
+A \vcompute encourages the scheduler to coschedule a group of threads at
+given program points.  It is for performance only, and a scheduler can
+ignore it without affecting correctness.  It operates as a
+barrier with deterministic timeouts in \xxx, helping \xxx switch to faster
+schedules that avoid serializing parallel computations.  The interface is
+\vspace{-3 mm}
+\lgrindfile{code/compute.cpp}
+\vspace{-1 mm}
+
+%% The \v{soba\_init} function initializes a soft barrier.  \v{group\_size}
+%% specifies the number of threads in the coscheduling group.  \v{key} is 
+%% an opaque key identifying a coscheduling group.
+%% An absent key refers to a unique anonymous barrier.
+%% \v{timeout} is an optional relative timeout overriding the default timeout.  \xxx
+%% ensures that the timeout is deterministic (\S\ref{sec:scheduler}).
+%% The \v{soba\_wait} function waits for all \v{group\_size} threads to arrive
+%% until some waiting thread times out.  If a thread times out,
+%% it releases all threads currently waiting for the barrier to
+%% get partial coscheduling benefits~\cite{partial-barrier:atc06}. (We need \v{soba\_init},
+%% because it may be difficult to figure out the group size when \v{soba\_wait} is called.)
+
+\noindent
+One thread calls \v{soba\_init(N, key, timeout)} to initialize the barrier
+named \v{key}, logically indicating that a group of \v{N} threads will
+be spawned.  Subsequently, any thread which calls \v{soba\_wait(key)}
+will block until either (1) \v{N}-1 other threads have also called
+\v{soba\_wait(key)} or (2) \v{timeout} time has elapsed since the first
+thread arrived at the barrier.  This timeout is made deterministic by \xxx
+(\S\ref{sec:scheduler}).  \v{soba\_init} can be called multiple
+times: if the number of coscheduled threads varies but is known at runtime,
+the soft barrier can be initialized before each use.  Both \v{key} and
+\v{timeout} in \v{soba\_init} are optional.  An absent \v{key} refers to a
+unique anonymous barrier.  An absent \v{timeout} initializes the barrier
+with the default timeout.
+
+A \compute may help developers express coscheduling intent to classic
+nondeterministic schedulers~\cite{coschedule}.  One advantage is that it
+makes the group of threads and program points explicit.  It is more robust
+to developer mistakes than a real barrier~\cite{coschedule:sigmetrics96}
+for coscheduling purposes because schedulers cannot ignore a real barrier.
+
+%% \begin{tightenum}
+
+%% \item[$\bullet$] Data partition. Data is partitioned among worker
+%%   threads, and each worker thread computes on a partition. This pattern is
+%%   the most common; XXX out of the \nprog programs follow this pattern,
+%%   including the programs with fork-join parallelism.  Most programs with
+%%   this pattern need no soft barriers because the default schedules already
+%%   align the computations.  In rare cases (\eg, when another thread
+%%   interferes with the worker threads like in Figure~\ref{fig:example} or
+%%   the worker threads do synchronizations asymmetrically before starting
+%%   the computations), developers can initialize a soft barrier to the
+%%   number of worker threads, and add \v{soba\_wait} before each worker's
+%%   computation.  These soft barriers often work extremely well because
+%%   developers strive to partition data evenly and keep all threads busy.
+
+%% \item[$\bullet$] Pipeline. The threads are split into stages of a
+%%   pipeline, and each item in the workload flows through the pipeline
+%%   stages.  \ferret, \dedup, \vips, and \xtwosixfour follow this pattern.
+%%   These programs often need soft barriers for good performance because
+%%   threads have different roles and thus do different synchronizations,
+%%   causing default round-robin scheduling to serialize computations.  The
+%%   methodology to add soft barriers is to align the most time-consuming
+%%   computations during the steady stage of the pipeline.  For instance, for
+%%   \vips and \xtwosixfour, we aligned all their stages.  For \ferret, we
+%%   aligned the two most time-consuming stages (\v{t\_vec} and \v{t\_rank})
+%%   out of six.  \dedup needs no barriers.  How well soft barriers work
+%%   depends on (1) load imbalance of different phases and (2) soft barriers
+%%   timeouts during pipeline startup and teardown.
+
+%% \item Map reduce. Programs with this pattern use both data partition
+%%   and pipeline, so the methodology follows both.  In general, the mapper
+%%   threads should be aligned.
+
+%%   The reducer threads should be aligned with   the mapper if the reducers 
+
+%%   Depending on how fast the mapper and the reducer threads are, the
+%%   reducer threads
+
+%%   combines
+
+%%   All the seven mapreduce programs in \phoenix fall into
+%%   this category.  For all the sever but one (\wordcount), we only need to
+%%   add compute hints to the beginning of each \v{map} function for all
+%%   worker threads, because the compuation amount of each \v{reduce}
+%%   function is much smaller than the \v{map} function. For \wordcount, we
+%%   need \compute hints for both the two functions.
+
+%% \item Workpile.  The workload consists of a pile of independent work
+%%   items, processed by worker threads running in parallel.  Among the
+%%   programs we evaluated, \bdb, \openldap, \redis, \pfscan, and \aget fall
+%%   in this category.  
+
+%%   All but one (\pfscan, needs \nondet hints) in this
+%%   category have been working well with our default scheduler.
+
+%% \end{tightenum}
+
+%% Computation hints encourage the runtime to align the execution of a thread
+%% group to be lockstep parallel at given points.  They are operationally
+%% barriers with deterministic timeouts. The interface is
+%% % They may benefit even nondeterministic thread runtimes
+
+
+%% \lgrindfile{code/compute.cpp}
+
+%% \noindent
+%% Function \v{compute\_init} initializes information about the thread group.
+%% \v{group\_size} specifies the number of threads.  \v{key} is an optional
+%% opaque key identifying the ``barrier'' in case the program needs multiple
+%% such barriers.  An absent key refers to a unique anonymous barrier.
+%% \v{timeout} is an optional deterministic timeout overriding the maximum
+%% amount of time the runtime waits for \v{group\_size} threads to arrive.
+%% We needed to set this timeout for only one out of all evaluated programs.
+%% Function \v{compute} is similar to a barrier wait except it can time out.
+%% \v{compute} could have an additional argument specifying the estimated
+%% size of the computation for more fine-grained alignment, but we did not
+%% find the need for it to get reasonable performance
+%% (\S\ref{sec:performance}).
+
+%% Computation hints switch schedules without introducing nondeterminism.
+%% They can be implemented in other DMT or \smt systems to improve speed.
+%% Moreover, they can benefit nondeterministic thread runtimes as
+%% well~\cite{xxx}.
+
+%% usage:
+%%   general usage: wait time or vtunes
+%%   parallel programming patterns
+%%     data parallel: can have load balance as well
+%%     pipeline: steady stage, start up \& tear down stage
+
+%% experience: 
+%%   simple, effective
+%%   doesn't need much time to add, low overhead already
+%%     developers can do better job: both faster in time spent in adding hints, and lower overhead at runtime).
+%%   doesn't not need to be 100\%
+%%   doesn't need to solve all serialization
+
+%% \compute helps \xxx switch to a faster schedule that makes intended
+%% parallel computations run in parallel. The interface of \compute is as
+%% follows:
+
+%% \lgrindfile{code/compute.cpp}
+
+%% Function \v{compute\_init} initializes information about a group of
+%% computations developers intend to run in parallel.  \v{group\_size}
+%% specifies the number of threads involved.  \v{key} is an optional opaque
+%% key identifying the group in case a program has multiple groups of
+%% parallel computations going on.  If it is absent, the \v{compute\_init}
+%% call refers to a unique anonymous group.  \v{logical\_timeout} is an
+%% optional timeout specifying the maximum amount of time \xxx waits for
+%% involved threads to arrive at the computations.  This time is not real
+%% time.  Instead, it is measured in the number of synchronizations executed
+%% by \xxx, so it is always deterministic with respect to the synchronization
+%% schedule \xxx enforces.  If \v{logical\_timeout} is absent, \xxx uses a
+%% default value of XXX times \v{group\_size}.  Why group size XXX.  We only
+%% needed to explicitly set \v{logical\_timeout} for one out of all programs
+%% we evaluated.
+
+%% Function \v{compute} indicates that a computation is about to begin.  As
+%% in \v{compute\_init}, \v{key} uniquely identifies the computation group.
+%% The semantics of \v{compute} is similar to a barrier wait.  When fewer
+%% than \v{group\_size} of threads with the same \v{key} have arrived at
+%% their respective \v{compute} calls, \xxx blocks the threads until all
+%% \v{group\_size} threads arrive or it has executed more than
+%% \v{logical\_timeout} synchronizations, most likely avoiding serializing
+%% the computations with an unfortunate synchronization schedule.  Different
+%% from a barrier wait, \v{compute} is not for synchronizing accesses to
+%% shared variables so it can be inaccurate, it is always associated with a
+%% timeout, and its timeout is always deterministic.
+
+%% \para{Usage.} \compute hints express developers' high-level parallel
+%% computation intents, so below we describe their usage under 
+%% four different categories of parallel computation based on the programs we
+%% evaluated.  We also note how effective we anticipate the \compute hints to
+%% work on different types. Generally we used long sync operation 
+%% waiting time to identify the locations of serilization in 
+%% code, and we used \vtune to identify the computation amount 
+%% of different locations.
+
+%% \begin{tightenum}
+
+%% \item Data partition. The workload data is partitioned based on the
+%%   number of threads, and each thread computes on a partition.  Among the
+%%   programs we evaluated, \mplayer, \pbzip, all OpenMP programs including
+%%   all STL algorithms and \imagick programs, and most of 
+%%   benchmark programs (if not mentioend in the other 
+%%   categories) fall in this category.  We initialized the group size to the number of threads and
+%%   added \v{compute} at the beginning of each thread's local computation.  This
+%%   category is the most common, and \compute hints are the most effective
+%%   on these programs because the developers strove to partition data evenly
+%%   and keep all threads busy.  Therefore, we observed little wait time in
+%%   \v{compute} for the threads to arrive and almost no 
+%%   timeouts. Note that many programs in this category do not 
+%%   need any hints and they already had low overhead 
+%%   with our default scheduler. They are \canneal, 
+%%   \streamcluster, \barnes, \fft, \luc, \lun, \oceancp, \oceanncp, \watern, 
+%%   \waters, \blackscholes.
+
+%% \item Pipeline. The threads are split into stages of a pipeline, and
+%%   each item in the workload flows through the pipeline stages.  \ferret,
+%%   \dedup, \vips, and \xtwosixfour fall in this category.  The 
+%%   methodology of adding \compute hints is to align the 
+%%   most performance critical stages in each thread. For 
+%%   example, for \vips and \xtwosixfour, we used \vtune to find that all threads are performing 
+%%   significant and roughly the same amount of computation 
+%%   in each pipeline stage, so we add \compute hints to the 
+%%   beginning of thread local computation for all those worker 
+%%   threads. And for \ferret, there are six stages, and two 
+%%   stages \v{t\_vec} and \v{t\_rank} do two order magnitude more 
+%%   computation than all the other stages, so we only need 
+%%   to add \compute hints to the two most performance critical stages. 
+%%   \dedup has been working well with our default scheduler already.
+%%   Interestingly, we observed that most of \compute timeouts 
+%%   happened during the periods when the pipeline warmed 
+%%   up and cooled down, more details are in \S\ref{sec:sensitivity}.
+
+%% \item Map reduce. Programs in category use both data 
+%% partition and pipeline. All the seven mapreduce 
+%% programs in \phoenix fall into this category. For all the 
+%% sever but one (\wordcount), we only need to add compute hints to the 
+%% beginning of each \v{map} function for all worker threads, because 
+%% the compuation amount of each \v{reduce} function is 
+%% much smaller than the \v{map} function. For \wordcount, we 
+%% need \compute hints for both the two functions.
+
+%% \item Workpile.  The workload consists of a pile of independent work
+%%  items, processed by worker threads running in parallel.  Among the
+%%  programs we evaluated, \bdb, \openldap, \redis, \pfscan, and \aget fall in 
+%%  this category. All but one (\pfscan, needs \nondet hints) 
+%%  in this category have been working well with our default 
+%%  scheduler.
+
+%% \end{tightenum}
+
+%% \noindent
+%% Heming: do not need to mention workpile, because they do 
+%% not need manual hints.
+%% Some programs in other threading models work pretty well with our 
+%% default scheduler already. For example, the workpile model.
+%%   The workload consists of a pile of independent work
+%%   items, processed by worker threads running in parallel.  Among the
+%%   programs we evaluated, \bdb, \openldap, \redis, and \aget fall in 
+%%   this category.
+
+  %% We found that the \compute hints we added do not 
+  %% require 100\% success rate. Among all programs we have 
+  %% evaluated, \nproglineuphints programs requrie \compute 
+  %% hints in order to get reasonable performance overhead, 
+  %% and \nlineupfails of them have less than 100\% sucess 
+  %% rate on \compute hints. This case is reasonable because 
+  %% in lots of programs, the workload may not be able to be 
+  %% evenly divided by the number of threads, so some threads 
+  %% tend to handle more computation than others. This fact 
+  %% makes the \compute hints suitable to \xxx runtime rather than 
+  %% tranditional \pthread barrier, which may corrupt program logic.
+
+  %% We do not need to add \compute hints to solve all seliazation in the programs, 
+  %% instead, we only need to solve the serilization in those most serious 
+  %% ones (using \vtune or some other tools), and we can already get reasonable performance. 
+  %% For exmaple, in \ferret, the pipeline sync operations 
+  %% serialize all the six stages, but only two of them is 
+  %% significantly more performance-critical than others, so 
+  %% we only need to align the two. We also tried to aligh all 
+  %% the six stages, but it turns out that the \compute hints 
+  %% brought little performance gain.
+
+
+\subsection{Performance Critical Section} \label{sec:performance-critical-section}
+
+A \vnondet identifies a code region as a potential bottleneck
+and encourages the scheduler to get
+through the region fast.  When a thread enters a performance critical
+section, \xxx removes the thread from the round-robin scheduling 
+and delegates it to the OS scheduler for nondeterministic execution.  \xxx thus gains speed
+from allowing additional schedules.  The interface is
+\vspace{-3 mm}
+
+\lgrindfile{code/nondet.cpp}
+\vspace{-1 mm}
+
+\noindent
+The \v{pcs\_enter} function marks the entry of a performance critical section and
+\v{pcs\_exit} the exit.
+
+% \xxx treats \v{pcs\_enter} as a special synchronization that
+% participates in the round-robin scheduling, so that a performance
+% critical section always begins deterministically.  However, \xxx does
+% not know how long the section may run, so it lets the section end
+% nondeterministically.  After a thread calls \v{pcs\_exit}, \xxx adds it
+% back to round-robin.
+
+\subsection{Usage of the Two Hints} \label{sec:hints-usage}
+
+\para{Soft barrier.} Developers should generally use soft barriers to align
+high-level, time-consuming parallel computations, such as the \v{compress}
+calls in \pbzip. A generic method is to use performance debugging tools or
+\xxx's logs to detect synchronizations excessively delayed by \xxx's
+round-robin scheduling, then identify the serialized parallel computations.
+
+A second method is to add soft barriers based on parallel computation
+patterns.  Below we describe how to do so based on four parallel
+computation patterns we observed from the \nprog evaluated programs.
+
+\begin{tightenum}
+
+\item[$\bullet$] {\em Data partition}. Data is partitioned among worker
+  threads, and each worker thread computes on a partition. This pattern is
+  the most common; \ndatapartition out of the \nprog programs follow this
+  pattern, including the programs with fork-join parallelism.  Most
+  programs with this pattern need no soft barriers.  In rare cases when
+  soft barriers are needed, developers can add \v{soba\_wait} before each
+  worker's computation.  These soft barriers often work extremely well.
+
+\item[$\bullet$] {\em Pipeline}. The threads are split into stages of a
+  pipeline, and each item in the workload flows through the pipeline
+  stages.  \ferret, \dedup, \vips, and \xtwosixfour from \parsec~\cite{parsec} follow this pattern.
+  These programs often need soft barriers because
+  threads have different roles and thus do different synchronizations,
+  causing default schedules to serialize computations.  The
+  methodology is to align the most time-consuming stages of the
+  pipeline.
+
+\item[$\bullet$] {\em Map-reduce}. Programs with this pattern use both data
+  partition and pipeline, so the methodology follows both: align the
+  map function and, if the reduce function runs for roughly the same
+  amount of time as the map function, align reduce with map.
+
+\item[$\bullet$] {\em Workpile}. The workload consists of a pile of independent
+  work items, processed by worker threads running in parallel.  Among the
+  programs we evaluated, \bdb, \openldap, \redis, \pfscan, and \aget fall
+  in this category.  These programs often need no soft barriers because
+  it typically takes similar times to process most items.
+
+\end{tightenum}
+
+
+\para{Performance critical section.} Unlike a soft barrier, a \nondet may trade
+some determinism for performance. Consequently, it should be applied with caution,
+only when (1) a code region imposes high performance overhead on deterministic execution
+and (2) the additional schedules have been thoroughly checked by tools or
+advanced developers.  Fortunately, both conditions are often easy to meet
+because the synchronizations causing high performance overhead are often low-level
+synchronizations (\eg, lock operations protecting a shared counter),
+straightforward to analyze with local reasoning or model checkers.
+
+Of all \nprog evaluated programs, only \nprognondethints need performance critical
+sections for reasonable performance; all other \nprognonondethints
+programs need not trade determinism for performance.
+Moreover, \ecosys verified all schedules in all 4 real-world programs that
+need performance critical sections, providing high assurance.
+
+Developers can identify where to add performance critical sections also
+using performance debugging tools.  For instance, frequent
+synchronizations with medium round-robin delays are often good candidates for
+a performance critical section.  Developers can also focus on such
+patterns as synchronizations in a tight loop,
+synchronizations inside an abstraction boundary (\eg, \v{lock()}
+inside a custom memory allocator), and tiny critical sections (\eg,
+``\v{lock(); x++; unlock();}'').  
+
+%% A dominant pattern is to mark a tight loop with synchronizations as a
+%% performance critical section, so \xxx can pass a thread running in the
+%% loop to the OS scheduler for quick finish.
+
+%% \nondet hints are added to tell the \xxx runtime to ignore 
+%% some sync operations in perfomance critical 
+%% sections, and the per-thread computation in these programs 
+%% and not roughly the same (so \compute hints are not 
+%% suitable for these cases). 
+
+%% usage: low-level
+
+%% experience: 
+
+%% Nondeterminism hints revert back to nondeterministic execution for
+%% carefully chosen code regions.  These regions are often already ``hot''
+%% during nondeterministic execution by doing many synchronizations at a high
+%% rate, so they cause even very high overhead when executed
+%% deterministically.  By moving threads in nondeterministic regions from the
+%% round-robin scheduler to the OS's scheduler, \xxx gains speed.
+
+
+%% \v{nondet(var)} marks all synchronizations on synchronization variable
+%% \v{var} as nondeterministic, so \xxx excludes the synchronizations from
+%% its round-robin scheduling. Frequently a code region executes many
+%% synchronizations touching several synchronization variables, and
+%% developers can use
+
+%% \xxx treats \v{nondet\_begin} as a special synchronization that
+%% participates in round-robin scheduling, so that a nondeterministic region
+%% always begins execution deterministically.  However, \xxx does not know
+%% how long the region may run, so it has to let the region end
+%% nondeterministically.  After the thread calls \v{nondet\_end}, \xxx adds
+%% the thread back to the round-robin scheduling.
+
+%% \para{Usage.} Unlike \compute hints, \nondet hints may trade off 
+%% an amount of determinism for performance, so it should be applied with
+%% caution, only when (1) a code region has high overhead on deterministic
+%% execution and (2) the additional schedules have been thoroughly checked by
+%% tools or advanced developers inspecting the code region.  Fortunately,
+%% both conditions are often easy to meet because the synchronizations
+%% causing high overhead tend to be frequent, low-level synchronizations,
+%% easy to analyze with local reasoning. Among all programs 
+%% we have evaluated, four real applications \pfscan, three STL programs 
+%% \partition, \nthelement, and \partialsort, and five 
+%% benchmark programs \fluidanimate, \fmm, 
+%% \cholesky, \raytrace from \splashx, and \ua and all fall into this category.
+%% For all the four real applications, our ecosystem can 
+%% effectively check all these schedules in the \nondet region 
+%% within a few hours. For all the five benchmarks programs, 
+%% although our ecosystem can not check all their schedules in 
+%% \nondet regions within one day's run, we still considered 
+%% these results promising because people normally care 
+%% about the correctness of real applications over benchmark 
+%% programs.
+
+%% Heming: we do not prefer to mention this because this 
+%% pattern is not that common in our non-det programs. Only 
+%% pfscan and fluidanimate do this.
+%% A common pattern we observed on the
+%% programs we evaluated is when the program uses a tiny critical section to
+%% increment or decrement a shared counter.  It easy to determine based on
+%% purely local reasoning that The executions of these critical section are
+%% commutable.  This pattern appears in 6 out of 9 programs with \nondet
+%% hints.
+
+

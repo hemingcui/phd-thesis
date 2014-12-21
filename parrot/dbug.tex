@@ -1,0 +1,77 @@
+\subsubsection{State Space Exploration}
+\dbug~\cite{dbug:spin11} is a tool for systematic testing of concurrent
+Linux programs. The goal of \dbug is to explore the state space of
+different program states of a concurrent program by systematically
+enumerating different orders in which concurrent POSIX threads and
+Linux sockets calls can be exercised by a program test.
+
+To this end, \dbug abstractly represents the state space of a program
+test using an \emph{execution tree}. Nodes of the execution tree
+represent non-deterministic choice points and edges record
+non-deterministic choices representing program state transitions. A
+branch leading from the root of the tree to a leaf thus encodes a
+unique test execution as a sequence of non-deterministic scheduling
+choices.
+
+\dbug uses this abstraction to repeatedly execute a program test,
+recording what sequence of program state transition have been explored
+by each iteration and guaranteeing that different iterations explore
+different sequences.
+
+\subsubsection{State Space Reduction}
+To mitigate the combinatorial explosion resulting from having to
+consider all possible permutations of concurrently enabled
+transitions, \dbug implements dynamic partial order
+reduction (DPOR)~\cite{flanagan:dynamicpo}.
+
+A key building block of DPOR is the \emph{independence} relation that
+identifies pairs of commutitative program state transitions. To avoid
+the prohibitive overhead of having to track each memory access to
+compute the independence relation precisely, \dbug adopts the approach
+used by RacePro~\cite{racepro:sosp11}. In particular, for each program state
+transition, \dbug records what abstract resources this transition
+accesses, and uses this information to approximate the independence
+relation.
+
+\subsubsection{State Space Estimation}
+To estimate the progress of the exploration, \dbug uses the
+\emph{weighted backtrack estimator} (WBE)~\cite{Kilby2006} to estimate
+the size of a partially explored execution tree. WBE is an online
+variant of Knuth's offline technique for tree size
+estimation~\cite{Knuth1975}. WBE uses the length of each explored branch
+weighted by the probability it is explored (assuming uniform
+distribution over edges) to predict the size of the tree. Formally,
+WBE updates the estimate every time a branch of the execution is
+explored, setting the estimate to:
+\[
+\mathit{estimate} =
+\frac{\sum\limits_{b \in B} p(b) * p^{-1}(b)}{\sum\limits_{b \in B} p(b)} =
+\frac{|B|}{\sum\limits_{b \in B} p(b)}
+\]
+where $B$ is the set of explored branches, and $p(b)$ is the
+probability of exploring the branch. For a branch $b = (v_1, \ldots,                                                                                          
+v_n)$, where $v_i$ is the $i$-th node along the branch $b$, the
+probability $p(b)$ is defined as: \[\prod\limits_{i = 1}^{n - 1}
+\frac{1}{E(v_i)}\] where $E(v_i)$ is the number of enabled
+edges originating from node $v_i$.
+
+\subsubsection{Source Code Annotations}
+In general, \dbug does not require any changes to the source code. In
+fact, as \dbug uses run-time interposition to control the order in
+which concurrent POSIX threads and Linux sockets calls happen, it does
+not require access to the source code at all.  However, similar to the
+SysNam annotations, in some cases, source code annotations can improve
+the efficiency of \dbug.
+
+For example, a programmer can use the {\tt \dbug\_off()} and {\tt
+  \dbug\_on()} annotations to exclude parts of the tested program from
+the scope of \dbug, avoiding exploration of uninteresting call
+interactions. (Example: using a lock to increment a variable in
+pfscan). Further, a programmer can use the {\tt int \dbug\_nondet(int
+  event)} function to identify a non-deterministic event. The first
+time such an event occurs, \dbug records its value and makes sure the
+same value is used for the same event in future iterations. (Example:
+Recording the return values of {\tt gettimeofday()} for redis).
+Finally, a programmer can use the {\tt int \dbug\_choose(int n)}
+function to non-determinstically choose a value between $0$ and
+$n-1$. (Example: Simulating timeouts or system call failures).

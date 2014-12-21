@@ -1,0 +1,124 @@
+benchmarks "non-det 8/4"
+parsec\\_blackscholes	1.553023615
+parsec\\_bodytrack	1.567313807
+parsec\\_canneal	1.406818826
+parsec\\_dedup	0.972302353
+parsec\\_facesim	1.493101461
+parsec\\_fluidanimate	2.228836802
+parsec\\_rtview\\_raytrace	1.142166367
+parsec\\_streamcluster	1.421294763
+parsec\\_swaptions	1.864526458
+parsec\\_vips	1.827690518
+parsec\\_x264	2.028502717
+splash2x\\_barnes	1.817440392
+splash2x\\_fft	1.217282521
+splash2x\\_fmm	1.633068602
+splash2x\\_lu\\_cb	2.297190037
+splash2x\\_lu\\_ncb	2.805522201
+splash2x\\_ocean\\_cp	2.600061336
+splash2x\\_ocean\\_ncp	2.542910952
+splash2x\\_radiosity	0.973717153
+splash2x\\_radix	1.887800275
+splash2x\\_raytrace	1.960742968
+splash2x\\_volrend	0.596715148
+splash2x\\_water\\_nsquared	1.951896198
+splash2x\\_water\\_spatial	1.720479804
+parsec\\_ferret	1.889954094
+parsec\\_blackscholes-openmp	1.288109756
+parsec\\_bodytrack-openmp	1.590516258
+parsec\\_freqmine-openmp	1.689642277
+
+
+benchmarks "xtern 8/4"
+parsec\\_blackscholes	1.542814883
+parsec\\_bodytrack	0.850497372
+parsec\\_canneal	1.39951195
+parsec\\_dedup	0.966361804
+parsec\\_facesim	1.628935562
+parsec\\_fluidanimate	1.340042279
+parsec\\_rtview\\_raytrace	0.983376882
+parsec\\_streamcluster	1.690973784
+parsec\\_swaptions	1.865963765
+parsec\\_vips	1.530322663
+parsec\\_x264	1.278324011
+splash2x\\_barnes	1.418260844
+splash2x\\_fft	1.208537811
+splash2x\\_fmm	1.4391589
+splash2x\\_lu\\_cb	2.401689324
+splash2x\\_lu\\_ncb	3.007525532
+splash2x\\_ocean\\_cp	1.783290069
+splash2x\\_ocean\\_ncp	1.875012063
+splash2x\\_radiosity	0.864729196
+splash2x\\_radix	1.946861218
+splash2x\\_raytrace	0.984984176
+splash2x\\_volrend	1.33562095
+splash2x\\_water\\_nsquared	2.072041936
+splash2x\\_water\\_spatial	1.64692449
+parsec\\_ferret	0.995476547
+parsec\\_blackscholes-openmp	1.281788012
+parsec\\_bodytrack-openmp	1.5493528
+parsec\\_freqmine-openmp	1.008792113
+
+
+benchmarks "non-det 16/4"
+parsec\\_blackscholes	2.923855351
+parsec\\_bodytrack	1.992493234
+parsec\\_canneal	1.482862204
+parsec\\_dedup	0.94993557
+parsec\\_facesim	1.661546431
+parsec\\_fluidanimate	2.154702006
+parsec\\_rtview\\_raytrace	1.182734853
+parsec\\_streamcluster	1.515657513
+parsec\\_swaptions	2.797512295
+parsec\\_vips	2.259765669
+parsec\\_x264	2.289925383
+splash2x\\_barnes	2.376327528
+splash2x\\_fft	1.272549754
+splash2x\\_fmm	2.073806593
+splash2x\\_lu\\_cb	2.335716417
+splash2x\\_lu\\_ncb	2.703871316
+splash2x\\_ocean\\_cp	1.4743114
+splash2x\\_ocean\\_ncp	2.281845156
+splash2x\\_radiosity	0.744198347
+splash2x\\_radix	2.794662667
+splash2x\\_raytrace	3.029235821
+splash2x\\_volrend	0.796370701
+splash2x\\_water\\_nsquared	2.762502409
+splash2x\\_water\\_spatial	2.307478944
+parsec\\_ferret	1.829052101
+parsec\\_blackscholes-openmp	1.782261203
+parsec\\_bodytrack-openmp	1.736495226
+parsec\\_freqmine-openmp	2.536109525
+
+
+benchmarks "xtern 16/4"
+parsec\\_blackscholes	2.889270345
+parsec\\_bodytrack	1.077381858
+parsec\\_canneal	1.539397003
+parsec\\_dedup	0.735421328
+parsec\\_facesim	1.582681613
+parsec\\_fluidanimate	1.47138141
+parsec\\_rtview\\_raytrace	0.988464062
+parsec\\_streamcluster	1.965062733
+parsec\\_swaptions	2.784323176
+parsec\\_vips	1.49999817
+parsec\\_x264	1.117288612
+splash2x\\_barnes	1.385571287
+splash2x\\_fft	1.263623371
+splash2x\\_fmm	1.617079679
+splash2x\\_lu\\_cb	2.467318416
+splash2x\\_lu\\_ncb	3.098077476
+splash2x\\_ocean\\_cp	1.697687104
+splash2x\\_ocean\\_ncp	1.540091948
+splash2x\\_radiosity	0.697678861
+splash2x\\_radix	2.848185856
+splash2x\\_raytrace	0.786426583
+splash2x\\_volrend	1.226335604
+splash2x\\_water\\_nsquared	2.763595135
+splash2x\\_water\\_spatial	2.366038996
+parsec\\_ferret	0.964041179
+parsec\\_blackscholes-openmp	1.737228935
+parsec\\_bodytrack-openmp	1.573216214
+parsec\\_freqmine-openmp	1.003886586
+
+

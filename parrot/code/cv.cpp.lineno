@@ -1,0 +1,10 @@
+1 : int wrap_cond_wait(pthread_cond_t *cv,pthread_mutex_t *mu){
+2 :   scheduler.get_turn();
+3 :   pthread_mutex_unlock(mu);
+4 :   scheduler.signal(mu);
+5 :   scheduler.wait(cv, 0);
+6 :   while(pthread_mutex_trylock(mu))
+7 :     scheduler.wait(mu, 0);
+8 :   scheduler.put_turn();
+9 :   return 0; /* error handling is omitted for clarity. */
+10: }

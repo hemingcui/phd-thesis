@@ -1,0 +1,112 @@
+\section{Determinism Discussion} \label{sec:discussion}
+
+\xxx's determinism is relative to three factors: (1) external input (data
+and timing), (2) \nondets, and (3) data races \wrt
+the enforced synchronization schedules.  Factor 1 is inherently
+nondeterministic, and \xxx mitigates it by reusing schedules on inputs.
+Factor 2 is developer-intended.  Factor 3 can be easily eliminated, but we
+deemed it not worthwhile.  Below we explain how to make data races
+deterministic in \xxx and why it is not worthwhile.
+
+We designed a simple memory commit protocol to make data races
+deterministic in \xxx, similar to those in previous
+work~\cite{grace:oopsla09,determinator:osdi10,dthreads:sosp11}.  Each
+thread maintains a private, copy-on-write mapping of shared memory.  When
+a thread has the turn, it commits updates and fetches other threads'
+updates by merging its private mapping with shared memory.  Since only one
+thread has the turn, all commits are serialized, making data races
+deterministic.  (Threads running nondeterministically in performance
+critical sections access shared memory directly as intended.)
+This protocol may also improve speed
+by reducing false sharing~\cite{dthreads:sosp11}.  Implementing it can
+leverage existing code~\cite{dthreads:sosp11}.
+
+%% We deemed the effort not worthwhile for three reasons.  
+%% First, prior work has shown that data races rarely occur if a
+%% synchronization schedule is enforced.  For instance,
+%% \peregrine~\cite{peregrine:sosp11} reported that at most 10 races in
+%% millions of shared memory accesses within an execution.  Second, the
+%% races that occured are often ad hoc synchronizations (\eg,
+%% ``\v{while(flag)};'')~\cite{syncfinder:osdi10}.  To handle these benign races,
+%% prior systems often require manual annotations
+%% anyway~\cite{dthreads:sosp11, grace:oopsla09}.  Third, the remaining races
+%% are so rare that we may be able to afford the nondeterminism they introduce.  For
+%% instance, to reproduce failures caused by them, we can search through a
+%% small number of executions (\eg, $<$ 96 to reproduce an \apache race
+%% caused by a real workload~\cite{pres:sosp09}).  Similarly, the races can be detected
+%% by checking a small number of executions using model checkers~\cite{musuvathi:chess:osdi08}. In short, as long as the number of schedules for
+%% an input is small, the problems caused by nondeterminism are easy to
+%% solve.
+
+We deemed the effort not worthwhile for three reasons. First, making data
+races deterministic is often costly.  Second, many races are \emph{ad hoc
+  synchronizations} (\eg, ``\v{while(flag)};'')~\cite{syncfinder:osdi10}
+which require manual annotations anyway in some prior systems that make
+races deterministic~\cite{dthreads:sosp11, grace:oopsla09}.  Third, most
+importantly, we believe that stability is much more useful for reliability
+than full determinism: once the set of schedules is much reduced, we can
+afford the nondeterminism introduced by a few data races.  Specifically,
+prior work has shown that data races rarely occur if a synchronization
+schedule is enforced.  For instance, \peregrine~\cite{peregrine:sosp11}
+reported at most 10 races in millions of shared memory accesses
+within an execution.  To reproduce failures caused by the few races, we
+can search through a small set of schedules (\eg, fewer than 96 for
+an \apache race caused by a real workload~\cite{pres:sosp09}).  Similarly,
+we can detect the races by model checking a small set of
+schedules~\cite{musuvathi:chess:osdi08}. In short, by vastly reducing
+schedules, \smt makes the problems caused by nondeterminism easy to solve.
+
+%% Making data races deterministic in
+%% \xxx is straightforward.  We have designed a memory commit protocol to do
+%% so, similar to the protocols in \grace, \determinator, and \dthreads.  In
+%% our protocol, each thread maintains a private copy of the shared memory,
+%% and \xxx mains a common copy.  Copy-on-write can be used to reduce memory
+%% and CPU
+%% overhead~\cite{grace:oopsla09,determinator:osdi10,dthreads:sosp11}.  When
+%% a thread has the turn, it synchronizes its copy of shared memory with the
+%% common copy by merging the updates, as shown in Figure~\ref{fig:commit}.
+%% Threads executing outside nondeterministic regions commit in serial
+%% because at most one thread may have the turn.  Threads executing in
+%% nondeterministic regions access the common copy directly.  Such a protocol
+%% sometimes improves speed by reducing false sharing~\cite{dthreads:sosp11}.
+
+%% Implementing this protocol is easy.  Since it is very similar to existing
+%% protocols, we may even leverage \dthreads's code.  However, we decided
+%% that it is not worthwhile to implement this protocol.  The reasons are
+%% threefold.  First, prior work has shown that data races rarely occur if a
+%% synchronization schedule is enforced.  For instance
+%% PRES~\cite{pres:sosp09} reported that
+%% XXX. \peregrine~\cite{peregrine:sosp11} reported that XXX.  Second, the
+%% occurred races are often ad hoc synchronizations~\cite{syncfinder:osdi10}.
+%% These benign races cannot be handled by some prior systems designed to
+%% make data races deterministic~\cite{xxx}, and need manual annotations
+%% anyway.  Third, the remaining races are so rare that we can afford the
+%% nondeterminism they create.  For instance, to reproduce failures caused by
+%% them, we can afford to search through a few executions.  PRES reported
+%% XXX.  Similarly, we can detect these races by running model checkers such
+%% as CHESS and \dbug.  In short, as long as the number of schedules for an
+%% input is small, the problems caused by nondeterminism are easy to solve.
+
+%% Due to these reasons, the complexity of implementing a memory commit
+%% protocol is not worthwhile.  Such a protocol often has to make unrealistic
+%% assumptions, severely limiting applicability.  For instance, our
+%% experiments show that \dthreads failed to support XXX programs because of
+%% the assumptions of its memory commit protocol.
+
+
+
+
+
+
+
+%% because races occur rarely
+%% when synchronization schedules are
+%% enforced~\cite{peregrine:sosp11,pres:sosp09}, and can be
+%% detected~\cite{musuvathi:chess:osdi08} or
+%% reproduced~\cite{odr:sosp09,pres:sosp09} using better approaches
+
+%% and as long as the number of schedules for an input is small, the problems
+%% caused by nondeterminism are easy to solve.
+
+
+

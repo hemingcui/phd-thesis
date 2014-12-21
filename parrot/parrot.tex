@@ -1,323 +1,439 @@
-\chapter{\parrot: Making \smt Simple and Deployable} \label{sec:parrot}
+\documentclass[10pt,twocolumn,letterpaper]{article}
+\usepackage[10pt,inchmargins]{sigmin}  %% template from Xi Wang.
+\special{papersize=8.5in,11in}
+\setlength{\pdfpagewidth}{8.5in}
+\setlength{\pdfpageheight}{11in}
+\usepackage[noheadfoot,
+            left=1in,right=1in,top=1in,bottom=1in,
+            columnsep=0.3in
+            ]{geometry}
+\usepackage[small,compact]{titlesec}
+\usepackage[font={small,bf}]{caption}    % added 9/10/13
+\usepackage[nolineno,noindent,norules]{lgrind}
+\usepackage{tightenum}
+\usepackage{float}
+\usepackage{xspace}
+\usepackage{times,pifont}
+\usepackage{mathptmx}
+\usepackage{subfig,graphics,graphicx,color}
+\usepackage{multirow}
+\usepackage{dblfloatfix} %% correctly orders single- and double-col figures
+\usepackage{hyphenat}
+\usepackage{mathrsfs}
+\usepackage{subfig}
+\usepackage{amssymb,amsmath,centernot}
+\usepackage{lastpage}
+\usepackage{flushend}
+\usepackage{hhline}
+\usepackage{authblk}
+\newcommand{\doi}{10.1145/2517349.2522735}
 
-Although the latest advances on building stable
-multi-threading systems are promising, whether \smt systems can be 
-made simple and deployable stills remains an open challenges. Existing systems 
-either incur high performance overhead~cite{dthreads:sosp11} (For instance, 
-we observed that a prior system, \dthreads, had 5$\times$ to 100$\times$ slowdown on
-some programs), or require sophiscated program analysis~cite{peregreine:sosp11, bergan:oopsla13}
-and fairly hard to deploy.
-These limitations make evaluation in existing systems limited: they often 
-used (1) synthetic benchmarks,
-not real-world programs, from incomplete benchmark suites; (2) one workload
-per program; and (3) at most 8 cores (with three exceptions; see \S\ref{sec:
-related}).
 
-These limitations are intermingled.  Reducing schedules improves correctness
-but trades performance because the schedules left may not balance each
-thread's load well, causing some threads to idle unnecessarily.  Our
-experiments show that ignoring load imbalance as in \dthreads
-can lead to pathological
-slowdown if the order of operations enforced by a schedule
-\emph{serializes} the intended parallel computations.
-To recover performance, one method is to count
-the instructions executed by each thread and select schedules that balance
-the instruction counts~\cite{kendo:asplos09, coredet:asplos10,
-  dmp:asplos09}, but this method is not stable because input or program
-perturbations easily change the instruction counts.  The other method (we 
-proposed)
-lets the nondeterministic OS scheduler select
-a reasonably fast schedule and reuses the schedule on
-compatible inputs~\cite{cui:tern:osdi10,peregrine:sosp11}, but it
-requires sophisticated program analysis, complicating deployment.
+%%% ================= START of SOSP '13 template ================= 
+\makeatletter
 
-We present \parrot, a simple, deployable runtime that efficiently makes
-threads deterministic and stable by offering a new contract to developers.
-By default, it schedules synchronizations in each thread using
-round-robin, vastly reducing schedules and providing broad repeatability.
-When default schedules are slow, it allows advanced developers to add
-intuitive \emph{performance hints} to their code for speed.  Developers 
-discover
-where to add hints through profiling as usual, and \parrot simplifies
-performance debugging by deterministically reproducing the bottlenecks.
-The hints are robust to developer mistakes as they can be safely ignored
-without affecting correctness.
+\def\ftype@copyrightbox{8}
+\def\@copyrightspace{
+\@float{copyrightbox}[b]
+\begin{center}
+\setlength{\unitlength}{1pc}
+\begin{picture}(20,6.0) 
+\put(0,3){\parbox{\columnwidth}{\scriptsize
 
-Like prior systems, \parrot's contract reduces schedules to favor correctness 
-over performance.  Unlike prior systems, it allows advanced developers
-to optimize performance.  We believe this practical ``meet in the
-middle'' contract eases writing correct, efficient programs.
+%*** SAMPLE. AUTHOR PUT SUPPLIED TEXT HERE ****
 
-% based on several years of lessons.
+\noindent
+\rule{6.0 cm}{0.2pt}\\
+Permission to make digital or hard copies of part or all of this work 
+for personal or classroom use is granted without fee provided that
+copies are not made or distributed for profit or commercial advantage 
+and that copies bear this notice and the full citation on the first
+page. Copyrights for third-party components of this work must be
+honored.  For all other uses, contact the Owner/Author. 
 
-%% Like prior systems, \parrot's contract favors correctness over performance
-%% by vastly reducing schedules.  Unlike prior systems, it provides
-%% advanced developers the flexibility for better performance.
+\vspace{\baselineskip}\noindent
+Copyright is held by the Owner/Author(s).\\
+\textit{SOSP'13}, Nov. 3--6, 2013, Farmington, Pennsylvania, USA. \\
+ACM 978-1-4503-2388-8/13/11.
 
-\parrot provides two performance hint abstractions.  A \emph{soft
-  barrier} encourages the scheduler to coschedule a group of threads at
-given program points.  It is for performance only, and operates as a
-barrier with deterministic timeouts in \parrot.  Developers use it to switch
-to faster schedules without compromising determinism
-when the default schedules serialize parallel
-computations.  A \emph{performance critical section}
-informs the scheduler that a code region is a potential
-bottleneck, encouraging the scheduler to get through the region fast.
-When a thread enters a performance critical section, \parrot delegates 
-scheduling to the
-nondeterministic OS scheduler for speed.  
-Performance critical sections may trade some determinism for
-performance, so they should be applied only when the schedules they add
-are thoroughly checked by tools or advanced developers.
-These simple abstractions
-let \parrot run fast on all programs evaluated, and
-may benefit other DMT or \smt systems and classic nondeterministic
-schedulers~\cite{coschedule:sigmetrics96, coschedule, partial-barrier:atc06}.
+\noindent
+http://dx.doi.org/\doi}
+}
+\end{picture}
+\end{center}
+\end@float}
 
-Our \parrot implementation is \pthread-compatible, simplifying deployment.
-It handles many diverse constructs real-world programs depend upon such as
-network operations and timeouts.  \parrot makes synchronizations outside
-performance critical sections deterministic but allows nondeterministic
-data races.  Although it is
-straightforward to make data races deterministic in \parrot,
-% with a memory commit protocol we designed, 
-we deemed it not worthwhile because the cost of doing so outweighs the
-benefits.  \parrot's determinism is similar to
-\kendo's weak determinism~\cite{kendo:asplos09}, but \parrot offers stability
-which Kendo lacks.
+\def\maketitle{\par
+ \begingroup
+   \def\thefootnote{\fnsymbol{footnote}}
+   \def\@makefnmark{\hbox
+       to 0pt{$^{\@thefnmark}$\hss}}
+     \twocolumn[\@maketitle]
+\@thanks
+ \endgroup
+ \setcounter{footnote}{0}
+ \let\maketitle\relax
+ \let\@maketitle\relax
+ \gdef\@thanks{}\gdef\@author{}\gdef\@title{}\gdef\@subtitle{}\let\thanks\relax
+ \@copyrightspace}
 
-\section{Evaluation} \label{sec:parrot-eval}
+\makeatother
 
-In this evaluation, we focus on examing \parrot's practicality by running it 
-with a wide range of popular-multithreaded programs, check whether \parrot is 
-easy to use with these programs, and collect \parrot's 
-execution time on utlity programs and throughput on server programs.
-
-We evaluated \parrot on a diverse set of \nprog programs. This set
-includes \nrealprog real-world programs: \bdb, a widely used database
-library~\cite{berkeleydb}; \openldap, a server implementing the
-Lightweight Directory Access Protocol~\cite{openldap}; \redis, a fast
-key-value data store server~\cite{redis}; \mplayer, a popular media
-encoder, decoder, and player~\cite{mplayer}; \pbzip, a parallel
-compression utility~\cite{pbzip2}; \pfscan, a parallel \v{grep}-like
-utility~\cite{pfscan}; \aget, a parallel file download
-utility~\cite{aget}; all \nstl parallel C++ STL algorithm
-implementations~\cite{parallel-stl} which use \openmp; all \nimagick
-parallel image processing utilities (which also use \openmp) in the
-\imagick software suite~\cite{imagick} to create, edit, compose, or
-convert bitmap images.  The set also includes all \nbenchmarks programs in
-four widely used benchmark suites including \nparsec in
-\parsec~\cite{parsec}, \nphoenix in
-\phoenix~\cite{phoenix-benchmarks}, \nsplash in
-\splashx~\cite{splashx}, and \nnpb in \npb~\cite{npb}.  The \phoenix
-benchmark suite provides two implementations per algorithm, one using
-regular Pthreads (marked with \v{-pthread} suffix) and the other using
-a map-reduce library atop Pthreads.  We used complete software or
-benchmark suites to avoid biasing our results.  The programs together
-cover a good range of parallel programming models and idioms such as
-threads, \openmp, data partition, fork-join, pipeline, map-reduce, and
-workpile.  To the best of our knowledge, our evaluation of \parrot
-represents \overeach more programs than any prior DMT or \smt
-evaluation, and \overcombined more than all prior
-evaluations combined.
-
-Our evaluation machine was a 2.80 GHz dual-socket hex-core Intel Xeon
-with 24 hyper-threading cores and 64 GB memory
-running Linux 3.2.14.  Unless otherwise specified, we used the maximum
-number of truly concurrent threads allowed by the machine and programs.  For 83
-out of the \nprog programs, we used 24.  For 13 programs, we used 16
-because they require the number of threads be a power of 
-two. For \ferret, we used 18 because it requires
-the number of threads to be 4$n$+2. For \mplayer, we used 8,
-the max it takes. For the other
-10 programs, we used 16 because they reach peak performance with
-this thread count.  In scalability experiments, we varied the number of
-threads from 4 to the max.
+%%% ================= END of SOSP '13 template ================= 
 
 
 
-Unless otherwise specified, we used the following workloads.  For \bdb, we
-used a popular benchmark \v{bench3n}~\cite{benchthreen}, which does
-fine-grained, highly concurrent transactions. For both \openldap and
-\redis, we used the benchmarks the developers themselves use, which come
-with the code. For \mplayer, we used its utility \mencoder to transcode a
-255 MB video (OSDI '12 keynote) from MP4 to AVI.  For \pbzip, we
-compressed and decompressed a 145 MB binary file.  For \pfscan, we searched for
-the keyword \v{return} in all 16K files in \v{/usr/include} on our
-evaluation machine.  For \aget, we downloaded a 656 MB file. For all
-\imagick programs, we used a 33 MB JPG.  For all \nstl
-parallel STL algorithms, we used integer vectors with 4G elements.  For
-\parsec, \splashx, and \phoenix, we used the largest workloads
-because they are considered ``real'' by the benchmark authors.  For \npb, we
-used the second largest workloads because the largest workloads are intended 
-for
-supercomputers. In workload sensitivity experiments, we used workloads of
-3 or 4 different scales per program, typically with a 10$\times$ difference 
-between
-scales.  We also tried 15 different
-types of workloads for \redis and 5 for \mplayer.  All workloads ran from
-a few seconds to about 0.5 hour, using 100 or 10
-repetitions respectively to bring the standard error below 1\%.
-All overhead means are geometric.
+\newcommand{\comment}[1]{}
+\frenchspacing
 
-We compiled all programs using \v{gcc -O2}.  To support
-\openmp programs such as parallel STL algorithms, we used the GNU \libgomp.
-When evaluating \parrot on the client program \aget and the server programs \
-openldap
-and \redis, we ran both endpoints on the same machine to avoid network
-latency.  \nprogadhocsync programs use ad hoc
-synchronization~\cite{syncfinder:osdi10}, and we added a \v{sched\_yield}
-to the busy-wait loops to make the programs work with \parrot. We set the
-spin-wait of \parrot's scheduler
-to $10^5$ cycles.  We used the default \compute timeout of 20 except 3,000
-for \ferret.  Some \phoenix programs read large files, so
-we ran them with a warm file cache to focus on measuring their computation
-time. (Cold-cache results are unusable due to large
-variations~\cite{Parrot:github}.)
+%\doublespacing
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     macro
 
+\newcommand{\xxx}{\mbox{\textsc{Parrot}}\xspace}
+\newcommand{\mytitle}[0]{\textbf {\xxx: A Practical Runtime \\
+  for Deterministic, Stable, and Reliable Threads}}
+\newcommand{\mykeywords}[0]{Deterministic Multithreading, Stable Multithreading,
+  Software Model Checking, State Space Reduction}
 
-\subsection{Ease of Use} \label{sec:parrot-use}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% hyperref stuff
 
-Of all \nprog programs, \nprognohints have reasonable overhead with
-default schedules, requiring no hints.  \nproglineuphints programs need a 
-total of 
-\nlineofcomputehints lines of \compute hints: \nproggenericlineuphints
-need only 4 lines of generic \compute hints in \libgomp, and
-\nprogspecificlineuphints need program-specific \computes
-(Table~\ref{tab:computehints}).  These programs enjoy both determinism and
-reasonable performance.  Only \nprognondethints programs 
-need a total of \nlineofnondethints lines of \nondet hints to
-trade some determinism for performance (Table~\ref{tab:nondethints}).
-On average, each program needs only \hintsperprog lines.
+\usepackage[square,comma,numbers,sort]{natbib}
+\usepackage{hypernat}
+\usepackage{hyperref}
 
+%% fill in pdf info here
+\hypersetup{%
+colorlinks=false,
+pdfborder={0 0 0},
+pdftitle={\mytitle},
+pdfkeywords={\mykeywords},
+bookmarksnumbered,
+pdfstartview={FitH},
+urlcolor=cyan,
+pdfpagelabels=true,
+pdfdisplaydoctitle=true,
+}%
 
-In our experience, adding hints was straightforward.  It took roughly 0.5--2 
-hours per program despite unfamiliarity with the programs.  We believe
-the programs' developers would spend much less time adding better hints.
-\parrot helped us deterministically reproduce the bottlenecks and identify
-the synchronizations delayed by round-robin.  We used Intel \vtune~\cite{vtune} and
-Linux \v{perf}~\cite{perf} performance counter-based tools to identify time-
-consuming computations, and usually needed to align only the top two or three
-computations.  For instance, \ferret uses a pipeline of six stages, all
-serialized by the \parrot's default schedules.  We aligned only two of them to 
-bring the overhead down to a reasonable level.  Aligning more stages did not help.
+%\usepackage{breakurl}
+%\usepackage[all]{hypcap}
+%\renewcommand{\url}{\burl}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Some NICE fonts
 
+\newfont{\BIG}{cminch}                             %--- One-inch font
+\newfont{\sfbHuge}{cmssbx10 scaled\magstep5}       %-- 25pt sans serif bold
+\newfont{\sfbLarger}{cmssbx10 scaled\magstep3}   %-- 12+pt sans serif boldd
+\newfont{\sfblarger}{cmssbx10 scaled\magstep2}   %-- 12+pt sans serif bold
+\newfont{\sfblarge}{cmssbx10 scaled\magstep1}      %-- 12pt sans serif bold
+\newfont{\sfbeleven}{cmssbx10 scaled\magstephalf}  %-- 11pt sans serif bold
+\newfont{\sfb}{cmssbx10}                           %-- 10pt sans serif bold
+\newfont{\sfeight}{cmss8}                          %-- 8pt sans serif
 
+%%%%%%%%%%%%%%%%%%%%%%%%
+%    space tweaking
 
-\begin{figure*}[tb]
-%%\centering
-\includegraphics[width=0.6\columnwidth]{parrot/figures/overhead}
-\caption{{\em \parrot's performance normalized over nondeterministic
-    execution.}  The patterns of the bars show the types of the hints the 
-programs
-  need: no hints, generic \computes in \libgomp, program-specific
-  \computes, or \nondets.  The mean overhead is
-  \meanoverhead (indicated by the horizontal line).} \label{fig:overhead}
-\vspace{-.05in}
-\end{figure*}
+%\textwidth = 6.5 in
+%\textheight = 9.0 in
+%\setlength{\topmargin}{-.5in}
 
+%\headheight = 0.0 in
+%\headsep = 0.0 in
+%\parskip = 0.2in
+%\parindent = 0.0in
 
+\renewcommand{\topfraction}{0.95}
+\addtolength{\textfloatsep}{-0.1in}
+%\addtolength{\floatsep}{0.025in}
+\renewcommand\floatpagefraction{.9}
+%\renewcommand\bottomfraction{.9}
+\renewcommand\textfraction{.1}
 
+\setlength{\parindent}{9pt}
 
+% Rescue
+\makeatletter
+\def\v#1{{\mbox{\fontfamily{cmtt}\fontsize{\f@size}{\f@size}\selectfont #1}}}
+\newcommand{\compute}{soft barrier\xspace}
+\newcommand{\vcompute}{\emph{soft barrier}\xspace}
+\newcommand{\computes}{soft barriers\xspace}
+\newcommand{\Compute}{Soft barrier\xspace}
+\newcommand{\Computes}{Soft barriers\xspace}
+\newcommand{\nondet}{performance critical section\xspace}
+\newcommand{\vnondet}{\emph{performance critical section}\xspace}
+\newcommand{\nondets}{performance critical sections\xspace}
+\newcommand{\Nondet}{Performance critical section\xspace}
+\newcommand{\Nondets}{Performance critical sections\xspace}
 
-\begin{table}[t]
-\footnotesize
-\centering
-\begin{tabular}{lr}
-{\bf Program} & {\bf Lines} \\
-\hline
+\newcommand{\dmt}[0]{DMT\xspace}
+\newcommand{\smt}[0]{StableMT\xspace}
+\newcommand{\racepro}[0]{\textsc{RacePro}\xspace}
+\newcommand{\tern}[0]{\textsc{Tern}\xspace}
+\newcommand{\peregrine}[0]{\textsc{Peregrine}\xspace}
+\newcommand{\grace}[0]{Grace\xspace}
+\newcommand{\coredet}[0]{\textsc{CoreDet}\xspace}
+\newcommand{\kendo}[0]{Kendo\xspace}
+\newcommand{\dthreads}[0]{\textsc{DThreads}\xspace}
+\newcommand{\determinator}[0]{Determinator\xspace}
+\newcommand{\dbug}[0]{\textsc{dbug}\xspace}
+\newcommand{\ecosys}[0]{\xxx-\dbug}
 
-\mencoder, \vips, \swaptions, \freqmine, \facesim
-,                                 &   2 each  \\
-\xtwosixfour, \radiosity, \radix, \kmeans, \\
-\linearregrepthread, \linearregre, \\
-\matrixmultpthread, \matrixmult, \\
-\wordcntpthread, \stringmatchpthread, \\
-\stringmatch, \histogrampthread, \histogram \\
+\newcommand{\apache}{\v{Apache}\xspace}
+\newcommand{\ab}{\v{ApacheBench}\xspace}
+\newcommand{\mysql}{\v{MySQL}\xspace}
+\newcommand{\sysbench}{\v{SysBench}\xspace}
+\newcommand{\mplayer}[0]{{MPlayer}\xspace}
+\newcommand{\mencoder}[0]{\v{mencoder}\xspace}
+\newcommand{\pbzip}[0]{\v{PBZip2}\xspace}
+\newcommand{\aget}[0]{\v{aget}\xspace}
+\newcommand{\mongoose}[0]{\v{Mongoose}\xspace}
+\newcommand{\pfscan}[0]{\v{pfscan}\xspace}
+\newcommand{\fft}[0]{\v{fft}\xspace}
+\newcommand{\luc}[0]{\v{lu\_cb}\xspace}
+\newcommand{\lun}[0]{\v{lu\_ncb}\xspace}
+\newcommand{\barnes}[0]{\v{barnes}\xspace}
+\newcommand{\radix}[0]{\v{radix}\xspace}
+\newcommand{\radiosity}[0]{\v{radiosity}\xspace}
+\newcommand{\waters}[0]{\v{water-spatial}\xspace}
+\newcommand{\watern}[0]{\v{water-nsquared}\xspace}
+\newcommand{\oceanncp}[0]{\v{ocean}\xspace}
+\newcommand{\oceancp}[0]{\v{ocean}\xspace}
+\newcommand{\fmm}[0]{\v{fmm}\xspace}
+\newcommand{\volrend}[0]{\v{volrend}\xspace}
+\newcommand{\cholesky}[0]{\v{cholesky}\xspace}
+\newcommand{\streamcluster}[0]{\v{streamcluster}\xspace}
+\newcommand{\blackscholes}[0]{\v{blackscholes}\xspace}
+\newcommand{\swaptions}[0]{\v{swaptions}\xspace}
+\newcommand{\bodytrack}[0]{\v{bodytrack}\xspace}
+\newcommand{\bodytrackopenmp}[0]{\v{bodytrack-openmp}\xspace}
+\newcommand{\ferret}[0]{\v{ferret}\xspace}
+\newcommand{\dedup}[0]{\v{dedup}\xspace}
+\newcommand{\raytrace}[0]{\v{raytrace}\xspace}
+\newcommand{\canneal}[0]{\v{canneal}\xspace}
+\newcommand{\racey}[0]{\v{racey}\xspace}
+\newcommand{\freqmine}[0]{\v{freqmine}\xspace}
+\newcommand{\vips}[0]{\v{vips}\xspace}
+\newcommand{\xtwosixfour}[0]{\v{x264}\xspace}
+\newcommand{\fluidanimate}[0]{\v{fluidanimate}\xspace}
+\newcommand{\facesim}[0]{\v{facesim}\xspace}
+\newcommand{\rtviewraytrace}[0]{\v{rtview\_raytrace}\xspace}
+\newcommand{\wordcount}[0]{\v{word\_count}\xspace}
+\newcommand{\klee}[0]{\textsc{klee}\xspace}
+\newcommand{\woodpecker}[0]{\textsc{woodpecker}\xspace}
+\newcommand{\splashx}[0]{\mbox{SPLASH-2x}\xspace}
+\newcommand{\parsec}[0]{\mbox{PARSEC}\xspace}
+\newcommand{\phoenix}[0]{\mbox{Phoenix}\xspace}
+\newcommand{\pthread}[0]{\mbox{Pthreads}\xspace}
 
-\hline
+\newcommand{\kmeans}[0]{\v{kmeans}\xspace}
+\newcommand{\kmeanspthread}[0]{\v{kmeans-pthread}\xspace}
+\newcommand{\linearregre}[0]{\v{linear-regression}\xspace}
+\newcommand{\linearregrepthread}[0]{\v{linear-regression-pthread}\xspace}
+\newcommand{\matrixmult}[0]{\v{matrix-multiply}\xspace}
+\newcommand{\matrixmultpthread}[0]{\v{matrix-multiply-pthread}\xspace}
+\newcommand{\wordcnt}[0]{\v{word-count}\xspace}
+\newcommand{\wordcntpthread}[0]{\v{word-count-pthread}\xspace}
+\newcommand{\stringmatch}[0]{\v{string-match}\xspace}
+\newcommand{\stringmatchpthread}[0]{\v{string-match-pthread}\xspace}
+\newcommand{\histogram}[0]{\v{histogram}\xspace}
+\newcommand{\histogrampthread}[0]{\v{histogram-pthread}\xspace}
+\newcommand{\pca}[0]{\v{pca}\xspace}
+\newcommand{\pcapthread}[0]{\v{pca-pthread}\xspace}
 
-\pbzip, \ferret,                                  &   3 each   \\
-\kmeanspthread, \pcapthread, \pca, \wordcnt \\
+\newcommand{\partition}[0]{\mbox{\v{partition}}\xspace}
+\newcommand{\nthelement}[0]{\mbox{\v{nth\_element}}\xspace}
+\newcommand{\partialsort}[0]{\mbox{\v{partial\_sort}}\xspace}
+\newcommand{\ua}[0]{\v{ua}\xspace}
+\newcommand{\is}[0]{\v{is}\xspace}
+\newcommand{\npb}[0]{\mbox{NPB}\xspace}
+\newcommand{\imagick}[0]{\mbox{ImageMagick}\xspace}
+\newcommand{\openldap}[0]{{OpenLDAP}\xspace}
+\newcommand{\redis}[0]{{Redis}\xspace}
+\newcommand{\bdb}[0]{{Berkeley DB}\xspace}
+\newcommand{\openmp}[0]{{OpenMP}\xspace}
+\newcommand{\libgomp}[0]{\v{libgomp}\xspace}
+\newcommand{\vtune}[0]{\v{VTune}\xspace}
 
-\hline
+%% imagick programs
+\newcommand{\convertshear}[0]{\v{convert\_shear}\xspace}
+\newcommand{\montage}[0]{\v{montage}\xspace}
 
-\libgomp, \bodytrack  &   4 each  \\
+\newcommand{\nprog}[0]{108\xspace}
+\newcommand{\nrealprog}[0]{55\xspace}
+\newcommand{\nstl}[0]{33\xspace}
+\newcommand{\nimagick}[0]{14\xspace}
+\newcommand{\nparsec}[0]{15\xspace}
+\newcommand{\nphoenix}[0]{14\xspace}
+\newcommand{\nsplash}[0]{14\xspace}
+\newcommand{\nnpb}[0]{10\xspace}
+\newcommand{\nbenchmarks}[0]{53\xspace}
+\newcommand{\ndatapartition}[0]{86\xspace}
+\newcommand{\nprogadhocsync}[0]{5\xspace}
+\newcommand{\nprogtimeout}[0]{5\xspace}
 
-\hline
+\newcommand{\nprognohints}[0]{18\xspace}
+\newcommand{\nprogneedhints}[0]{90\xspace}
+\newcommand{\nprognondethints}[0]{9\xspace}
+\newcommand{\nprognondetandnetwork}[0]{11\xspace} % the UA program is excluded.
+\newcommand{\nprognonondethints}[0]{99\xspace}
+\newcommand{\nproglineuphints}[0]{81\xspace}
+\newcommand{\nproggenericlineuphints}[0]{43\xspace}
+\newcommand{\nprogspecificlineuphints}[0]{38\xspace}
+\newcommand{\nlineofhints}[0]{109\xspace}
+\newcommand{\nlineofcomputehints}[0]{87\xspace}
+\newcommand{\nlineofnondethints}[0]{22\xspace}
+\newcommand{\hintsperprog}[0]{1.2\xspace}
+\newcommand{\nlineupfails}[0]{12\xspace}
 
-\imagick (12 programs)                          &   25 total  \\
+%% effects of perfomance hints.
+\newcommand{\genericnolineup}[0]{500\%\xspace}
+\newcommand{\genericlineup}[0]{0.8\%\xspace}
+\newcommand{\specificnolineup}[0]{460\%\xspace}
+\newcommand{\specificlineup}[0]{19.1\%\xspace}
+\newcommand{\nondetnohints}[0]{830\%\xspace}
+\newcommand{\nondethints}[0]{42.1\%\xspace}
+\newcommand{\overallnohints}[0]{510\%\xspace}
+\newcommand{\overallhints}[0]{11.9\%\xspace}
 
-\end{tabular}
-\caption{{\em Stats of \compute hints.} \nproglineuphints
-  programs need \compute hints.  The hints in \libgomp benefit all \openmp
-  programs including \imagick, STL, and \npb.} \label{tab:computehints}
-\end{table}
+%% our geometric mean overhead on standard workload.
+\newcommand{\meanoverhead}[0]{12.7\%\xspace}
+\newcommand{\meanrealoverhead}[0]{6.9\%\xspace}
+\newcommand{\meanbenchoverhead}[0]{19.0\%\xspace}
 
-\begin{table}[t]
-\footnotesize
-\centering
-\begin{tabular}{lrl}
-{\bf Program} & {\bf Lines} & {\bf Nondet Sync Var} \\
-\hline
+%% model checking reduction.
+%% nprogshrink, totally 56: 50 programs with out nondet hints, and 6 programs with network or nondet hints.
+\newcommand{\shrinkscale}[0]{$10^{6}$--$10^{19734}$\xspace}
+\newcommand{\nprogshrink}[0]{56\xspace}
+\newcommand{\nprognondetshrink}[0]{5\xspace}
+\newcommand{\nprogverifiedxxx}[0]{99\xspace}
+\newcommand{\nprogverifieddbug}[0]{43\xspace}
 
-\pfscan                       &   2   &   \v{matches\_lock}   \\
+%% overheads in comparison table.
+\newcommand{\nprogcompared}[0]{25\xspace}
+\newcommand{\xxxcompoverhead}[0]{11.8\%\xspace}
+\newcommand{\dthreadssyncoverhead}[0]{150.0\%\xspace}
+\newcommand{\dthreadssyncoverheadnoflui}[0]{112.5\%\xspace}
+%\newcommand{\dthreadsoverhead}[0]{1,173\%\xspace}
+\newcommand{\dthreadsexampleoverhead}[0]{7.7$\times$\xspace}
+\newcommand{\coredetoverhead}[0]{115.1\%\xspace}
+\newcommand{\overeach}[0]{10$\times$\xspace}
+\newcommand{\overcombined}[0]{4$\times$\xspace}
 
-\partition                &   2  &   \v{\_\_result\_lock}   \\
+%% should not use these any more.
+\newcommand{\overcoredet}[0]{20.7\xspace}
+\newcommand{\overdthreadssync}[0]{131.3\xspace}
+\newcommand{\overdthreadsfull}[0]{47.3\xspace}
 
-%% mutex array name: mutex[][].
-\fluidanimate          &   6  &   \v{mutex[i][j]} \\
+\newcommand{\npthreadsync}[0]{38\xspace}
+\newcommand{\nioync}[0]{33\xspace}
+\newcommand{\locsmcmc}[0]{243\xspace}
 
-%% mutex array name: lock_array[].
-\fmm                  &   2   &  \v{lock\_array[i]} \\
+\newcommand{\eg}{{e.g.}}
+\newcommand{\ie}{{i.e.}}
+\newcommand{\etc}{{etc}}
+\newcommand{\para}[1]{\vspace{.00in}\noindent{\bf #1}}
+\newcommand{\wrt}{{w.r.t. }}
+\newcommand{\cf}{{cf. }}
 
-%% mutex array name: tasks[i].taskLock, i is thread id.
-\cholesky             &   2   &  \v{tasks[i].taskLock} \\
-\raytrace             &   2   &  \v{ridlock}   \\
+\newcommand{\github}[0]{\url{github.com/columbia/smt-mc}}
 
-%% mutex array name: tlock[].
-\ua                       &   6   &  \v{tlock[i]} \\
+\def\LGfsize{\footnotesize}
+\pagestyle{empty}
 
-\end{tabular}
-\caption{{\em Stats of \nondet hints.} \nprognondethints programs need \nondet
-  hints. The hints in \partition are generic for three STL programs
-  \partition, \nthelement, and \partialsort. The last column shows the
-  synchronization variables whose operations are made
-  nondeterministic.} \label{tab:nondethints}
-\end{table}
+\begin{document}
 
-\subsection{Performance} \label{sec:parrot-performance}
+% Hack for: Package caption Error: No float type 'copyrightbox' defined.
+\newcounter{copyrightbox}
 
-Figure~\ref{fig:overhead} compares \parrot's performance to nondeterministic
-execution.  Even with the maximum number of threads (16--24), the mean
-overhead is small: \meanrealoverhead for real-world programs, \
-meanbenchoverhead for benchmark
-programs, and \meanoverhead for all programs.
-Only seven programs had over 100\% overhead.  The \ferret, \freqmine, and \is 
-benchmarks
-had dynamic load imbalance even with the starting points of the computations
-aligned with \compute hints. \ua also had load 
-imbalance even after \nondet hints are added.
-\xtwosixfour is a pipeline program, and its overhead
-comes from the \compute timeouts during the pipeline startup and
-teardown.  \rtviewraytrace and \barnes have low-level
-synchronizations in tight loops, and their overhead may be further reduced
-with \nondets.  Four programs, \mencoder, \bodytrackopenmp, \facesim, and
-\linearregrepthread, enjoyed big speedups, so we analyzed their 
-executions with profiling tools. We found that the number of \mencoder's 
-context switches due to synchronization decreased from 1.9M with
-nondeterministic executions to 921 with \parrot.  The reason of the context
-switch savings was that \parrot's round-robin scheduling reduced contention
-and its synchronizations use a more efficient wait that combines spin- and
-block-waits.  \bodytrackopenmp and \facesim
-enjoyed a similar benefit.  So did another 19 programs which had
-10$\times$ fewer context switches with
-\parrot~\cite{Parrot:github}. \linearregrepthread's stalled cycles were
-reduced by 10$\times$ with \parrot, and we speculate that \parrot's scheduler
-improved its affinity. (See~\cite{Parrot:github} for all results on
-microarchitectural events.)
+\date{}
 
+\title{\mytitle}
 
+\author[+]{\hspace{0 mm}\fontsize{10}{10}\selectfont Heming Cui}
+\author[*]{Jiri Simsa}
+\author[+]{Yi-Hong Lin}
+\author[+]{Hao Li}
+\author[*]{Ben Blum}
+\author[+]{Xinan Xu}
+\author[+]{\\\hspace{0 mm}\fontsize{10}{10}\selectfont Junfeng Yang}
+\author[*]{Garth A. Gibson}
+\author[*]{Randal E. Bryant\vspace{-3.0 mm}}
+\setlength{\affilsep}{1em}
+\renewcommand\AB@affilsepx{\hspace{28.0 mm}\protect\Affilfont}
+%\affil[+]{Department of Computer Science}
+%\renewcommand\AB@affilsepx{\\\protect\Affilfont}
+%\affil[*]{Department of Computer Science\hspace{1.0mm}}
+\affil[+]{\textrm\fontsize{10}{10}\selectfont Columbia University}
+\affil[*]{\textrm Carnegie Mellon University\vspace{-7.0 mm}}
+%\affil[ ]{\textrm{\small {\hspace{-8.5 mm}\{heming, yl2790, lihao, xx2153, junfeng\}@cs.columbia.edu
+%  \hspace{15 mm}\{jsimsa, bblum, garth, randy.bryant\}@cs.cmu.edu}}}
+\maketitle
+\thispagestyle{empty}
 
+\begin{sloppypar}
+\begin{abstract}
+\input{abstract}
+\end{abstract}
+\end{sloppypar}
+
+\begin{sloppypar}
+%% %\category{D.2.5}{Software Engineering}{Testing and Debugging}
+%% \category{D.4.5}{Operating Systems}{Threads, Reliability}
+%% \category{D.2.4}{Software Engineering}{Software/Program Verification}
+%% \terms{Algorithms, Design, Reliability, Performance}
+%% \keywords{\mykeywords}
+
+%% \vskip 2mm
+%% \noindent {\small \bf Categories and Subject Descriptors:} \vskip -.2mm
+%% \noindent
+%% {\footnotesize D.4.5~[{\bf Operating Systems}]: {Threads, Reliability}\\
+%% D.2.4~[{\bf Software Engineering}]: {Software/Program Verification};}
+%% \vskip 1mm
+%% \noindent {\small \bf General Terms:} \vskip -.2mm
+%% \noindent
+%% {\footnotesize Algorithms, Design, Reliability, Performance}
+%% \vskip 1mm
+%% \noindent {\small \bf Keywords:} \vskip -.2mm
+%% \noindent
+%% {\footnotesize \mykeywords}
+
+\vskip 2mm
+\noindent {\small \bf Categories and Subject Descriptors:}
+{\small D.4.5~[{\bf Operating Systems}]: {Threads, Reliability};
+  D.2.4~[{\bf Software Engineering}]: {Software/Program Verification};}
+\vskip .1mm
+\noindent {\small \bf General Terms:} {\small Algorithms, Design,
+  Reliability, Performance}
+\vskip .1mm
+\noindent {\small \bf Keywords:} {\small \mykeywords}
+
+\end{sloppypar}
+
+\begin{sloppypar}
+
+\input{intro}
+\input{overview}
+\input{hints}
+\input{runtime}
+\input{mc}
+%\input{implementation}
+\input{discussion}
+\input{eval}
+\input{related}
+\input{conclusion}
+\input{ack}
+
+\end{sloppypar}
+
+% uncomment to tweak with bib spacing
+%\setlength\bibsep{2.25pt}
+{
+%\small
+ \bibliographystyle{abbrvnat}
+ \bibliography{bib/biblio}
+}
+
+\end{document}

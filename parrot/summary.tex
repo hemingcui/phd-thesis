@@ -1,0 +1,17 @@
+\vspace{-.05in}
+\section{Conclusion} \label{sec:conclusion}
+\vspace{-.05in}
+
+We have presented \xxx, a simple, practical \pthread-compatible system for
+making threads deterministic and stable. It offers a new contract to
+developers.  By default, it schedules synchronizations using round-robin,
+vastly reducing schedules.  When the default schedules are slow, it
+allows developers to write performance hints for speed.  We believe this
+contract eases writing correct, efficient programs.  We have
+also presented an ecosystem formed by integrating \xxx with model checker
+\dbug, so that \dbug can thoroughly check \xxx's schedules, and \xxx can
+greatly improve \dbug's coverage.  Results on a diverse set of \nprog
+programs, roughly \overeach more than any prior evaluation,
+show that \xxx is easy to use, fast, and scalable; and it improves \dbug's
+coverage by many orders of magnitude.  We have released \xxx's source
+code, entire benchmark suite, and raw results at \github.
