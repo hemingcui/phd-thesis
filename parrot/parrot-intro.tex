@@ -2,12 +2,12 @@ The last two chapters have presented two \smt and \dmt systems, \tern and
 \peregrine. Other researchers have also been building and applying \smt
 systems~\cite{determinator:osdi10, dthreads:sosp11, ics:oopsla13} to improve
 software reliability. However, despite of these recent advances, it remains an
-open challenge that whether \smt can be made simple, fast, and deployable,
-because existing work either require sophiscated program
-analysis~\cite{cui:tern:osdi10, peregrine:sosp11, ics:oopsla13}, or incur
-prohibitive performance overhead (\eg, 30X slowdown in a previous
-system~\cite{dthreads:sosp11} with many programs in our evaluation
-(\S\ref{sec:parrot-eval}).
+open challenge that whether \smt can be made simple, fast, and deployable on a
+wide range of multithreaded programs, because existing work either require
+sophiscated program analysis~\cite{cui:tern:osdi10, peregrine:sosp11,
+ics:oopsla13}, or incur prohibitive performance overhead (\eg, 30$\times$
+slowdown in a previous system~\cite{dthreads:sosp11} with many programs in our
+evaluation (\S\ref{sec:parrot-eval}).
 
 To address this open challenge, this chapter presents \parrot, a simple, fast,
 and deployable \smt and \dmt runtime system, simplifying deployment. \parrot
@@ -21,7 +21,8 @@ right, two complementary techniques have been invented by reserachers recently.
 First, Stable Multithreading (\smt)~\cite{determinator:osdi10, cui:tern:osdi10,
 dthreads:sosp11, peregrine:sosp11}, which
 is created by my collaborators and me, aims to reduce the number possibles
-schedules on all inputs. Other researchers have also been building and applying \smt
+schedules on all inputs. Other researchers have also been building and applying
+\smt
 systems~\cite{determinator:osdi10, dthreads:sosp11, ics:oopsla13} to improve
 software reliability. These work have shown to greatly improve the
 reliability of multithreaded programs, including: (1) making reproducing
@@ -33,20 +34,28 @@ coverage~\cite{ics:oopsla13}.
 Second, Deterministic Multithreading
 (\dmt)~\cite{dmp:asplos09,kendo:asplos09,coredet:asplos10,
 dos:osdi10,grace:oopsla09} addresses the nondeterminism problem, and it focuses
-on reducing the number of possible schedules on each input down to one. \dmt is especially useful in testing and debugging multithreaded programs, however, we have previously stated in Chapter~\ref{sec:smt-motivation} that \dmt is not as useful as commonly perceived, and \smt is better for improving reliability of multithreaded programs. \smt and \dmt are complementary, and several systems (\eg, \ref{determinator:osdi10, dthreads:sosp11, cui:tern:osdi10, peregrine:sosp11}) are both \smt and \dmt.
+on reducing the number of possible schedules on each input down to one. \dmt is
+especially useful in testing and debugging multithreaded programs, however, we
+have previously stated in Chapter~\ref{sec:smt-motivation} that \dmt is not as
+useful as commonly perceived, and \smt is better for improving reliability of
+multithreaded programs. \smt and \dmt are complementary, and several systems
+(\eg, \cite{determinator:osdi10, dthreads:sosp11, cui:tern:osdi10,
+peregrine:sosp11}) are both \smt and \dmt.
 
-Although the latest advances on building and applying \smt are promising, two important challenges remain
-unaddressed.  First, can the DMT and \smt approaches consistently achieve
-good performance on a wide range of programs?  For instance, we observed
-that a prior system, \dthreads, had 5$\times$ to 100$\times$ slowdown on
-some programs.  Second, can they be made simple and adoptable?
-These challenges are not helped much by the limited
+However, despite of these recent advances, it remains an
+open challenge that whether \smt can be made simple, fast, and deployable on a
+wide range of multithreaded programs.  
+This challenge is not helped much by the limited
 evaluation of prior systems which often used (1) synthetic benchmarks, not
 real-world programs, from incomplete benchmark suites; (2) one workload
 per program; and (3) at most 8 cores (with three exceptions; see
-\S\ref{sec:parrot-related}).
+\S\ref{sec:parrot-related}). For instance, while a previous
+system~\cite{dthreads:sosp11} achieves reasonable performanace overhead on 14
+scientific benchmark programs, we observed
+this system incured 30$\times$ slowdown in many other programs in our evaluation.
 
-These challenges are intermingled.  Reducing schedules improves correctness
+This open challenge comes from the design choices of existing \smt systems. 
+Reducing schedules improves correctness
 but trades performance because the schedules left may not balance each
 thread's load well, causing some threads to idle unnecessarily.  Our
 experiments show that ignoring load imbalance as in \dthreads
@@ -66,8 +75,9 @@ requires sophisticated program analysis, complicating deployment.
 
 
 
-This chapter presents \parrot, our third \smt and \dmt system, with three contributions.
-First, we present \parrot,\footnote{We name our system after one of the most
+To tackle this open challenge, this chapter presents \parrot, our third \smt and
+\dmt system, with three contributions.
+First, \parrot is \footnote{We name our system after one of the most
   trainable birds.} a simple, practical runtime that efficiently makes
 threads deterministic and stable by offering a new contract to developers.
 By default, it schedules synchronizations in each thread using
@@ -77,10 +87,9 @@ intuitive \emph{performance hints} to their code for speed.  Developers discover
 where to add hints through profiling as usual, and \parrot simplifies
 performance debugging by deterministically reproducing the bottlenecks.
 The hints are robust to developer mistakes as they can be safely ignored
-without affecting correctness.
-
-Like prior systems, \parrot's contract reduces schedules to favor correctness
-over performance.  Unlike prior systems, it allows advanced developers
+without affecting correctness. Like prior systems, \parrot's contract reduces
+schedules to favor correctness over performance.  Unlike prior systems, it
+allows advanced developers
 to optimize performance.  We believe this practical ``meet in the
 middle'' contract eases writing correct, efficient programs.
 
@@ -193,7 +202,7 @@ they
 \end{enumerate}
 
 We have released \parrot's source code, entire benchmark suite, and
-raw results~\cite{Parrot:github}. In the remaining of this paper,
+raw results~\cite{Parrot:github}. In the remaining of this chapter,
 $\S$\ref{sec:parrot-design} contrasts \parrot with 
 prior systems on an example and gives an overview of \parrot's 
 architecture.~$\S$\ref{sec:parrot-hints} describes the performance hint
