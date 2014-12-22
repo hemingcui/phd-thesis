@@ -2,7 +2,7 @@
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=.96\columnwidth]{peregrine/figures/overview.eps}
+\includegraphics[width=.7\columnwidth]{peregrine/figures/overview.eps}
 \caption{{\em \peregrine Architecture: components and data structures are
     shaded (and in green).}}\label{fig:peregrine-arch}
 \end{figure}
@@ -35,7 +35,7 @@ DMT algorithms~\cite{cui:tern:osdi10}.
 
 \begin{figure}
 \centering
-\includegraphics[width=\columnwidth]{peregrine/figures/analyzer.eps}
+\includegraphics[width=0.7\columnwidth]{peregrine/figures/analyzer.eps}
 \caption{{\em Analyses performed by the analyzer.}}\label{fig:peregrine-analyzer}
 \end{figure}
 
@@ -88,10 +88,10 @@ scenarios (\S\ref{sec:peregrine-deploy}) and assumptions (\S\ref{sec:peregrine-l
 %% \caption{{\em Analysis performed by the analyzer.}}\label{fig:analyzer}
 %% \end{figure}
 
-\begin{figure}[t]
+\begin{figure}[!ht]
 \centering
 \begin{minipage}{.5\textwidth}
-\lgrindfile{peregrine/code/example.cpp.tex}
+\tiny \lgrindfile{peregrine/code/example.cpp.tex}
 \end{minipage}
 \caption{{\em Running example.} It uses the common
   divide-and-conquer idiom to split work among multiple threads.
@@ -122,10 +122,10 @@ the recorder and replayer at runtime.  It also inserts code to mark
 the contents of \vv{argv[i]} and the data from \vv{read()} (line L11) as
 input.
 
-\begin{figure}[t]
+\begin{figure}[!ht]
 \begin{minipage}[t]{\columnwidth}
 \centering
-\includegraphics[width=\textwidth]{peregrine/figures/trace}
+\includegraphics[width=0.7\textwidth]{peregrine/figures/trace}
 \end{minipage}
 \caption{{\em Execution trace, hybrid schedule, and trace slice.}  An
   execution trace of the program in Figure~\ref{fig:peregrine-example} on arguments

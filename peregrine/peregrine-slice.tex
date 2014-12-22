@@ -50,10 +50,11 @@ logical clock.  For each pair, it detects input-dependent races, and adds
 the racy instructions to a list of \emph{slicing targets} used by the
 intra-thread step.
 
-\begin{figure}[t]
-\centering
-\begin{minipage}[t]{.5\textwidth}
-  \lgrindfile{peregrine/code/input-race.cpp.tex}
+\begin{figure}[!ht]
+%%\centering
+\vspace{-.3in}
+\begin{minipage}[t]{\textwidth}
+\tiny  \lgrindfile{peregrine/code/input-race.cpp.tex}
 \end{minipage}
 \vspace{-.2in}
 \caption{{\em Input-dependent race detection
