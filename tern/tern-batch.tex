@@ -16,13 +16,15 @@ algorithm is that independent sites may memoize the same schedules, making
 program behaviors deterministic and stable across sites.
 
 \begin{figure}[t]
+\centering
+\begin{minipage}{0.8\linewidth}
 \lgrindfile{tern/code/memoize.cpp.lineno}
+\end{minipage}
 \caption{\small \emph{The memoizer's round-robin scheduling algorithm.}}
 \label{fig:tern-memoizer}
 \end{figure}
 
-The memoizer implements this algorithm by implementing the wrapper
-functions in Table~\ref{tab:tern-interface}.  Figure~\ref{fig:tern-memoizer} shows
+The memoizer implements this algorithm by implementing the wrappers in Table~\ref{tab:tern-interface}.  Figure~\ref{fig:tern-memoizer} shows
 the wrappers to \vv{pthread\_mutex\_lock()} and
 \vv{pthread\_mutex\_unlock()}.  The memoizer maintains a queue of active
 threads.  Only the thread at the head of the queue ``has the turn'' (line
@@ -265,6 +267,7 @@ illustrates semaphore relay using the replayer's
 \vv{pthread\_mutex\_lock()} wrapper.
 
 \begin{figure}[t]
+\hspace{1.5in}
 \begin{minipage}[c]{.8\linewidth}
 \tiny \lgrindfile{tern/code/replay.cpp.tex}
 \end{minipage}

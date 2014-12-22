@@ -129,13 +129,16 @@ avoid interference between windows.
 \subsection{Workflow and An Example} \label{sec:tern-example}
 
 \begin{figure}[t]
-\centering \tiny \lgrindfile{tern/code/pbzip2.cpp.lineno}
+\centering
+\begin{minipage}[c]{.8\linewidth}
+\tiny \lgrindfile{tern/code/pbzip2.cpp.lineno}
+\end{minipage}
 \caption{\small Simplified \pbzip code.}
 \label{fig:tern-pbzip2}
 \end{figure}
 
 \begin{figure}[t]
-\centering
+\hspace{1.5in}
 \begin{minipage}[c]{.8\linewidth}
 \tiny \lgrindfile{tern/code/pbzip2-sync-order.cpp}
 %\includegraphics[width=.4\textwidth]{figures/pbzip2-sync-order.eps}
@@ -287,28 +290,28 @@ analysis.
 \begin{table*}[t]
 \small
 \centering
-\begin{tabular}{lcp{4.1in}}
+\begin{tabular}{l c p{3.2in}}
 {\bf Annotations} & {\bf Inserted by} &  {\bf Semantics} \\
 
 \hline
 
-\multirow{2}{*}{symbolic(\emph{data}, \emph{len})} &
-\multirow{2}{*}{Developer} & Marks data that may affect
+\multirow{3}{*}{symbolic(\emph{data}, \emph{len})} &
+\multirow{3}{*}{Developer} & Marks data that may affect
 schedules.  The memoizer tracks constraints on this data.  The replayer
 checks this data against the memoized constraints. \\ \hline
 
-begin\_task() & \multirow{2}{*}{Developer} & \multirow{2}{4.1in}{Mark the
-  beginning and end of a logical task.  Often used to divide the
-  executions of threads in a pool into separate tasks
+begin\_task() & \multirow{2}{*}{Developer} & \multirow{2}{3.2in}{Mark the
+  beginning and end of a logical task.  Used to divide the
+  executions of threads in servers.
   (\S\ref{sec:tern-window}).  }\\
 
 end\_task() & & \\
 
 \hline
 
-lock\_wrapper(\emph{l}) & Developer & \multirow{2}{4.1in}{Synchronization
-  wrappers.  The memoizer intercepts these operations for memoizing
-  schedules, and the replayer intercepts them for reusing schedules.  } \\
+lock\_wrapper(\emph{l}) & Developer & \multirow{2}{3.2in}{Synch
+  wrappers used by the memoizer for memoizing
+  schedules, and by the replayer for reusing schedules.  } \\
 
 unlock\_wrapper(\emph{l}) & or \tern & \\
 
@@ -318,10 +321,10 @@ unlock\_wrapper(\emph{l}) & or \tern & \\
 
 \hline
 
-before\_blocking() & \multirow{2}{*}{\tern} &
-\multirow{2}{4.1in}{Inserted before and after blocking system calls.  The
-  memoizer logs the order of these calls. The replayer opportunistically
-  enforces the same order of these calls.}\\
+before\_blocking() & \multirow{3}{*}{\tern} &
+\multirow{3}{3.2in}{Inserted before and after blocking system calls for
+  the memoizer to log the order of these calls, and for the replayer to
+  enforce the same order of these calls.}\\
 
 after\_blocking() & & \\
 
