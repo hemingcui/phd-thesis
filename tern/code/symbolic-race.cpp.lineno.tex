@@ -1,0 +1,11 @@
+% Remember to use the lgrind style
+
+\Head{}
+\File{symbolic\-race.cpp.lineno}{2014}{12}{22}{16:58}{137}
+\L{\LB{\N{1}\V{:}_\C{}//_T1}\Tab{15}{//_T2\CE{}}}
+\L{\LB{\N{2}\V{:}_\V{lock}(\V{l1});}}
+\L{\LB{\N{3}\V{:}_\V{a}[\V{i}]++;}\Tab{15}{\V{lock}(\V{l2});}}
+\L{\LB{\N{4}\V{:}}\Tab{15}{\V{a}[\V{j}]\-\-;}}
+\L{\LB{\N{5}\V{:}_\V{unlock}(\V{l1});}\Tab{16}{}}
+\L{\LB{\N{6}\V{:}}\Tab{15}{\V{unlock}(\V{l2});}}
+\L{\LB{\N{7}\V{:}}\Tab{10}{}}

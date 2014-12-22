@@ -1,0 +1,7 @@
+1: // T1       // T2
+2: lock(l1);
+3: a[i]++;     lock(l2);
+4:             a[j]--;
+5: unlock(l1);  
+6:             unlock(l2);
+7:        
