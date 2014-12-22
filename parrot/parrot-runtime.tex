@@ -1,4 +1,4 @@
-\section{\parrot Runtime} \label{sec:runtime}
+\section{\parrot Runtime} \label{sec:parrot-runtime}
 
 %% The simple \parrot runtime consists of a user-space scheduler
 %% (\S\ref{sec:scheduler}), a set of wrapper functions for intercepting
@@ -7,17 +7,17 @@
 %% (\S\ref{sec:network}), and handlers of timeouts (\S\ref{sec:timeout}).
 
 The \parrot runtime contains implementation of the hint abstractions
-(\S\ref{sec:hints-impl}) and a set of wrapper functions that intercept
-\pthread (\S\ref{sec:sync}), network (\S\ref{sec:network}), and timeout
-(\S\ref{sec:timeout}) operations.  The wrappers interpose dynamically
+(\S\ref{sec:parrot-hints-impl}) and a set of wrapper functions that intercept
+\pthread (\S\ref{sec:parrot-sync}), network (\S\ref{sec:parrot-network}), and timeout
+(\S\ref{sec:parrot-timeout}) operations.  The wrappers interpose dynamically
 loaded library calls via \v{LD\_PRELOAD} and ``trap'' the calls into
-\parrot's deterministic scheduler (\S\ref{sec:scheduler}).  Instead of
+\parrot's deterministic scheduler (\S\ref{sec:parrot-scheduler}).  Instead of
 reimplementing the operations from scratch, these wrappers leverage
 existing runtimes, greatly simplifying \parrot's implementation, deployment,
 and inter-operation with code that assumes standard runtimes (\eg,
 debuggers).
 
-\subsection{Scheduler} \label{sec:scheduler}
+\subsection{Scheduler} \label{sec:parrot-scheduler}
 
 The scheduler intercepts synchronization calls and releases threads using the
 well-understood, deterministic round-robin algorithm: the first thread
@@ -49,12 +49,12 @@ the \pthread library.
 %% \v{void wakeup()} \\
 %% \end{tabular}
 \vspace{-.05in}
-\caption{{\em Scheduler primitives.}} \label{tab:scheduler}
+\caption{{\em Scheduler primitives.}} \label{tab:parrot-scheduler}
 \vspace{-.05in}
 \end{table}
 
 To implement operations in the \parrot runtime, the scheduler provides a
-monitor-like internal interface, shown in Table~\ref{tab:scheduler}.  The
+monitor-like internal interface, shown in Table~\ref{tab:parrot-scheduler}.  The
 first five functions map one-to-one to functions of a typical monitor,
 except the scheduler functions are deterministic.  The last two are for
 selectively reverting to nondeterministic execution.  The rest of this
@@ -101,7 +101,7 @@ counts the number of turns executed since the beginning of current
 execution.  In each call to the \v{get\_turn} function, \parrot increments this logical
 time and checks for timeouts. 
 (If all threads block, \parrot keeps the logic time advancing with an idle
-thread; see~\S\ref{sec:timeout}.)
+thread; see~\S\ref{sec:parrot-timeout}.)
 The \v{wait} function takes a relative timeout argument.  If
 current logical time is $t_l$, a timeout of 10 means waking up the thread
 at logical time $t_l + 10$. A \v{wait(NULL, timeout)} 
@@ -115,11 +115,11 @@ call is a logical sleep, and a \v{wait(addr, 0)} call never times out.
 \lgrindfile{parrot/code/lock.cpp}
 \end{minipage}
 \vspace{-1 mm}
-\caption{{\em Wrappers of \pthread mutex lock\&unlock.}} \label{fig:lock}
+\caption{{\em Wrappers of \pthread mutex lock\&unlock.}} \label{fig:parrot-lock}
 \vspace{-0.0in}
 \end{figure}
 
-The last two functions in Table~\ref{tab:scheduler} support performance
+The last two functions in Table~\ref{tab:parrot-scheduler} support performance
 critical sections and network operations.  They set the calling thread's
 execution mode to nondeterministic or deterministic. \parrot always schedules
 synchronizations of deterministic threads using round-robin, but it lets
@@ -164,7 +164,7 @@ queues.
 %% queue}  directly, because our \parrot runtime ensures that only the 
 %% head of \emph{runq queue} is allowed to modify the \emph{runq queue}.
 
-\subsection{Synchronizations} \label{sec:sync}
+\subsection{Synchronizations} \label{sec:parrot-sync}
 
 %% The wrapper functions intercept \pthread synchronizations by interposing
 %% dynamically loaded library calls (via \v{LD\_PRELOAD}) and ``trapping''
@@ -200,7 +200,7 @@ is held.
 
 % \subsubsection{Locks}
 
-Figure~\ref{fig:lock} shows the pseudo code of our \pthread mutex lock and
+Figure~\ref{fig:parrot-lock} shows the pseudo code of our \pthread mutex lock and
 unlock wrappers.  Both are quite simple; so are most other wrappers.  The
 lock wrapper uses the try-version of the \pthread lock operation to avoid
 deadlock: if the head of run queue is blocked waiting for a lock before
@@ -225,11 +225,11 @@ giving up the turn, no other thread can get the turn.
 \lgrindfile{parrot/code/cv.cpp}
 \end{minipage}
 \vspace{-2 mm}
-\caption{{\em Wrapper of \v{pthread\_cond\_wait}.}} \label{fig:cv}
+\caption{{\em Wrapper of \v{pthread\_cond\_wait}.}} \label{fig:parrot-cv}
 \vspace{-0 mm}
 \end{figure}
 
-Figure~\ref{fig:cv} shows the \v{pthread\_cond\_wait}
+Figure~\ref{fig:parrot-cv} shows the \v{pthread\_cond\_wait}
 wrapper.  It is slightly more complex than the lock and unlock wrappers
 for two reasons.  First, there is no try-version of
 \v{pthread\_cond\_wait}, so \parrot cannot use the same trick to avoid
@@ -299,7 +299,7 @@ make the current thread wait until the child gets the ID.
 %% unlocking \v{mutex} and waiting on \v{cond} be atomic (to avoid the
 %% lost-wakeup problem).
 
-\subsection{Performance Hints} \label{sec:hints-impl}
+\subsection{Performance Hints} \label{sec:parrot-hints-impl}
 
 %% \begin{figure}[t]
 %% \centering
@@ -331,7 +331,7 @@ because it cannot see  $t_2$'s unlock.
 To avoid the above interference, \parrot requires that synchronization variables accessed
 in nondeterministic execution are isolated from those accessed in
 deterministic execution.  This \emph{strong isolation} is easy to achieve based
-on our experiments because, as discussed in~$\S$\ref{sec:hints}, the
+on our experiments because, as discussed in~$\S$\ref{sec:parrot-hints}, the
 synchronizations causing high overhead on deterministic execution tend to
 be low-level synchronizations already isolated from other
 synchronizations. To help developers write performance critical sections
@@ -472,7 +472,7 @@ programs evaluated.
 %% blocked by \parrot for the turn and another blocked by the system's scheduler
 %% waiting be woken up by another synchronization.  
 
-\subsection{Network Operations} \label{sec:network}
+\subsection{Network Operations} \label{sec:parrot-network}
 
 To handle network operations, \parrot leverages the \v{nondet\_begin} and
 \v{nondet\_end} primitives.  Before a blocking operation such as \v{recv},
@@ -483,7 +483,7 @@ operations such as \v{send}, \v{recv}, \v{accept}, and \v{epoll\_wait}.
 This list suffices to run all evaluated programs that require network
 operations (\bdb, \openldap, \redis, and \aget).
 
-\subsection{Timeouts} \label{sec:timeout}
+\subsection{Timeouts} \label{sec:parrot-timeout}
 
 Real-world programs frequently use timeouts (\eg, \v{sleep},
 \v{epoll\_wait}, and \v{pthread\_cond\_timedwait}) for periodic activities
@@ -501,7 +501,7 @@ Proportional conversion is better than a fixed logical timeout because it
 matches developer intents better (\eg, important activities
 run more often).  A nice fallout is that it makes some
 non-terminating executions terminate for model checking
-(\S\ref{sec:coverage}).  Of course, \parrot's logical time corresponds
+(\S\ref{sec:parrot-coverage}).  Of course, \parrot's logical time corresponds
 loosely to real time, and may be less useful for real-time applications.\footnote{
 dOS~\cite{dos:osdi10} discussed the possibility of converting real time to
 logical time but did not present how.}

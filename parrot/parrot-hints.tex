@@ -1,4 +1,4 @@
-\section{Performance Hint Abstractions} \label{sec:hints}
+\section{Performance Hint Abstractions} \label{sec:parrot-hints}
 
 \parrot provides two performance-hint abstractions: a \emph{soft barrier} and
 a \emph{performance critical section}.  This section describes these abstractions and
@@ -53,7 +53,7 @@ be spawned.  Subsequently, any thread which calls \v{soba\_wait(key)}
 will block until either (1) \v{N}-1 other threads have also called
 \v{soba\_wait(key)} or (2) \v{timeout} time has elapsed since the first
 thread arrived at the barrier.  This timeout is made deterministic by \parrot
-(\S\ref{sec:scheduler}).  \v{soba\_init} can be called multiple
+(\S\ref{sec:parrot-scheduler}).  \v{soba\_init} can be called multiple
 times: if the number of coscheduled threads varies but is known at runtime,
 the soft barrier can be initialized before each use.  Both \v{key} and
 \v{timeout} in \v{soba\_init} are optional.  An absent \v{key} refers to a
@@ -293,7 +293,7 @@ for coscheduling purposes because schedulers cannot ignore a real barrier.
   %% brought little performance gain.
 
 
-\subsection{Performance Critical Section} \label{sec:performance-critical-section}
+\subsection{Performance Critical Section} \label{sec:parrot-performance-critical-section}
 
 A \vnondet identifies a code region as a potential bottleneck
 and encourages the scheduler to get
@@ -317,7 +317,7 @@ The \v{pcs\_enter} function marks the entry of a performance critical section an
 % nondeterministically.  After a thread calls \v{pcs\_exit}, \parrot adds it
 % back to round-robin.
 
-\subsection{Usage of the Two Hints} \label{sec:hints-usage}
+\subsection{Usage of the Two Hints} \label{sec:parrot-hints-usage}
 
 \para{Soft barrier.} Developers should generally use soft barriers to align
 high-level, time-consuming parallel computations, such as the \v{compress}

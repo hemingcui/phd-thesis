@@ -1,10 +1,10 @@
-\section{Overview} \label{sec:overview}
+\section{High-Level Design} \label{sec:parrot-design}
 
 This section first compares two prior systems and \parrot using
-an example (\S\ref{sec:example}), and then describes \parrot's architecture
-(\S\ref{sec:arch}).
+an example (\S\ref{sec:parrot-example}), and then describes \parrot's architecture design
+(\S\ref{sec:parrot-arch}).
 
-\subsection{An Example} \label{sec:example}
+\subsection{An Example} \label{sec:parrot-example}
 
 %% TODO: switch to use latex listings
 \begin{figure}[t]
@@ -14,7 +14,7 @@ an example (\S\ref{sec:example}), and then describes \parrot's architecture
 \end{minipage}
 \vspace{-.1in}
 \caption{{\em Simplified \pbzip.} It uses the producer-consumer idiom to
-  compress a file in parallel.} \label{fig:example}
+  compress a file in parallel.} \label{fig:parrot-example}
 \vspace{-.05in}
 \end{figure}
 
@@ -24,7 +24,7 @@ an example (\S\ref{sec:example}), and then describes \parrot's architecture
 \vspace{-.2in}
 \caption{{\em A \dthreads schedule.}  All
   \v{compress} calls are serialized. \v{read\_block} runs much faster than
-  \v{compress}.}\label{fig:dthreads-schedule}
+  \v{compress}.}\label{fig:parrot-dthreads-schedule}
 \vspace{-.05in}
 \end{figure}
 
@@ -108,7 +108,7 @@ order.  In a parallel phase, it lets threads run until all of them are about
 to do synchronizations.  A parallel phase lasts as long as the slowest
 thread, and is oblivious to the execution times of the other threads.  When
 running the example with two threads, we observed the \dthreads schedule
-in Figure~\ref{fig:dthreads-schedule}.  This schedule is stable because it
+in Figure~\ref{fig:parrot-dthreads-schedule}.  This schedule is stable because it
 can compress any file, but it is also very slow because it serializes all
 \v{compress} calls.  We observed \dthreadsexampleoverhead slowdown
 with 16 threads; and more threads give bigger slowdowns.
@@ -225,13 +225,13 @@ for reasonable performance, we need to align only time-consuming computations
 %deterministic scheduler, 
 %OS schedule
 \vspace{-.05in}
-\caption{{\em \parrot architecture.}} \label{fig:arch}
+\caption{{\em \parrot architecture.}} \label{fig:parrot-arch}
 \vspace{-.05in}
 \end{figure}
 
-\subsection{Architecture} \label{sec:arch}
+\subsection{Architecture} \label{sec:parrot-arch}
 
-Figure~\ref{fig:arch} shows \parrot's architecture.  We designed \parrot to be
+Figure~\ref{fig:parrot-arch} shows \parrot's architecture.  We designed \parrot to be
 simple and deployable.  It consists of a deterministic user-space
 scheduler, implementation of hints, a set of wrapper functions for
 intercepting \pthread, network, and timeout operations.  For simplicity,

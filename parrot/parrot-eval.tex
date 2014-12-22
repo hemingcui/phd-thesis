@@ -1,4 +1,4 @@
-\section{Evaluation} \label{sec:eval}
+\section{Evaluation} \label{sec:parrot-eval}
 
 We evaluated \parrot on a diverse set of \nprog programs. This set
 includes \nrealprog real-world programs: \bdb, a widely used database
@@ -92,7 +92,7 @@ latency.  \nprogadhocsync programs use ad hoc
 synchronization~\cite{syncfinder:osdi10}, and we added a \v{sched\_yield}
 to the busy-wait loops to make the programs work with \parrot.  \nprogtimeout
 programs use \pthread timed operations, and we added \v{set\_base\_time}
-(\S\ref{sec:timeout}) to them. We set the spin-wait of \parrot's scheduler
+(\S\ref{sec:parrot-timeout}) to them. We set the spin-wait of \parrot's scheduler
 to $10^5$ cycles.  We used the default \compute timeout of 20 except 3,000
 for \ferret.  Some \phoenix programs read large files, so
 we ran them with a warm file cache to focus on measuring their computation
@@ -122,34 +122,34 @@ variations~\cite{Parrot:github}.)
 The rest of this section focuses on six questions:
 \begin{enumerate}
 
-\item[\S\ref{sec:ease-of-use}:] Is \parrot easy to use?  How many hints are
+\item[\S\ref{sec:parrot-ease-of-use}:] Is \parrot easy to use?  How many hints are
   needed to make the programs with \parrot fast?
 
-\item[\S\ref{sec:performance}:] Is \parrot fast?  How effective are the
+\item[\S\ref{sec:parrot-performance}:] Is \parrot fast?  How effective are the
   hints?
 
-\item[\S\ref{sec:comparison}:] How does it compare to prior systems?
+\item[\S\ref{sec:parrot-comparison}:] How does it compare to prior systems?
 
-\item[\S\ref{sec:sensitivity}:] How does its performance vary according
+\item[\S\ref{sec:parrot-sensitivity}:] How does its performance vary according
   to core counts and workload scales/types?
 
-\item[\S\ref{sec:determinism}:] Is it deterministic in the absence of data races?
+\item[\S\ref{sec:parrot-determinism}:] Is it deterministic in the absence of data races?
 
-\item[\S\ref{sec:coverage}:] How much does it improve \dbug's coverage?
+\item[\S\ref{sec:parrot-coverage}:] How much does it improve \dbug's coverage?
 
 \end{enumerate}
 
-\subsection{Ease of Use} \label{sec:ease-of-use}
+\subsection{Ease of Use} \label{sec:parrot-ease-of-use}
 
 Of all \nprog programs, \nprognohints have reasonable overhead with
 default schedules, requiring no hints.  \nproglineuphints programs need a total of 
 \nlineofcomputehints lines of \compute hints: \nproggenericlineuphints
 need only 4 lines of generic \compute hints in \libgomp, and
 \nprogspecificlineuphints need program-specific \computes
-(Table~\ref{tab:computehints}).  These programs enjoy both determinism and
+(Table~\ref{tab:parrot-computehints}).  These programs enjoy both determinism and
 reasonable performance.  Only \nprognondethints programs 
 need a total of \nlineofnondethints lines of \nondet hints to
-trade some determinism for performance (Table~\ref{tab:nondethints}).
+trade some determinism for performance (Table~\ref{tab:parrot-nondethints}).
 On average, each program needs only \hintsperprog lines.
 
 In our experience, adding hints was straightforward.  It took roughly 0.5--2 hours per
@@ -238,7 +238,7 @@ the overhead down to a reasonable level.  Aligning more stages did not help.
 \end{tabular}
 \caption{{\em Stats of \compute hints.} \nproglineuphints
   programs need \compute hints.  The hints in \libgomp benefit all \openmp
-  programs including \imagick, STL, and \npb.} \label{tab:computehints}
+  programs including \imagick, STL, and \npb.} \label{tab:parrot-computehints}
 \end{table}
 
 \begin{table}[t]
@@ -270,10 +270,10 @@ the overhead down to a reasonable level.  Aligning more stages did not help.
   hints. The hints in \partition are generic for three STL programs
   \partition, \nthelement, and \partialsort. The last column shows the
   synchronization variables whose operations are made
-  nondeterministic.} \label{tab:nondethints}
+  nondeterministic.} \label{tab:parrot-nondethints}
 \end{table}
 
-\subsection{Performance} \label{sec:performance}
+\subsection{Performance} \label{sec:parrot-performance}
 
 \begin{figure*}[tb]
 \centering
@@ -283,11 +283,11 @@ the overhead down to a reasonable level.  Aligning more stages did not help.
     execution.}  The patterns of the bars show the types of the hints the programs
   need: no hints, generic \computes in \libgomp, program-specific
   \computes, or \nondets.  The mean overhead is
-  \meanoverhead (indicated by the horizontal line).} \label{fig:overhead}
+  \meanoverhead (indicated by the horizontal line).} \label{fig:parrot-overhead}
 \vspace{-.05in}
 \end{figure*}
 
-Figure~\ref{fig:overhead} compares \parrot's performance to nondeterministic
+Figure~\ref{fig:parrot-overhead} compares \parrot's performance to nondeterministic
 execution.  Even with the maximum number of threads (16--24), the mean
 overhead is small: \meanrealoverhead for real-world programs, \meanbenchoverhead for benchmark
 programs, and \meanoverhead for all programs.
@@ -306,7 +306,7 @@ context switches due to synchronization decreased from 1.9M with
 nondeterministic executions to 921 with \parrot.  The reason of the context
 switch savings was that \parrot's round-robin scheduling reduced contention
 and its synchronizations use a more efficient wait that combines spin- and
-block-waits (\S\ref{sec:scheduler}).  \bodytrackopenmp and \facesim
+block-waits (\S\ref{sec:parrot-scheduler}).  \bodytrackopenmp and \facesim
 enjoyed a similar benefit.  So did another 19 programs which had
 10$\times$ fewer context switches with
 \parrot~\cite{Parrot:github}. \linearregrepthread's stalled cycles were
@@ -333,7 +333,7 @@ microarchitectural events.)
 \centering
 \includegraphics[width=\textwidth]{parrot/figures/hints}
 \vspace{-.20in}
-\caption{{\em Effects of performance hints.} They reduced \parrot's overhead from \overallnohints to \overallhints.} \label{fig:overhead-hints}
+\caption{{\em Effects of performance hints.} They reduced \parrot's overhead from \overallnohints to \overallhints.} \label{fig:parrot-overhead-hints}
 \vspace{-.05in}
 \end{figure*}
 
@@ -358,23 +358,23 @@ microarchitectural events.)
 \wordcnt                     & 15,468      & 11          \\
 \end{tabular}
 \vspace{-.05in}
-\caption{{\em \Compute successes and timeouts.}} \label{tab:timeouts}
+\caption{{\em \Compute successes and timeouts.}} \label{tab:parrot-timeouts}
 \end{table}
 
-Figure~\ref{fig:overhead-hints} compares \parrot's performance with and
+Figure~\ref{fig:parrot-overhead-hints} compares \parrot's performance with and
 without hints.  For all the \nprogneedhints programs that 
 have hints, their mean overhead was reduced from
 \overallnohints to \overallhints after hints were added. The four lines of generic
-\compute hints in \libgomp (Table~\ref{tab:computehints}) 
+\compute hints in \libgomp (Table~\ref{tab:parrot-computehints}) 
 reduced the mean overhead from \genericnolineup
 to \genericlineup for \nproggenericlineuphints programs, program-specific
 \computes from \specificnolineup to \specificlineup for
 \nprogspecificlineuphints programs, and \nondets from \nondetnohints
 to \nondethints for 9 programs.  \Computes timed out on
-\nlineupfails programs (Table~\ref{tab:timeouts}), which affected neither
+\nlineupfails programs (Table~\ref{tab:parrot-timeouts}), which affected neither
 determinism nor correctness. The  \kmeans experienced over 10\% timeouts,
 causing higher overhead. \xtwosixfour experienced many timeouts
-but enjoyed partial coscheduling benefits (\S\ref{sec:hints}).
+but enjoyed partial coscheduling benefits (\S\ref{sec:parrot-hints}).
 
 %% Table~\ref{tab:timeouts} shows that \nlineupfails programs had \compute
 %% timeouts over all \nproglineuphints programs that requried \compute hints.
@@ -406,7 +406,7 @@ but enjoyed partial coscheduling benefits (\S\ref{sec:hints}).
 %% Some program such as parsec mapreduce still have some siginificant amout of overhead (around 50\%)
 %% because the workload is not evenly divided, so we pay some dynamic load imbalance here.
 
-\subsection{Comparison to Prior Systems} \label{sec:comparison}
+\subsection{Comparison to Prior Systems} \label{sec:parrot-comparison}
 
 We compared \parrot's performance to \dthreads and \coredet.  We configured
 both to provide the same determinism guarantee as \parrot,\footnote{While
@@ -419,7 +419,7 @@ support programming constructs such as read-write locks, semaphores,
 thread local storage, network operations, and timeouts. These programs are
 all benchmarks, not real-world programs.
 
-Figure~\ref{fig:comparison} shows the comparison results.
+Figure~\ref{fig:parrot-comparison} shows the comparison results.
 \parrot's mean overhead is \parrotcompoverhead,
 whereas \dthreads's is \dthreadssyncoverhead and \coredet's is
 \coredetoverhead. 
@@ -441,7 +441,7 @@ mainly from counting instructions. \ferret, \fluidanimate, \barnes, and
 \centering
 \includegraphics[width=\columnwidth]{parrot/figures/comparison}
 \vspace{-.2in}
-\caption{{\em \parrot, \dthreads, and \coredet overhead.}} \label{fig:comparison}
+\caption{{\em \parrot, \dthreads, and \coredet overhead.}} \label{fig:parrot-comparison}
 \vspace{-.0in}
 \end{figure}
 
@@ -483,7 +483,7 @@ mainly from counting instructions. \ferret, \fluidanimate, \barnes, and
 %%   work with the system.}
 %% \end{table}
 
-\subsection{Scalability and Sensitivity} \label{sec:sensitivity}
+\subsection{Scalability and Sensitivity} \label{sec:parrot-sensitivity}
 
 %% Uncomment for the journal version of this paper
 
@@ -565,7 +565,7 @@ for detailed scalability results.)
 %% redis: different workloads
 %% mplayer: different conversion, different data
 
-\subsection{Determinism} \label{sec:determinism}
+\subsection{Determinism} \label{sec:parrot-determinism}
 
 We evaluated \parrot's determinism by verifying that it computed the same
 schedules given the same input.  For all programs except those with
@@ -586,7 +586,7 @@ same result.
 %% results. For executions with xxx, each run shows same results. This shows
 %% that our locks are scheduled deterministically.
 
-\subsection{Model Checking Coverage} \label{sec:coverage}
+\subsection{Model Checking Coverage} \label{sec:parrot-coverage}
 
 %% We formed an \ecosys by integrating \parrot with \dbug. Within 
 %% this \ecosys, \parrot determinsitically schedules all \pthread synchronizations 
@@ -645,7 +645,7 @@ D & 25 & $4.75\times10^{511}$ $\sim$ $2.10\times10^{19734}$ \\
 \end{tabular}
 \vspace{-.05in}
 \caption{{\em Estimated \dbug's state space sizes on programs with no
-    \nondet nor network operation.}  } \label{tab:state-space-compute}
+    \nondet nor network operation.}  } \label{tab:parrot-state-space-compute}
 \vspace{-.05in}
 \end{table}
 % Programs are divided  into four bins based on the estimated   sizes.
@@ -660,7 +660,7 @@ D & 25 & $4.75\times10^{511}$ $\sim$ $2.10\times10^{19734}$ \\
 %% Table~\ref{tab:state-space-compute} shows all programs 
 %% that need no hints or only \computes, divided into five bins based on state space size.
 
-Table~\ref{tab:state-space-compute} bins all 95 programs that contain
+Table~\ref{tab:parrot-state-space-compute} bins all 95 programs that contain
 (1) no network operations and (2) either no hints or only \computes. For each program,
 \ecosys reduced the state space down to just one
 schedule and finished in 2 seconds. \dbug alone could finish only
@@ -693,10 +693,10 @@ schedule and finished in 2 seconds. \dbug alone could finish only
 \vspace{-.05in}
 \caption{{\em Estimated state space sizes for programs containing
     \nondets.}  \ecosys finished 4 real-world programs (time in
-  last column), and \dbug none.} \label{tab:state-space-nondet}
+  last column), and \dbug none.} \label{tab:parrot-state-space-nondet}
 \end{table}
 
-Table~\ref{tab:state-space-nondet} shows the results for all
+Table~\ref{tab:parrot-state-space-nondet} shows the results for all
 \nprognondetandnetwork programs containing network operations or
 \nondets.  For all four real-world programs \pfscan, \partition,
 \nthelement, and \partialsort, \ecosys effectively explored all
@@ -705,11 +705,11 @@ guarantee.  These results also demonstrate the power of \parrot:
 the programs can use the checked schedules at runtime for speed.
 
 To summarize, \parrot reduced the state space by \shrinkscale for
-\nprogshrink programs (50 programs in Table~\ref{tab:state-space-compute},
-6 in Table~\ref{tab:state-space-nondet}).  It increased the number of
+\nprogshrink programs (50 programs in Table~\ref{tab:parrot-state-space-compute},
+6 in Table~\ref{tab:parrot-state-space-nondet}).  It increased the number of
 verified programs from \nprogverifieddbug to \nprogverifiedxxx (95
-programs in Table~\ref{tab:state-space-compute}, 4 in
-Table~\ref{tab:state-space-nondet}).
+programs in Table~\ref{tab:parrot-state-space-compute}, 4 in
+Table~\ref{tab:parrot-state-space-nondet}).
 
 %  These results also demonstrate the flexibility of \parrot: once schedules
 %  are checked, \parrot can use the schedules at runtime for better

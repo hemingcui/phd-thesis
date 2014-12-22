@@ -1,4 +1,4 @@
-\section{\parrot-\dbug Ecosystem} \label{sec:mc}
+\section{\parrot-\dbug Ecosystem} \label{sec:parrot-mc}
 
 %% In this section, we present an ecosystem formed by integrating \parrot with
 %% the model checker \dbug~\cite{dbug:spin11}.  We present some background and rationale
@@ -30,12 +30,12 @@ reduction still grows too large to fully explore.  Despite
 decades of efforts, state-space explosion remains the bane of model
 checking.
 
-As discussed in~$\S$\ref{sec:intro}, integrating \smt and model checking is
+As discussed in~$\S$\ref{sec:parrot-intro}, integrating \smt and model checking is
 mutually beneficial.  By reducing schedules, \smt offers an extremely
 simple, effective way to mitigate and sometimes completely solve the
 state-space explosion problem without requiring equivalence.  For
 instance, \parrot enables \dbug to verify \nprogverifiedxxx programs,
-including 4 programs containing \nondets (\S\ref{sec:coverage}).
+including 4 programs containing \nondets (\S\ref{sec:parrot-coverage}).
 In return, model
 checking helps check the schedules that matter for \parrot and developers.
 For instance, it can check the default schedules chosen by \parrot, the
@@ -53,7 +53,7 @@ developers add using \nondets.
 %% this approach what-you-check-is-what-you-run.  On the flip side, model
 %% checking can check the schedules that matter to \smt.
 
-\subsection{The \dbug Model Checker} \label{sec:dbug}
+\subsection{The \dbug Model Checker} \label{sec:parrot-dbug}
 
 In principle, \parrot can be integrated with many model checkers.  We chose
 \dbug~\cite{dbug:spin11} for three reasons.  First, it is 
@@ -107,7 +107,7 @@ paths divided by the aggregated probability they are explored.
 
 %% \input{dbug}
 
-\subsection{Integrating \parrot and \dbug} \label{sec:smt+mc}
+\subsection{Integrating \parrot and \dbug} \label{sec:parrot-smt+mc}
 
 A key integration challenge is that both \parrot and \dbug control the order
 of nondeterministic operations and may interfere, causing
@@ -122,7 +122,7 @@ critical sections make nondeterminism explicit, and \dbug can ignore
 operations that \parrot runs deterministically.  \parrot's strong-isolation
 semantics further prevent interference
 between \parrot and \dbug.  Our integration uses a nested-scheduler
-architecture similar to Figure~\ref{fig:arch} except the
+architecture similar to Figure~\ref{fig:parrot-arch} except the
 nondeterministic scheduler is \dbug.  This architecture is transparent
 to \dbug, and requires only minor changes (\locsmcmc lines) to \parrot.
 First, we modified \v{nondet\_begin} and \v{nondet\_end} to turn \dbug
@@ -135,7 +135,7 @@ a scheduling decision.
 
 We found two pleasant surprises in the
 integration.  First, \computes speed up \dbug executions.  Second,
-\parrot's deterministic timeout (\S\ref{sec:timeout}) prevents \dbug from
+\parrot's deterministic timeout (\S\ref{sec:parrot-timeout}) prevents \dbug from
 possibly having to explore infinitely many schedules.  Consider the
 ``\v{while(!done) sleep(30);}'' loop which can normally
 nondeterministically repeat any number of times before making

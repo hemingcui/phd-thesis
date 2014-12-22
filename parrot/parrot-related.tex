@@ -1,5 +1,5 @@
 \vspace{-.02in}
-\section{Related Work} \label{sec:related}
+\section{Related Work} \label{sec:parrot-related}
 \vspace{-.02in}
 
 \para{DMT and \smt systems.}  Conceptually, prior
@@ -27,7 +27,7 @@ compatibility, complicating deployment. Bergan {\it et
 to statically compute a small set of schedules covering all inputs, an
 undecidable problem in general.  \grace~\cite{grace:oopsla09} and \dthreads~\cite{dthreads:sosp11} ignore thread load
 imbalance, so they are prone to the serialization problem
-($\S$\ref{sec:example}). \grace also requires
+($\S$\ref{sec:parrot-example}). \grace also requires
 fork-join parallelism.
 
 Compared to \parrot's evaluation, prior evaluations have several limitations.
@@ -63,7 +63,7 @@ via synchronizations and shared memory.
 % many different schedules, which \parrot can help reduce.)
 
 \parrot offers three advantages over reduction techniques
-(\S\ref{sec:mc}): (1) it is much simpler because it does not
+(\S\ref{sec:parrot-mc}): (1) it is much simpler because it does not
 need equivalence to reduce state space; (2) it remains effective as the
 checked system scales; and (3) it works transparently to reduction
 techniques, so it can be combined with them for further reduction.  The
