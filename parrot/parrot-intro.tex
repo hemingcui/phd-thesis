@@ -330,75 +330,75 @@ requires sophisticated program analysis, complicating deployment.
 
 This paper makes three contributions.
 %% YJF: DON'T move \footnote before comma. check grammar
-First, we present \xxx,\footnote{We name our system after one of the most
+First, we present \parrot,\footnote{We name our system after one of the most
   trainable birds.} a simple, practical runtime that efficiently makes
 threads deterministic and stable by offering a new contract to developers.
 By default, it schedules synchronizations in each thread using
 round-robin, vastly reducing schedules and providing broad repeatability.
 When default schedules are slow, it allows advanced developers to add
 intuitive \emph{performance hints} to their code for speed.  Developers discover
-where to add hints through profiling as usual, and \xxx simplifies
+where to add hints through profiling as usual, and \parrot simplifies
 performance debugging by deterministically reproducing the bottlenecks.
 The hints are robust to developer mistakes as they can be safely ignored
 without affecting correctness.
 
-Like prior systems, \xxx's contract reduces schedules to favor correctness over performance.  Unlike prior systems, it allows advanced developers
+Like prior systems, \parrot's contract reduces schedules to favor correctness over performance.  Unlike prior systems, it allows advanced developers
 to optimize performance.  We believe this practical ``meet in the
 middle'' contract eases writing correct, efficient programs.
 
 % based on several years of lessons.
 
-%% Like prior systems, \xxx's contract favors correctness over performance
+%% Like prior systems, \parrot's contract favors correctness over performance
 %% by vastly reducing schedules.  Unlike prior systems, it provides
 %% advanced developers the flexibility for better performance.
 
-\xxx provides two performance hint abstractions.  A \emph{soft
+\parrot provides two performance hint abstractions.  A \emph{soft
   barrier} encourages the scheduler to coschedule a group of threads at
 given program points.  It is for performance only, and operates as a
-barrier with deterministic timeouts in \xxx.  Developers use it to switch
+barrier with deterministic timeouts in \parrot.  Developers use it to switch
 to faster schedules without compromising determinism
 when the default schedules serialize parallel
 computations (\S\ref{sec:example}).  A \emph{performance critical section}
 informs the scheduler that a code region is a potential
 bottleneck, encouraging the scheduler to get through the region fast.
-When a thread enters a performance critical section, \xxx delegates scheduling to the
+When a thread enters a performance critical section, \parrot delegates scheduling to the
 nondeterministic OS scheduler for speed.  
 Performance critical sections may trade some determinism for
 performance, so they should be applied only when the schedules they add
 are thoroughly checked by tools or advanced developers.
 These simple abstractions
-let \xxx run fast on all programs evaluated, and
+let \parrot run fast on all programs evaluated, and
 may benefit other DMT or \smt systems and classic nondeterministic
 schedulers~\cite{coschedule:sigmetrics96, coschedule, partial-barrier:atc06}.
 
-%% \xxx currently supports two types of performance hints.  \emph{Computation
-%%   hints} inform \xxx of a group of computations developers intend to run
-%% in parallel, so \xxx can switch to faster schedules.  \emph{Nondeterminism
-%%   hints} inform \xxx of carefully chosen code regions developers intend to
-%% revert back to nondeterminism execution for, so \xxx can use the
+%% \parrot currently supports two types of performance hints.  \emph{Computation
+%%   hints} inform \parrot of a group of computations developers intend to run
+%% in parallel, so \parrot can switch to faster schedules.  \emph{Nondeterminism
+%%   hints} inform \parrot of carefully chosen code regions developers intend to
+%% revert back to nondeterminism execution for, so \parrot can use the
 %% additional schedules for performance.  Mixing deterministic and
 %% nondeterministic executions is tricky because they may interfere; we have
 %% carefully defined the semantics of the nondeterminism hints to provably
-%% avoid interference (\S\ref{sec:hints}).  These simple hints let \xxx
+%% avoid interference (\S\ref{sec:hints}).  These simple hints let \parrot
 %% achieve low overhead on all \nprog programs evaluated while avoiding
 %% heavyweight techniques and unrealistic assumptions.  They can also benefit
 %% other DMT or \smt systems and even nondeterministico thread runtimes.
 
-Our \xxx implementation is \pthread-compatible, simplifying deployment.
+Our \parrot implementation is \pthread-compatible, simplifying deployment.
 It handles many diverse constructs real-world programs depend upon such as
-network operations and timeouts.  \xxx makes synchronizations outside
+network operations and timeouts.  \parrot makes synchronizations outside
 performance critical sections deterministic but allows nondeterministic
 data races.  Although it is
-straightforward to make data races deterministic in \xxx,
+straightforward to make data races deterministic in \parrot,
 % with a memory commit protocol we designed, 
 we deemed it not worthwhile because the cost of doing so outweighs the
-benefits (\S\ref{sec:discussion}).  \xxx's determinism is similar to
-\kendo's weak determinism~\cite{kendo:asplos09}, but \xxx offers stability
+benefits (\S\ref{sec:discussion}).  \parrot's determinism is similar to
+\kendo's weak determinism~\cite{kendo:asplos09}, but \parrot offers stability
 which Kendo lacks.
 
-%% \xxx currently is not intended to make data races deterministic.  Although
+%% \parrot currently is not intended to make data races deterministic.  Although
 %% doing so is straightforward (cf \S\ref{sec:xxx} for a memory commit
-%% protocol we designed to let \xxx make data races deterministic), we deem
+%% protocol we designed to let \parrot make data races deterministic), we deem
 %% it not worthwhile.  Prior work~\cite{peregrine:sosp11,pres:sosp09} has
 %% shown that data races rarely occur if a synchronization schedule is
 %% enforced (\eg, xxx data races out of xxx millions of memory accesses).
@@ -409,42 +409,42 @@ which Kendo lacks.
 %% a small number of executions~\cite{pres:sosp09} using for example model
 %% checkers.
 
-Our second contribution is an ecosystem formed by integrating \xxx with
+Our second contribution is an ecosystem formed by integrating \parrot with
 \dbug~\cite{dbug:spin11}, an open source model checker for 
 distributed and multithreaded Linux programs that systematically checks possible schedules for bugs.
 This \ecosys ecosystem is more effective than
 either system alone: \dbug checks the schedules
-that matter to \xxx and developers (\eg, schedules added by performance
-critical sections), and \xxx greatly increases \dbug's coverage by
+that matter to \parrot and developers (\eg, schedules added by performance
+critical sections), and \parrot greatly increases \dbug's coverage by
 reducing the schedules \dbug has to check (the \emph{state space}). Our
 integration is transparent to \dbug and requires only minor
-changes to \xxx.  It lets \xxx effectively leverage advanced model
+changes to \parrot.  It lets \parrot effectively leverage advanced model
 checking techniques~\cite{flanagan:dynamicpo, demeter:sosp11}.
 %, such as effective search heuristics and reduction
 % techniques~\cite{flanagan:dynamicpo} which soundly avoid checking
 % equivalent executions.
 
-%% that we quantitatively show that \xxx
-%% effectively improves correctness by integrating \xxx with \dbug, a model
+%% that we quantitatively show that \parrot
+%% effectively improves correctness by integrating \parrot with \dbug, a model
 %% checker that systematically tests different orders of nondeterministic
-%% events for bugs.  This integration is mutually beneficial: \xxx greatly
+%% events for bugs.  This integration is mutually beneficial: \parrot greatly
 %% increases \dbug's coverage by vastly reducing schedules, and \dbug checks
-%% the schedules that matter to \xxx, including the default schedules,
+%% the schedules that matter to \parrot, including the default schedules,
 %% schedules selected by \compute, and schedules added by \nondet.
 
-%% Both \xxx and \dbug must control the order of nondeterministic events, and
+%% Both \parrot and \dbug must control the order of nondeterministic events, and
 %% may run into deadlocks if they interfere with each other.  To solve this
-%% challenge, our \xxx and \dbug integration uses a nested scheduler
-%% architecture with \xxx nesting inside \dbug.  \xxx deterministically
+%% challenge, our \parrot and \dbug integration uses a nested scheduler
+%% architecture with \parrot nesting inside \dbug.  \parrot deterministically
 %% schedules synchronizations, and exposes only synchronizations in \nondet
 %% regions to \dbug.  \dbug then systematically explores the order of these
 %% synchronizations and other nondeterministic events such as network
 %% operations.  This architecture makes the integration seamless, and
-%% required only XXX lines of modification to \xxx and zero to \dbug.  It
-%% illustrates an additional \smt advantage: \xxx enforces the same
+%% required only XXX lines of modification to \parrot and zero to \dbug.  It
+%% illustrates an additional \smt advantage: \parrot enforces the same
 %% well-defined schedules whether it runs alone or inside \dbug.
 
-Third, we quantitatively show that \xxx achieves good performance and high
+Third, we quantitatively show that \parrot achieves good performance and high
 model checking coverage on a diverse set of \nprog programs.  The programs
 include \nrealprog real-world programs, such as \bdb~\cite{berkeleydb},
 \openldap~\cite{openldap}, \redis~\cite{redis}, \mplayer~\cite{mplayer},
@@ -465,42 +465,42 @@ prior evaluations combined.
 % We used at least three different scales/types of workloads per program
 % and a 24-core machine to make our results robust.
 Our experiments show:
-\begin{tightenum}
+\begin{enumerate}
 
-\item \xxx is easy to use. It averages only \hintsperprog lines of hints
+\item \parrot is easy to use. It averages only \hintsperprog lines of hints
   per program to get good performance, and adding hints is fast.  Of all
   \nprog programs, \nprognohints need no hints, \nproglineuphints need
   \computes which do not affect determinism, and only \nprognondethints
   programs need \nondets to trade some determinism for speed.
 
-\item \xxx has low overhead.  At the maximum allowed (16--24) cores, \xxx's
+\item \parrot has low overhead.  At the maximum allowed (16--24) cores, \parrot's
   geometric mean overhead is \meanrealoverhead for \nrealprog real-world programs,
   \meanbenchoverhead for the other \nbenchmarks programs, and \meanoverhead for all.
 
 \item On \nprogcompared programs that two prior systems \dthreads~\cite{dthreads:sosp11}
-  and \coredet~\cite{coredet:asplos10} can both handle, \xxx's overhead is \xxxcompoverhead whereas \dthreads's
+  and \coredet~\cite{coredet:asplos10} can both handle, \parrot's overhead is \parrotcompoverhead whereas \dthreads's
   is \dthreadssyncoverhead and \coredet's \coredetoverhead.
 
-\item \xxx scales well to the maximum allowed cores on our 24-core server and
+\item \parrot scales well to the maximum allowed cores on our 24-core server and
   to at least three different scales/types of workloads per program.
 
 \item \ecosys offers exponential coverage increase compared to \dbug alone.
-  \xxx helps \dbug reduce the state space by \shrinkscale for
+  \parrot helps \dbug reduce the state space by \shrinkscale for
   \nprogshrink programs and increase the number of verified programs from
   \nprogverifieddbug to \nprogverifiedxxx under our test setups.
   These verified programs include all 4 real-world programs out of
   the \nprognondethints programs that need performance critical sections, so they
   enjoy both speed and reliability.
-  These quantitative reliability results help potential \xxx adopters justify
+  These quantitative reliability results help potential \parrot adopters justify
   the overhead.
 
-\end{tightenum}
+\end{enumerate}
 
-We have released \xxx's source code, entire benchmark suite, and
-raw results~\cite{Parrot:github}. In the remaining of this paper, $\S$\ref{sec:overview} contrasts \xxx with 
-prior systems on an example and gives an overview of \xxx's 
-architecture.~$\S$\ref{sec:hints} describes the performance hint abstractions \xxx
-provides,~$\S$\ref{sec:runtime} the \xxx runtime, and~$\S$\ref{sec:mc} the
-\xxx-\dbug ecosystem.~$\S$\ref{sec:discussion} discusses \xxx's determinism,~$\S$\ref{sec:eval}
+We have released \parrot's source code, entire benchmark suite, and
+raw results~\cite{Parrot:github}. In the remaining of this paper, $\S$\ref{sec:overview} contrasts \parrot with 
+prior systems on an example and gives an overview of \parrot's 
+architecture.~$\S$\ref{sec:hints} describes the performance hint abstractions \parrot
+provides,~$\S$\ref{sec:runtime} the \parrot runtime, and~$\S$\ref{sec:mc} the
+\parrot-\dbug ecosystem.~$\S$\ref{sec:discussion} discusses \parrot's determinism,~$\S$\ref{sec:eval}
 presents evaluation results,~$\S$\ref{sec:related}
 discusses related work, and~$\S$\ref{sec:conclusion} concludes.

@@ -5,15 +5,12 @@
 %\documentclass[11pt,openright,twoside,letterpaper,onecolumn]{report} %% USE THIS FOR DOUBLE SIDED
 \documentclass[11pt,openright,oneside,letterpaper,onecolumn]{report}  %% USE THIS FOR SINGLE SIDED
 
-\usepackage{graphics}
-%\usepackage{epsfig}
-%%\usepackage{times}
-%\usepackage{amsmath}
 \usepackage{xspace}
 \usepackage[nolineno,noindent,norules]{lgrind}
-\usepackage{subfig,graphics,graphicx,color}
+\usepackage{graphicx}
+\usepackage{subfig,graphics,color}
 \usepackage{pifont}
-%\DeclareGraphicsExtensions{.eps}
+\DeclareGraphicsExtensions{.eps}
 
 %%%
 %%% Packages
@@ -26,6 +23,7 @@
 \usepackage{multirow}
 \usepackage{amsmath}
 \usepackage{centernot}
+
 
 \input{terminology}
 
@@ -146,10 +144,13 @@ Dedication text
 
 \input{intro}
 \input{smt-motivation}
-%%\input{related}
+\clearpage
 \input{tern/tern}
+\clearpage
 \input{peregrine/peregrine}
+\clearpage
 \input{parrot/parrot}
+\clearpage
 \input{conclusion}
 
 %%%

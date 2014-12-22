@@ -16,14 +16,14 @@ running \pbzip with prior system \dthreads.  \pbzip deadlocked in
 \v{pthread\_cond\_timedwait} just as \v{pthread\_cond\_wait}, but \pbzip
 sometimes relies on the timeout to terminate.
 
-\xxx makes timeouts deterministic by proportionally converting them to a
+\parrot makes timeouts deterministic by proportionally converting them to a
 logical.  When a thread registers a relative timeout that fires $\Delta
-t_p$ later in real time, \xxx converts $\Delta t_p$ to a relative logical
+t_p$ later in real time, \parrot converts $\Delta t_p$ to a relative logical
 timeout $\Delta t_p /R$ where $R$ is a configurable conversion ratio
 default to 3 $\mu$s, which works for all evaluated programs that use
 timeouts.
 
-When all threads in the current process are on the wait queue, \xxx spawns
+When all threads in the current process are on the wait queue, \parrot spawns
 an idle thread to keep the logical time going. The thread simply
 repeatedly gets the turn, sleeps for time $R$, and gives up the turn.  An
 alternative is fast-forwarding~\cite{modist:nsdi09}.  Our experiments show
@@ -37,7 +37,7 @@ matches developer intents better.  For instance, developers may want to
 performance one important periodical activity with higher frequency, and a
 less important one with lower frequency.  Proportional conversion keeps
 the relative ratio of the frequencies, and improves performance based on
-our experiments.  Of course, \xxx's logical time corresponds loosely to
+our experiments.  Of course, \parrot's logical time corresponds loosely to
 real time, and may be less useful for real-time applications.
 dOS~\cite{dos:osdi10} discussed the possibility of converting real to
 logical time, but it did not present a formula.  Moreover, it
@@ -45,13 +45,13 @@ fast-forwards logical time after all threads block, slower than using an
 idle thread.
 
 \pthread timed synchronizations such as \v{pthread\_cond\_timedwait} use
-absolute real time, so \xxx cannot compute $\Delta t_p$.  To solve this
-problem, developers can call a \xxx-provided function \v{set\_base\_time}
-to inform \xxx the base time, and \xxx uses the difference between the
+absolute real time, so \parrot cannot compute $\Delta t_p$.  To solve this
+problem, developers can call a \parrot-provided function \v{set\_base\_time}
+to inform \parrot the base time, and \parrot uses the difference between the
 base time and the time passed to \v{pthread\_cond\_timedwait} as $\Delta
 t_p$.
 
-list of timeouts \xxx handles
+list of timeouts \parrot handles
 
 because they depend on the inherently nondeterministic physical time.
 

@@ -1,6 +1,6 @@
-\section{\xxx-\dbug Ecosystem} \label{sec:mc}
+\section{\parrot-\dbug Ecosystem} \label{sec:mc}
 
-%% In this section, we present an ecosystem formed by integrating \xxx with
+%% In this section, we present an ecosystem formed by integrating \parrot with
 %% the model checker \dbug~\cite{dbug:spin11}.  We present some background and rationale
 %% (\S\ref{sec:mc-background}), briefly introduce \dbug (\S\ref{sec:dbug}),
 %% and describe the integration (\S\ref{sec:smt+mc}).
@@ -34,11 +34,11 @@ As discussed in~$\S$\ref{sec:intro}, integrating \smt and model checking is
 mutually beneficial.  By reducing schedules, \smt offers an extremely
 simple, effective way to mitigate and sometimes completely solve the
 state-space explosion problem without requiring equivalence.  For
-instance, \xxx enables \dbug to verify \nprogverifiedxxx programs,
+instance, \parrot enables \dbug to verify \nprogverifiedxxx programs,
 including 4 programs containing \nondets (\S\ref{sec:coverage}).
 In return, model
-checking helps check the schedules that matter for \xxx and developers.
-For instance, it can check the default schedules chosen by \xxx, the
+checking helps check the schedules that matter for \parrot and developers.
+For instance, it can check the default schedules chosen by \parrot, the
 faster schedules developers choose using \computes, or the schedules
 developers add using \nondets.
 
@@ -55,16 +55,16 @@ developers add using \nondets.
 
 \subsection{The \dbug Model Checker} \label{sec:dbug}
 
-In principle, \xxx can be integrated with many model checkers.  We chose
+In principle, \parrot can be integrated with many model checkers.  We chose
 \dbug~\cite{dbug:spin11} for three reasons.  First, it is 
 open source, checks implementations directly, and 
 supports \pthread synchronizations and Linux 
 socket calls.  Second, it implements one of the
 most advanced state-space reduction techniques---dynamic partial order
-reduction (DPOR)~\cite{flanagan:dynamicpo}, so the further reduction \xxx
+reduction (DPOR)~\cite{flanagan:dynamicpo}, so the further reduction \parrot
 achieves is more valuable.  Third, \dbug can estimate the size of the
 state space based on the executions explored, a technique particularly
-useful for estimating the reduction \xxx can achieve when
+useful for estimating the reduction \parrot can achieve when
 the state space explodes.
 
 Specifically, \dbug represents the state space as an \emph{execution tree}
@@ -92,73 +92,73 @@ paths divided by the aggregated probability they are explored.
 %% as: \[\prod\limits_{i = 1}^{n - 1} \frac{1}{E(v_i)}\] where $E(v_i)$ is
 %% the number of edges originating from $v_i$.
 
-%% We have integrated \xxx with a model checker called
+%% We have integrated \parrot with a model checker called
 %% \dbug~\cite{dbug:spin11}.  We chose \dbug over other model checkers for
 %% three reasons.
 
 %% First, it runs in Linux and readily supports Pthreads.
 %% Second, \dbug implements some of the most advanced state-space reduction
 %% techniques such as dynamic partial order reduction~\cite{popl:dpor}, so
-%% the further reduction \xxx can achieve is more valuable.  Third, \dbug
+%% the further reduction \parrot can achieve is more valuable.  Third, \dbug
 %% provides a technique to estimate the state space size based on the
 %% executions explored~\cite{xxx}.  Given that model checkers often cannot
 %% fully explore the state space, \dbug's estimated state space size help us
-%% compute an estimated reduction \xxx can achieve.
+%% compute an estimated reduction \parrot can achieve.
 
 %% \input{dbug}
 
-\subsection{Integrating \xxx and \dbug} \label{sec:smt+mc}
+\subsection{Integrating \parrot and \dbug} \label{sec:smt+mc}
 
-A key integration challenge is that both \xxx and \dbug control the order
+A key integration challenge is that both \parrot and \dbug control the order
 of nondeterministic operations and may interfere, causing
 difficult-to-diagnose false positives.  A na\"{i}ve solution
-is to replicate \xxx's scheduling algorithm inside \dbug.  This
+is to replicate \parrot's scheduling algorithm inside \dbug.  This
 approach is not only labor-intensive, but also risky because the
 replicated algorithm may diverge from the real one, deviating the checked
 schedules from the actual ones.
 
 Fortunately, the integration is greatly simplified because performance
 critical sections make nondeterminism explicit, and \dbug can ignore
-operations that \xxx runs deterministically.  \xxx's strong-isolation
+operations that \parrot runs deterministically.  \parrot's strong-isolation
 semantics further prevent interference
-between \xxx and \dbug.  Our integration uses a nested-scheduler
+between \parrot and \dbug.  Our integration uses a nested-scheduler
 architecture similar to Figure~\ref{fig:arch} except the
 nondeterministic scheduler is \dbug.  This architecture is transparent
-to \dbug, and requires only minor changes (\locsmcmc lines) to \xxx.
+to \dbug, and requires only minor changes (\locsmcmc lines) to \parrot.
 First, we modified \v{nondet\_begin} and \v{nondet\_end} to turn \dbug
 on and off.  Second, since \dbug explores event orders only after
 it has received the full set of concurrent events, we modified
-\xxx to notify \dbug when a thread transitions between the run queue
-and the wait queue in \xxx. These notifications help \dbug accurately
+\parrot to notify \dbug when a thread transitions between the run queue
+and the wait queue in \parrot. These notifications help \dbug accurately
 determine when all threads in the system are waiting for \dbug to make
 a scheduling decision.
 
 We found two pleasant surprises in the
 integration.  First, \computes speed up \dbug executions.  Second,
-\xxx's deterministic timeout (\S\ref{sec:timeout}) prevents \dbug from
+\parrot's deterministic timeout (\S\ref{sec:timeout}) prevents \dbug from
 possibly having to explore infinitely many schedules.  Consider the
 ``\v{while(!done) sleep(30);}'' loop which can normally
 nondeterministically repeat any number of times before making
-progress.  This code has only one schedule with \ecosys because \xxx
+progress.  This code has only one schedule with \ecosys because \parrot
 makes the \v{sleep} return deterministically.
 
-%% that runs \xxx inside
-%% a model checker.  \xxx deterministically schedules all synchronizations
+%% that runs \parrot inside
+%% a model checker.  \parrot deterministically schedules all synchronizations
 %% outside of nondeterministic regions, so it hides them from the model
 %% checker.  It exposes the events in nondeterministic regions to the model
 %% checker, which can then systematically explore different orders of these
 %% events.  This architecture is transparent to a model checker, enabling
-%% \xxx to leverage whatever model checkers~\cite{xxx}, advanced search
+%% \parrot to leverage whatever model checkers~\cite{xxx}, advanced search
 %% heuristics, and state-space reduction techniques~\cite{xxx}.  It also
-%% requires little change to \xxx to forward the nondeterministic events to
+%% requires little change to \parrot to forward the nondeterministic events to
 %% the model checker.
 
-%% To integrate \xxx with \dbug, we made no change to \dbug and only two
-%% minor changes to \xxx.  First, we modified \v{nondet\_begin} and
+%% To integrate \parrot with \dbug, we made no change to \dbug and only two
+%% minor changes to \parrot.  First, we modified \v{nondet\_begin} and
 %% \v{nondet\_end} to attach and detach a thread to \dbug, so that \dbug can
 %% track the events executed in nondeterministic regions.  Second, since
 %% \dbug explores event orders only after it has received the full set of
-%% concurrent events, we modified \xxx to block threads in \v{nondet\_end}
+%% concurrent events, we modified \parrot to block threads in \v{nondet\_end}
 %% until all threads, including the deterministic ones, are blocked, so it
 %% can accumulate a maximal set of concurrent events and call into \dbug to
 %% explore them.

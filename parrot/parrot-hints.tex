@@ -1,19 +1,19 @@
 \section{Performance Hint Abstractions} \label{sec:hints}
 
-\xxx provides two performance-hint abstractions: a \emph{soft barrier} and
+\parrot provides two performance-hint abstractions: a \emph{soft barrier} and
 a \emph{performance critical section}.  This section describes these abstractions and
 their usage.
 
 %% These simple hints effectively
-%% improved \xxx's performance (\S\ref{sec:eval}), and have the potential to
+%% improved \parrot's performance (\S\ref{sec:eval}), and have the potential to
 %% benefit other DMT or \smt systems and even classic nondeterministic
 %% schedulers.  
 
 %% \compute and \nondet. \compute marks the starting point of a thread's
-%% computation participating in a parallel computation group.  It lets \xxx
+%% computation participating in a parallel computation group.  It lets \parrot
 %% switch to an efficient schedule that runs all computations in the group in
 %% parallel.  It does not affect determinism.  \nondet marks a code region
-%% upon which \xxx should revert back to nondeterministic execution.  This
+%% upon which \parrot should revert back to nondeterministic execution.  This
 %% hint may trade off a small amount of determinism for speed, so it should
 %% be applied with caution, only when (1) the code region, if run
 %% deterministically, has high overhead and (2) the additional schedules have
@@ -28,17 +28,17 @@ their usage.
 A \vcompute encourages the scheduler to coschedule a group of threads at
 given program points.  It is for performance only, and a scheduler can
 ignore it without affecting correctness.  It operates as a
-barrier with deterministic timeouts in \xxx, helping \xxx switch to faster
+barrier with deterministic timeouts in \parrot, helping \parrot switch to faster
 schedules that avoid serializing parallel computations.  The interface is
 \vspace{-3 mm}
-\lgrindfile{code/compute.cpp}
+\lgrindfile{parrot/code/compute.cpp}
 \vspace{-1 mm}
 
 %% The \v{soba\_init} function initializes a soft barrier.  \v{group\_size}
 %% specifies the number of threads in the coscheduling group.  \v{key} is 
 %% an opaque key identifying a coscheduling group.
 %% An absent key refers to a unique anonymous barrier.
-%% \v{timeout} is an optional relative timeout overriding the default timeout.  \xxx
+%% \v{timeout} is an optional relative timeout overriding the default timeout.  \parrot
 %% ensures that the timeout is deterministic (\S\ref{sec:scheduler}).
 %% The \v{soba\_wait} function waits for all \v{group\_size} threads to arrive
 %% until some waiting thread times out.  If a thread times out,
@@ -52,7 +52,7 @@ named \v{key}, logically indicating that a group of \v{N} threads will
 be spawned.  Subsequently, any thread which calls \v{soba\_wait(key)}
 will block until either (1) \v{N}-1 other threads have also called
 \v{soba\_wait(key)} or (2) \v{timeout} time has elapsed since the first
-thread arrived at the barrier.  This timeout is made deterministic by \xxx
+thread arrived at the barrier.  This timeout is made deterministic by \parrot
 (\S\ref{sec:scheduler}).  \v{soba\_init} can be called multiple
 times: if the number of coscheduled threads varies but is known at runtime,
 the soft barrier can be initialized before each use.  Both \v{key} and
@@ -163,7 +163,7 @@ for coscheduling purposes because schedulers cannot ignore a real barrier.
 %%   doesn't not need to be 100\%
 %%   doesn't need to solve all serialization
 
-%% \compute helps \xxx switch to a faster schedule that makes intended
+%% \compute helps \parrot switch to a faster schedule that makes intended
 %% parallel computations run in parallel. The interface of \compute is as
 %% follows:
 
@@ -175,11 +175,11 @@ for coscheduling purposes because schedulers cannot ignore a real barrier.
 %% key identifying the group in case a program has multiple groups of
 %% parallel computations going on.  If it is absent, the \v{compute\_init}
 %% call refers to a unique anonymous group.  \v{logical\_timeout} is an
-%% optional timeout specifying the maximum amount of time \xxx waits for
+%% optional timeout specifying the maximum amount of time \parrot waits for
 %% involved threads to arrive at the computations.  This time is not real
 %% time.  Instead, it is measured in the number of synchronizations executed
-%% by \xxx, so it is always deterministic with respect to the synchronization
-%% schedule \xxx enforces.  If \v{logical\_timeout} is absent, \xxx uses a
+%% by \parrot, so it is always deterministic with respect to the synchronization
+%% schedule \parrot enforces.  If \v{logical\_timeout} is absent, \parrot uses a
 %% default value of XXX times \v{group\_size}.  Why group size XXX.  We only
 %% needed to explicitly set \v{logical\_timeout} for one out of all programs
 %% we evaluated.
@@ -188,7 +188,7 @@ for coscheduling purposes because schedulers cannot ignore a real barrier.
 %% in \v{compute\_init}, \v{key} uniquely identifies the computation group.
 %% The semantics of \v{compute} is similar to a barrier wait.  When fewer
 %% than \v{group\_size} of threads with the same \v{key} have arrived at
-%% their respective \v{compute} calls, \xxx blocks the threads until all
+%% their respective \v{compute} calls, \parrot blocks the threads until all
 %% \v{group\_size} threads arrive or it has executed more than
 %% \v{logical\_timeout} synchronizations, most likely avoiding serializing
 %% the computations with an unfortunate synchronization schedule.  Different
@@ -279,7 +279,7 @@ for coscheduling purposes because schedulers cannot ignore a real barrier.
   %% in lots of programs, the workload may not be able to be 
   %% evenly divided by the number of threads, so some threads 
   %% tend to handle more computation than others. This fact 
-  %% makes the \compute hints suitable to \xxx runtime rather than 
+  %% makes the \compute hints suitable to \parrot runtime rather than 
   %% tranditional \pthread barrier, which may corrupt program logic.
 
   %% We do not need to add \compute hints to solve all seliazation in the programs, 
@@ -298,23 +298,23 @@ for coscheduling purposes because schedulers cannot ignore a real barrier.
 A \vnondet identifies a code region as a potential bottleneck
 and encourages the scheduler to get
 through the region fast.  When a thread enters a performance critical
-section, \xxx removes the thread from the round-robin scheduling 
-and delegates it to the OS scheduler for nondeterministic execution.  \xxx thus gains speed
+section, \parrot removes the thread from the round-robin scheduling 
+and delegates it to the OS scheduler for nondeterministic execution.  \parrot thus gains speed
 from allowing additional schedules.  The interface is
 \vspace{-3 mm}
 
-\lgrindfile{code/nondet.cpp}
+\lgrindfile{parrot/code/nondet.cpp}
 \vspace{-1 mm}
 
 \noindent
 The \v{pcs\_enter} function marks the entry of a performance critical section and
 \v{pcs\_exit} the exit.
 
-% \xxx treats \v{pcs\_enter} as a special synchronization that
+% \parrot treats \v{pcs\_enter} as a special synchronization that
 % participates in the round-robin scheduling, so that a performance
-% critical section always begins deterministically.  However, \xxx does
+% critical section always begins deterministically.  However, \parrot does
 % not know how long the section may run, so it lets the section end
-% nondeterministically.  After a thread calls \v{pcs\_exit}, \xxx adds it
+% nondeterministically.  After a thread calls \v{pcs\_exit}, \parrot adds it
 % back to round-robin.
 
 \subsection{Usage of the Two Hints} \label{sec:hints-usage}
@@ -322,14 +322,14 @@ The \v{pcs\_enter} function marks the entry of a performance critical section an
 \para{Soft barrier.} Developers should generally use soft barriers to align
 high-level, time-consuming parallel computations, such as the \v{compress}
 calls in \pbzip. A generic method is to use performance debugging tools or
-\xxx's logs to detect synchronizations excessively delayed by \xxx's
+\parrot's logs to detect synchronizations excessively delayed by \parrot's
 round-robin scheduling, then identify the serialized parallel computations.
 
 A second method is to add soft barriers based on parallel computation
 patterns.  Below we describe how to do so based on four parallel
 computation patterns we observed from the \nprog evaluated programs.
 
-\begin{tightenum}
+\begin{enumerate}
 
 \item[$\bullet$] {\em Data partition}. Data is partitioned among worker
   threads, and each worker thread computes on a partition. This pattern is
@@ -359,7 +359,7 @@ computation patterns we observed from the \nprog evaluated programs.
   in this category.  These programs often need no soft barriers because
   it typically takes similar times to process most items.
 
-\end{tightenum}
+\end{enumerate}
 
 
 \para{Performance critical section.} Unlike a soft barrier, a \nondet may trade
@@ -387,10 +387,10 @@ inside a custom memory allocator), and tiny critical sections (\eg,
 ``\v{lock(); x++; unlock();}'').  
 
 %% A dominant pattern is to mark a tight loop with synchronizations as a
-%% performance critical section, so \xxx can pass a thread running in the
+%% performance critical section, so \parrot can pass a thread running in the
 %% loop to the OS scheduler for quick finish.
 
-%% \nondet hints are added to tell the \xxx runtime to ignore 
+%% \nondet hints are added to tell the \parrot runtime to ignore 
 %% some sync operations in perfomance critical 
 %% sections, and the per-thread computation in these programs 
 %% and not roughly the same (so \compute hints are not 
@@ -405,20 +405,20 @@ inside a custom memory allocator), and tiny critical sections (\eg,
 %% during nondeterministic execution by doing many synchronizations at a high
 %% rate, so they cause even very high overhead when executed
 %% deterministically.  By moving threads in nondeterministic regions from the
-%% round-robin scheduler to the OS's scheduler, \xxx gains speed.
+%% round-robin scheduler to the OS's scheduler, \parrot gains speed.
 
 
 %% \v{nondet(var)} marks all synchronizations on synchronization variable
-%% \v{var} as nondeterministic, so \xxx excludes the synchronizations from
+%% \v{var} as nondeterministic, so \parrot excludes the synchronizations from
 %% its round-robin scheduling. Frequently a code region executes many
 %% synchronizations touching several synchronization variables, and
 %% developers can use
 
-%% \xxx treats \v{nondet\_begin} as a special synchronization that
+%% \parrot treats \v{nondet\_begin} as a special synchronization that
 %% participates in round-robin scheduling, so that a nondeterministic region
-%% always begins execution deterministically.  However, \xxx does not know
+%% always begins execution deterministically.  However, \parrot does not know
 %% how long the region may run, so it has to let the region end
-%% nondeterministically.  After the thread calls \v{nondet\_end}, \xxx adds
+%% nondeterministically.  After the thread calls \v{nondet\_end}, \parrot adds
 %% the thread back to the round-robin scheduling.
 
 %% \para{Usage.} Unlike \compute hints, \nondet hints may trade off 

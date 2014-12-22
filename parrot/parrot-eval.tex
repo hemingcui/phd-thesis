@@ -1,6 +1,6 @@
 \section{Evaluation} \label{sec:eval}
 
-We evaluated \xxx on a diverse set of \nprog programs. This set
+We evaluated \parrot on a diverse set of \nprog programs. This set
 includes \nrealprog real-world programs: \bdb, a widely used database
 library~\cite{berkeleydb}; \openldap, a server implementing the
 Lightweight Directory Access Protocol~\cite{openldap}; \redis, a fast
@@ -23,7 +23,7 @@ a map-reduce library atop Pthreads.  We used complete software or
 benchmark suites to avoid biasing our results.  The programs together
 cover a good range of parallel programming models and idioms such as
 threads, \openmp, data partition, fork-join, pipeline, map-reduce, and
-workpile.  To the best of our knowledge, our evaluation of \xxx
+workpile.  To the best of our knowledge, our evaluation of \parrot
 represents \overeach more programs than any prior DMT or \smt
 evaluation, and \overcombined more than all prior
 evaluations combined.
@@ -86,13 +86,13 @@ All overhead means are geometric.
 
 We compiled all programs using \v{gcc -O2}.  To support
 \openmp programs such as parallel STL algorithms, we used the GNU \libgomp.
-When evaluating \xxx on the client program \aget and the server programs \openldap
+When evaluating \parrot on the client program \aget and the server programs \openldap
 and \redis, we ran both endpoints on the same machine to avoid network
 latency.  \nprogadhocsync programs use ad hoc
 synchronization~\cite{syncfinder:osdi10}, and we added a \v{sched\_yield}
-to the busy-wait loops to make the programs work with \xxx.  \nprogtimeout
+to the busy-wait loops to make the programs work with \parrot.  \nprogtimeout
 programs use \pthread timed operations, and we added \v{set\_base\_time}
-(\S\ref{sec:timeout}) to them. We set the spin-wait of \xxx's scheduler
+(\S\ref{sec:timeout}) to them. We set the spin-wait of \parrot's scheduler
 to $10^5$ cycles.  We used the default \compute timeout of 20 except 3,000
 for \ferret.  Some \phoenix programs read large files, so
 we ran them with a warm file cache to focus on measuring their computation
@@ -116,16 +116,16 @@ variations~\cite{Parrot:github}.)
 %% classes of workload for each benchmark program, and they considered the largest 
 %% workload as the real workload). Each of these workloads take from a few 
 %% seconds to half an hour. In order to avoid biasing our results on 
-%% choosing workloads, we have also evaluated \xxx on three different workloads for each 
+%% choosing workloads, we have also evaluated \parrot on three different workloads for each 
 %% program (refer to figure XXX).
 
 The rest of this section focuses on six questions:
-\begin{tightenum}
+\begin{enumerate}
 
-\item[\S\ref{sec:ease-of-use}:] Is \xxx easy to use?  How many hints are
-  needed to make the programs with \xxx fast?
+\item[\S\ref{sec:ease-of-use}:] Is \parrot easy to use?  How many hints are
+  needed to make the programs with \parrot fast?
 
-\item[\S\ref{sec:performance}:] Is \xxx fast?  How effective are the
+\item[\S\ref{sec:performance}:] Is \parrot fast?  How effective are the
   hints?
 
 \item[\S\ref{sec:comparison}:] How does it compare to prior systems?
@@ -137,7 +137,7 @@ The rest of this section focuses on six questions:
 
 \item[\S\ref{sec:coverage}:] How much does it improve \dbug's coverage?
 
-\end{tightenum}
+\end{enumerate}
 
 \subsection{Ease of Use} \label{sec:ease-of-use}
 
@@ -155,12 +155,12 @@ On average, each program needs only \hintsperprog lines.
 In our experience, adding hints was straightforward.  It took roughly 0.5--2 hours per
 program despite unfamiliarity with the programs.  We believe
 the programs' developers would spend much less time adding better hints.
-\xxx helped us deterministically reproduce the bottlenecks and identify
+\parrot helped us deterministically reproduce the bottlenecks and identify
 the synchronizations delayed by round-robin.  We used Intel \vtune~\cite{vtune} and
 Linux \v{perf}~\cite{perf} performance counter-based tools to identify time-consuming
 computations, and usually needed to align only the top two or three
 computations.  For instance, \ferret uses a pipeline of six stages, all
-serialized by the \xxx's default schedules.  We aligned only two of them to bring
+serialized by the \parrot's default schedules.  We aligned only two of them to bring
 the overhead down to a reasonable level.  Aligning more stages did not help.
 
 %% Table~\ref{tab:computehints} shows that a total number of
@@ -174,7 +174,7 @@ the overhead down to a reasonable level.  Aligning more stages did not help.
 %% spent roughly half hour to two hours on adding hints, although we were not
 %% familiar with the implementation of most of the programs.  We used EIP and
 %% the waiting time of each synchronization operation (optionally) recorded
-%% by \xxx, and the Intel \vtune tool to inspect serialization caused by our
+%% by \parrot, and the Intel \vtune tool to inspect serialization caused by our
 %% default scheduler.  The EIP showed where the serilization was in source
 %% code, and how critical it was (a longer waiting time means more
 %% critical). We used \vtune to identify the roughly amout of computation of
@@ -195,7 +195,7 @@ the overhead down to a reasonable level.  Aligning more stages did not help.
 %% The reason of timeouts is that the workload of a program may not be evenly
 %% divided by the number of threads, so some threads may handle more
 %% computation than others.  Therefore, the \compute hints are suitable to
-%% \xxx runtime rather than tranditional \pthread barrier, which may corrupt
+%% \parrot runtime rather than tranditional \pthread barrier, which may corrupt
 %% program logic. Even timeout happened, these hints could still largely
 %% speed up programs (Figure~\ref{fig:overhead-hints}).
 
@@ -277,9 +277,9 @@ the overhead down to a reasonable level.  Aligning more stages did not help.
 
 \begin{figure*}[tb]
 \centering
-\includegraphics[width=\textwidth]{figures/overhead}
+\includegraphics[width=\textwidth]{parrot/figures/overhead}
 \vspace{-.20in}
-\caption{{\em \xxx's performance normalized over nondeterministic
+\caption{{\em \parrot's performance normalized over nondeterministic
     execution.}  The patterns of the bars show the types of the hints the programs
   need: no hints, generic \computes in \libgomp, program-specific
   \computes, or \nondets.  The mean overhead is
@@ -287,7 +287,7 @@ the overhead down to a reasonable level.  Aligning more stages did not help.
 \vspace{-.05in}
 \end{figure*}
 
-Figure~\ref{fig:overhead} compares \xxx's performance to nondeterministic
+Figure~\ref{fig:overhead} compares \parrot's performance to nondeterministic
 execution.  Even with the maximum number of threads (16--24), the mean
 overhead is small: \meanrealoverhead for real-world programs, \meanbenchoverhead for benchmark
 programs, and \meanoverhead for all programs.
@@ -303,14 +303,14 @@ with \nondets.  Four programs, \mencoder, \bodytrackopenmp, \facesim, and
 \linearregrepthread, enjoyed big speedups, so we analyzed their 
 executions with profiling tools. We found that the number of \mencoder's 
 context switches due to synchronization decreased from 1.9M with
-nondeterministic executions to 921 with \xxx.  The reason of the context
-switch savings was that \xxx's round-robin scheduling reduced contention
+nondeterministic executions to 921 with \parrot.  The reason of the context
+switch savings was that \parrot's round-robin scheduling reduced contention
 and its synchronizations use a more efficient wait that combines spin- and
 block-waits (\S\ref{sec:scheduler}).  \bodytrackopenmp and \facesim
 enjoyed a similar benefit.  So did another 19 programs which had
 10$\times$ fewer context switches with
-\xxx~\cite{Parrot:github}. \linearregrepthread's stalled cycles were
-reduced by 10$\times$ with \xxx, and we speculate that \xxx's scheduler
+\parrot~\cite{Parrot:github}. \linearregrepthread's stalled cycles were
+reduced by 10$\times$ with \parrot, and we speculate that \parrot's scheduler
 improved its affinity. (See~\cite{Parrot:github} for all results on
 microarchitectural events.)
 
@@ -322,18 +322,18 @@ microarchitectural events.)
 %% njoyed big speedups, and we analyzed their
 %% executions with profiling tools.  We found that \mencoder's context
 %% switches reduced from 1.05M with nondeterministic execution to 3.3K with
-%% \xxx. The reason was that \xxx's implementation of condition variable wait
-%% uses \xxx's scheduler \v{wait}, which combines spin- and block-waits, saving
+%% \parrot. The reason was that \parrot's implementation of condition variable wait
+%% uses \parrot's scheduler \v{wait}, which combines spin- and block-waits, saving
 %% context switches (\S\ref{sec:scheduler}). \bodytrackopenmp had a similar 
 %% pattern as that in \mencoder. \v{linear\_regression-pthread}'s
 %% stalled cycles were reduced by 10$\times$ with
-%% \xxx because \xxx's schedules improved affinity.
+%% \parrot because \parrot's schedules improved affinity.
 
 \begin{figure*}[tb]
 \centering
-\includegraphics[width=\textwidth]{figures/hints}
+\includegraphics[width=\textwidth]{parrot/figures/hints}
 \vspace{-.20in}
-\caption{{\em Effects of performance hints.} They reduced \xxx's overhead from \overallnohints to \overallhints.} \label{fig:overhead-hints}
+\caption{{\em Effects of performance hints.} They reduced \parrot's overhead from \overallnohints to \overallhints.} \label{fig:overhead-hints}
 \vspace{-.05in}
 \end{figure*}
 
@@ -361,7 +361,7 @@ microarchitectural events.)
 \caption{{\em \Compute successes and timeouts.}} \label{tab:timeouts}
 \end{table}
 
-Figure~\ref{fig:overhead-hints} compares \xxx's performance with and
+Figure~\ref{fig:overhead-hints} compares \parrot's performance with and
 without hints.  For all the \nprogneedhints programs that 
 have hints, their mean overhead was reduced from
 \overallnohints to \overallhints after hints were added. The four lines of generic
@@ -381,7 +381,7 @@ but enjoyed partial coscheduling benefits (\S\ref{sec:hints}).
 %% The reason of timeouts is that the workload of a program may not be evenly
 %% divided by the number of threads, so some threads may handle more
 %% computation than others.  Therefore, the \compute hints are suitable to
-%% \xxx runtime rather than tranditional \pthread barrier, which may corrupt
+%% \parrot runtime rather than tranditional \pthread barrier, which may corrupt
 %% program logic. Even timeout happened, these hints could still largely
 %% speed up programs (Figure~\ref{fig:overhead-hints}).
 
@@ -408,9 +408,9 @@ but enjoyed partial coscheduling benefits (\S\ref{sec:hints}).
 
 \subsection{Comparison to Prior Systems} \label{sec:comparison}
 
-We compared \xxx's performance to \dthreads and \coredet.  We configured
-both to provide the same determinism guarantee as \xxx,\footnote{While
-  \kendo's determinism guarantee is closest to \xxx's, we tried and failed
+We compared \parrot's performance to \dthreads and \coredet.  We configured
+both to provide the same determinism guarantee as \parrot,\footnote{While
+  \kendo's determinism guarantee is closest to \parrot's, we tried and failed
   to acquire its code.}  so their overhead measured only the overhead to
 make synchronizations deterministic.  One caveat is that neither system is
 specially optimized for this purpose.  We managed to make only
@@ -420,7 +420,7 @@ thread local storage, network operations, and timeouts. These programs are
 all benchmarks, not real-world programs.
 
 Figure~\ref{fig:comparison} shows the comparison results.
-\xxx's mean overhead is \xxxcompoverhead,
+\parrot's mean overhead is \parrotcompoverhead,
 whereas \dthreads's is \dthreadssyncoverhead and \coredet's is
 \coredetoverhead. 
 %% When we turned on this protocol, we observed \dthreadsoverhead overhead.
@@ -439,9 +439,9 @@ mainly from counting instructions. \ferret, \fluidanimate, \barnes, and
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\columnwidth]{figures/comparison}
+\includegraphics[width=\columnwidth]{parrot/figures/comparison}
 \vspace{-.2in}
-\caption{{\em \xxx, \dthreads, and \coredet overhead.}} \label{fig:comparison}
+\caption{{\em \parrot, \dthreads, and \coredet overhead.}} \label{fig:comparison}
 \vspace{-.0in}
 \end{figure}
 
@@ -475,7 +475,7 @@ mainly from counting instructions. \ferret, \fluidanimate, \barnes, and
 %% {\bf System} & {\bf \# Supported} \\
 %% \coredet   &  27 $\rightarrow$ 35 \\
 %% \dthreads  &  24 $\rightarrow$ 31 \\
-%% \xxx       & \nprog \\
+%% \parrot       & \nprog \\
 %% \end{tabular}
 %% \caption{{\em Number of programs supported.} The first number is the
 %%   number of programs originally supported by the system, and the second
@@ -490,7 +490,7 @@ mainly from counting instructions. \ferret, \fluidanimate, \barnes, and
 %% \begin{figure}[t]
 %% \centering
 %% \includegraphics[width=\columnwidth]{figures/overhead_scalibility_bug}
-%% \caption{{\em \xxx's scalability to the number of cores.} Legend lists
+%% \caption{{\em \parrot's scalability to the number of cores.} Legend lists
 %%   only programs with over 25.0\% variance; the other programs are shown as
 %%   light gray lines.} \label{fig:scalability}
 %% \end{figure}
@@ -498,19 +498,19 @@ mainly from counting instructions. \ferret, \fluidanimate, \barnes, and
 %% \begin{figure}[t]
 %% \centering
 %% \includegraphics[width=\columnwidth]{figures/workload_sensitivity}
-%% \caption{{\em \xxx's scalability to workloads.}  Legend lists only
+%% \caption{{\em \parrot's scalability to workloads.}  Legend lists only
 %%   programs with over 60.0\% variance; the other programs are shown as
 %%   light gray lines.} \label{fig:workloads}
 %% \end{figure}
 %% %% the variance is around 50%
 
-%% Figure~\ref{fig:scalability} shows \xxx's scalability on our 24-core
+%% Figure~\ref{fig:scalability} shows \parrot's scalability on our 24-core
 %% machine. The overhead of most programs varies less than 25.0\% (light gray lines).
 %% The overhead of other programs varies more, but stays below 2$\times$
 %% except \ferret.  It scales worst because it uses pipeline and more threads
 %% lead to more \compute timeouts during pipeline startup and teardown.
 
-%% Figure~\ref{fig:workloads} shows \xxx's scalability on three or four
+%% Figure~\ref{fig:workloads} shows \parrot's scalability on three or four
 %% different scales of workloads defined by the benchmark authors.
 %% The overhead of most programs varies less than 60.0\% (light gray
 %% lines).  The \partition and \radiosity programs have large
@@ -519,15 +519,15 @@ mainly from counting instructions. \ferret, \fluidanimate, \barnes, and
 %% large workload runs for less than 3s and medium and small workloads
 %% for less than 0.4s.  We also tried \redis on 15 different types of
 %% workloads, and \mencoder on 5.  The results are similar to what we have
-%% shown.  To summarize, the performance of \xxx and its hints are robust
+%% shown.  To summarize, the performance of \parrot and its hints are robust
 %% to core counts, workload scales, and workload types.
 
-We measured \xxx's scalability on our 24-core machine. All programs
+We measured \parrot's scalability on our 24-core machine. All programs
 varied within 40.0\% from each program's mean overhead across different core counts
 except \ferret (57.4\%), \vips (46.7\%), \volrend (43.1\%), and
 \linearregrepthread (57.1\%).  Some of these four programs use pipelines, so more
 threads lead to more \compute timeouts during pipeline startup and
-teardown.  We also measured \xxx's scalability on three or four different
+teardown.  We also measured \parrot's scalability on three or four different
 workload scales as defined by the benchmark authors.  All programs
 varied within 60\% from each program's mean overhead across different scales except
 14 programs, of which 9 varied from 60\%--100\%, 3 from 100\%--150\%, and
@@ -536,7 +536,7 @@ varied within 60\% from each program's mean overhead across different scales exc
 \v{radiosity}'s native workload runs for over 200s, but its large workload
 runs for less than 3s and medium and small workloads for less than 0.4s.
 We also ran \redis on 15 types of workloads, and \mencoder on
-5.  The overhead did not vary much.  To summarize, \xxx's performance is
+5.  The overhead did not vary much.  To summarize, \parrot's performance is
 robust to core count and workload scale/type. (See~\cite{Parrot:github}
 for detailed scalability results.)
 
@@ -567,39 +567,39 @@ for detailed scalability results.)
 
 \subsection{Determinism} \label{sec:determinism}
 
-We evaluated \xxx's determinism by verifying that it computed the same
+We evaluated \parrot's determinism by verifying that it computed the same
 schedules given the same input.  For all programs except those with
-\nondets, ad hoc synchronizations, and network operations, \xxx is
+\nondets, ad hoc synchronizations, and network operations, \parrot is
 deterministic.  Our current way of marking ad hoc synchronization causes
 nondeterminism; annotations~\cite{syncfinder:osdi10} can solve this
-problem.  We also evaluated \xxx's determinism using a modified version of
+problem.  We also evaluated \parrot's determinism using a modified version of
 \racey~\cite{racy-stress} that protects each shared memory access with a
 lock.  In \racey, each different schedule leads to a different result with
 high probability.  We executed our modified \racey 1,000 times without
-\xxx, and saw 1,000 different results.  With \xxx, it always computed the
+\parrot, and saw 1,000 different results.  With \parrot, it always computed the
 same result.
 
 %% Evaluated the determinism of sync operations with \racey. Added the same
 %% mutex lock to protect each shared memory access in source code, and then
-%% run both non-det (original) executions and executions with \xxx, both with
+%% run both non-det (original) executions and executions with \parrot, both with
 %% 1000 times. For non-det executions, each run shows different hash
 %% results. For executions with xxx, each run shows same results. This shows
 %% that our locks are scheduled deterministically.
 
 \subsection{Model Checking Coverage} \label{sec:coverage}
 
-%% We formed an \ecosys by integrating \xxx with \dbug. Within 
-%% this \ecosys, \xxx determinsitically schedules all \pthread synchronizations 
+%% We formed an \ecosys by integrating \parrot with \dbug. Within 
+%% this \ecosys, \parrot determinsitically schedules all \pthread synchronizations 
 %% for \dbug except those in \nondet, and \dbug systematically explores 
 %% all possible schedules of network events and operations within 
-%% \nondet for \xxx. But forming this \ecosys, we expect that 
-%% \xxx should drastically reduce the state space of a program and
+%% \nondet for \parrot. But forming this \ecosys, we expect that 
+%% \parrot should drastically reduce the state space of a program and
 %% increase testing coverage for \dbug, and \dbug can focus on
-%% exploring the schedules that matter to \xxx. We enabled 
+%% exploring the schedules that matter to \parrot. We enabled 
 %% dynamic partial order reduction when running both \ecosys and \dbug.
-%% We focus on evaluating how well \xxx can improve 
+%% We focus on evaluating how well \parrot can improve 
 %% testing coverage for \dbug and how effectively \dbug can explore 
-%% the schedules that matter to \xxx in \ecosys.
+%% the schedules that matter to \parrot in \ecosys.
 
 %% because
 %% checking them requires including both endpoints in the checked system
@@ -611,7 +611,7 @@ same result.
 
 To evaluate coverage, we used small workloads and two threads per workload.
 Otherwise, the time and space overhead of \dbug,
-or model checking in general, becomes prohibitive. Consequently, \xxx's
+or model checking in general, becomes prohibitive. Consequently, \parrot's
 reduction measured with small state spaces is a conservative estimate of
 its potential.  Two programs, \volrend and \ua, were excluded because they
 have too many synchronization operations (\eg, 132M for \ua), causing
@@ -619,7 +619,7 @@ have too many synchronization operations (\eg, 132M for \ua), causing
 (no-input) system, we paired \aget with lightweight web server
 \mongoose~\cite{mongoose}).  We enabled
 state-of-the-art DPOR~\cite{flanagan:dynamicpo} to evaluate how much more
-\xxx can reduce the state space. We checked each program for a maximum of
+\parrot can reduce the state space. We checked each program for a maximum of
 one day or until the checking session finished.  We then compared the
 estimated state space sizes.
 
@@ -701,23 +701,23 @@ Table~\ref{tab:state-space-nondet} shows the results for all
 \nondets.  For all four real-world programs \pfscan, \partition,
 \nthelement, and \partialsort, \ecosys effectively explored all
 schedules in seven hours or less, providing a strong reliability
-guarantee.  These results also demonstrate the power of \xxx:
+guarantee.  These results also demonstrate the power of \parrot:
 the programs can use the checked schedules at runtime for speed.
 
-To summarize, \xxx reduced the state space by \shrinkscale for
+To summarize, \parrot reduced the state space by \shrinkscale for
 \nprogshrink programs (50 programs in Table~\ref{tab:state-space-compute},
 6 in Table~\ref{tab:state-space-nondet}).  It increased the number of
 verified programs from \nprogverifieddbug to \nprogverifiedxxx (95
 programs in Table~\ref{tab:state-space-compute}, 4 in
 Table~\ref{tab:state-space-nondet}).
 
-%  These results also demonstrate the flexibility of \xxx: once schedules
-%  are checked, \xxx can use the schedules at runtime for better
+%  These results also demonstrate the flexibility of \parrot: once schedules
+%  are checked, \parrot can use the schedules at runtime for better
 %  performance.
 
 %{\bf TODO:} Add \ua and discuss \raytrace.
 
-%% results are promising because \xxx can safely ignore these operations in
+%% results are promising because \parrot can safely ignore these operations in
 %% \nondet and run with these programs with reasonable overhead. For the five
 %% benchmark programs \fluidanimate, \cholesky, \fmm, \raytrace and \ua,
 %% \ecosys could not finish exploring their state space within one day. Maybe
@@ -747,12 +747,12 @@ Table~\ref{tab:state-space-nondet}).
 %% operations within \nondet. For four real applications \pfscan, 
 %% \partition, \nthelement, and \partialsort, \ecosys can 
 %% effectively explore all their schedules within seven hours, 
-%% because \ecosys runs \xxx to deterministically schedule 
+%% because \ecosys runs \parrot to deterministically schedule 
 %% lots of \pthread synchronization operations and enables \dbug to 
 %% focus on only exploring those schedules that matter to 
-%% \xxx. We estimated that \dbug won't finish exploring 
+%% \parrot. We estimated that \dbug won't finish exploring 
 %% scheduels for these four programs within a few years.
-%% These results are promising because \xxx can 
+%% These results are promising because \parrot can 
 %% safely ignore these operations in \nondet and run with 
 %% these programs with reasonable overhead. For the five benchmark 
 %% programs \fluidanimate, \cholesky, \fmm, \raytrace and \ua,

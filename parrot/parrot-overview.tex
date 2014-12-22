@@ -1,7 +1,7 @@
 \section{Overview} \label{sec:overview}
 
-This section first compares two prior systems and \xxx using
-an example (\S\ref{sec:example}), and then describes \xxx's architecture
+This section first compares two prior systems and \parrot using
+an example (\S\ref{sec:example}), and then describes \parrot's architecture
 (\S\ref{sec:arch}).
 
 \subsection{An Example} \label{sec:example}
@@ -10,7 +10,7 @@ an example (\S\ref{sec:example}), and then describes \xxx's architecture
 \begin{figure}[t]
 \centering
 \begin{minipage}{.5\textwidth}
-\lgrindfile{code/msmr-wait-rule.cpp.lineno}
+\lgrindfile{parrot/code/example.cpp.lineno}
 \end{minipage}
 \vspace{-.1in}
 \caption{{\em Simplified \pbzip.} It uses the producer-consumer idiom to
@@ -20,7 +20,7 @@ an example (\S\ref{sec:example}), and then describes \xxx's architecture
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\columnwidth]{figures/dthreads_schedule}
+\includegraphics[width=\columnwidth]{parrot/figures/dthreads_schedule}
 \vspace{-.2in}
 \caption{{\em A \dthreads schedule.}  All
   \v{compress} calls are serialized. \v{read\_block} runs much faster than
@@ -30,15 +30,15 @@ an example (\S\ref{sec:example}), and then describes \xxx's architecture
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\columnwidth]{figures/parrot_schedule}
+\includegraphics[width=\columnwidth]{parrot/figures/parrot_schedule}
 \vspace{-.2in}
-\caption{{\em A \xxx schedule with performance
+\caption{{\em A \parrot schedule with performance
     hints.}}\label{fig:parrot-schedule}
 \vspace{-.05in}
 \end{figure}
 
 %% In this subsection, we present an example, explain why two prior systems
-%% perform poorly on it, and illustrate how \xxx works with it.
+%% perform poorly on it, and illustrate how \parrot works with it.
 
 Figure~\ref{fig:example} shows the example, a simplified version of the parallel
 compression utility \pbzip\cite{pbzip2}.  It uses the common producer-consumer idiom:
@@ -156,7 +156,7 @@ imbalance.
 %% places on inputs.
 
 
-Running the example with \xxx is easy; users do
+Running the example with \parrot is easy; users do
 \vspace{-2 mm}
 \begin{small}
 \begin{verbatim}
@@ -169,22 +169,22 @@ $ LD_PRELOAD=./parrot.so program args...
 % more than 10 times slowdown when the number of threads is more than 16.
 
 \noindent
-During the execution, \xxx intercepts \pthread synchronizations.  Without
-the hints at lines 3 and 23, \xxx schedules the synchronizations using round-robin. 
+During the execution, \parrot intercepts \pthread synchronizations.  Without
+the hints at lines 3 and 23, \parrot schedules the synchronizations using round-robin. 
 This schedule also serializes the \v{compress} calls, yielding the same slowdown as \dthreads.
 Developers can easily detect this performance problem with
-sample runs, and \xxx simplifies performance debugging by
+sample runs, and \parrot simplifies performance debugging by
 deterministically reproducing the problem and reporting synchronizations
 excessively delayed  by round-robin
 (\eg, the return of \v{pthread\_cond\_wait} here).
-%  When running the examplewith \xxx on a 400 MB file, we frequently
+%  When running the examplewith \parrot on a 400 MB file, we frequently
 %  observed over 4s round-robin delay on \v{pthread\_mutex\_lock} in the
 %  main thread.
 
 To solve the serialization problem, we added a \compute at lines 3 and 23.  Line 3
-informs \xxx that the program has a coscheduling group involving
+informs \parrot that the program has a coscheduling group involving
 \v{nthreads} threads, and line 23 is the starting point of coscheduling.  With
-these hints, \xxx switched to the schedule in
+these hints, \parrot switched to the schedule in
 Figure~\ref{fig:parrot-schedule} which ran \v{compress} in parallel,
 achieving 0.8\% overhead compared to nondeterministic execution. A soft barrier is
 different from classic synchronizations and can be safely 
@@ -194,28 +194,28 @@ the threads, the soft barrier will time out on the last round of input blocks.  
 for reasonable performance, we need to align only time-consuming computations
 (\eg, \v{compress}, not \v{read\_block}).
 
-%% Note that these hints need not be 100\% accurate because \xxx can time out
+%% Note that these hints need not be 100\% accurate because \parrot can time out
 %% them without losing determinism.  Moreover, these hints need not align the
 %% computation perfectly for reasonable performance.
 
 % lasts longer than 4 seconds
 %% Once developers discover this serialization, they can add \compute hints
-%% (lines XX and XX) to let \xxx switch to a faster schedule that makes
+%% (lines XX and XX) to let \parrot switch to a faster schedule that makes
 %% \v{compress} calls run in parallel. In our sample run, the wait time of
 %% \v{pthread\_mutex\_lock} in main thread lasts longer than 4 seconds when
 %% the input file size is 400MB, which indicates a serializtion problem only
 %% utilizes one thread and starves the rest.  Lines XXX and XXX show the
-%% hints. Line XXX informs \xxx the size of the parallel computation group.
-%% Line XXX informs \xxx the beginning point of a computation.  With the
-%% hints, \xxx achieved comparable performance ($<$1\% overhead) to
+%% hints. Line XXX informs \parrot the size of the parallel computation group.
+%% Line XXX informs \parrot the beginning point of a computation.  With the
+%% hints, \parrot achieved comparable performance ($<$1\% overhead) to
 %% nondeterministic execution.
 
-%% To further help developers, \xxx also logs the wait
+%% To further help developers, \parrot also logs the wait
 %% time of each synchronization for developers to identify excessive delays.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=.28\textwidth]{figures/architecture}
+\includegraphics[width=.28\textwidth]{parrot/figures/architect}
 %arch:
 %programs with threads
 %  computation  nondet regions
@@ -225,13 +225,13 @@ for reasonable performance, we need to align only time-consuming computations
 %deterministic scheduler, 
 %OS schedule
 \vspace{-.05in}
-\caption{{\em \xxx architecture.}} \label{fig:arch}
+\caption{{\em \parrot architecture.}} \label{fig:arch}
 \vspace{-.05in}
 \end{figure}
 
 \subsection{Architecture} \label{sec:arch}
 
-Figure~\ref{fig:arch} shows \xxx's architecture.  We designed \xxx to be
+Figure~\ref{fig:arch} shows \parrot's architecture.  We designed \parrot to be
 simple and deployable.  It consists of a deterministic user-space
 scheduler, implementation of hints, a set of wrapper functions for
 intercepting \pthread, network, and timeout operations.  For simplicity,

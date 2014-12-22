@@ -1,19 +1,19 @@
-\section{\xxx Runtime} \label{sec:runtime}
+\section{\parrot Runtime} \label{sec:runtime}
 
-%% The simple \xxx runtime consists of a user-space scheduler
+%% The simple \parrot runtime consists of a user-space scheduler
 %% (\S\ref{sec:scheduler}), a set of wrapper functions for intercepting
 %% \pthread synchronizations (\S\ref{sec:sync}), implementations of the hint
 %% abstractions (\S\ref{sec:hints-impl}), handlers for network operations
 %% (\S\ref{sec:network}), and handlers of timeouts (\S\ref{sec:timeout}).
 
-The \xxx runtime contains implementation of the hint abstractions
+The \parrot runtime contains implementation of the hint abstractions
 (\S\ref{sec:hints-impl}) and a set of wrapper functions that intercept
 \pthread (\S\ref{sec:sync}), network (\S\ref{sec:network}), and timeout
 (\S\ref{sec:timeout}) operations.  The wrappers interpose dynamically
 loaded library calls via \v{LD\_PRELOAD} and ``trap'' the calls into
-\xxx's deterministic scheduler (\S\ref{sec:scheduler}).  Instead of
+\parrot's deterministic scheduler (\S\ref{sec:scheduler}).  Instead of
 reimplementing the operations from scratch, these wrappers leverage
-existing runtimes, greatly simplifying \xxx's implementation, deployment,
+existing runtimes, greatly simplifying \parrot's implementation, deployment,
 and inter-operation with code that assumes standard runtimes (\eg,
 debuggers).
 
@@ -27,17 +27,17 @@ of code, which runs in parallel.  It maintains a queue
 of runnable threads (\emph{run queue}) and another queue of waiting
 threads (\emph{wait queue}), like typical schedulers.  Only the head of the
 run queue may enter synchronization next. Once the synchronization call is
-executed, \xxx updates the queues accordingly.  For instance, for
-\v{pthread\_create}, \xxx appends the new thread to the tail of
+executed, \parrot updates the queues accordingly.  For instance, for
+\v{pthread\_create}, \parrot appends the new thread to the tail of
 the run queue and rotates the head to the tail.  By maintaining
-its own queues, \xxx avoids nondeterminism in the OS scheduler and
+its own queues, \parrot avoids nondeterminism in the OS scheduler and
 the \pthread library.
 
 \begin{table}[t]
 \centering
 \small
 \begin{minipage}[t]{.25\textwidth}
-\lgrindfile{code/scheduler.cpp}
+\lgrindfile{parrot/code/scheduler.cpp}
 \end{minipage}
 %% \begin{tabular}{l}
 %% \v{void get\_turn(void)} \\
@@ -53,7 +53,7 @@ the \pthread library.
 \vspace{-.05in}
 \end{table}
 
-To implement operations in the \xxx runtime, the scheduler provides a
+To implement operations in the \parrot runtime, the scheduler provides a
 monitor-like internal interface, shown in Table~\ref{tab:scheduler}.  The
 first five functions map one-to-one to functions of a typical monitor,
 except the scheduler functions are deterministic.  The last two are for
@@ -98,9 +98,9 @@ the turn.
 
 The \v{timeout} in the \v{wait} function does not specify real time, but relative \emph{logical time} that
 counts the number of turns executed since the beginning of current
-execution.  In each call to the \v{get\_turn} function, \xxx increments this logical
+execution.  In each call to the \v{get\_turn} function, \parrot increments this logical
 time and checks for timeouts. 
-(If all threads block, \xxx keeps the logic time advancing with an idle
+(If all threads block, \parrot keeps the logic time advancing with an idle
 thread; see~\S\ref{sec:timeout}.)
 The \v{wait} function takes a relative timeout argument.  If
 current logical time is $t_l$, a timeout of 10 means waking up the thread
@@ -112,7 +112,7 @@ call is a logical sleep, and a \v{wait(addr, 0)} call never times out.
 \begin{figure}[t]
 \centering
 \begin{minipage}[t]{.38\textwidth}
-\lgrindfile{code/lock.cpp}
+\lgrindfile{parrot/code/lock.cpp}
 \end{minipage}
 \vspace{-1 mm}
 \caption{{\em Wrappers of \pthread mutex lock\&unlock.}} \label{fig:lock}
@@ -121,7 +121,7 @@ call is a logical sleep, and a \v{wait(addr, 0)} call never times out.
 
 The last two functions in Table~\ref{tab:scheduler} support performance
 critical sections and network operations.  They set the calling thread's
-execution mode to nondeterministic or deterministic. \xxx always schedules
+execution mode to nondeterministic or deterministic. \parrot always schedules
 synchronizations of deterministic threads using round-robin, but it lets
 the OS scheduler schedule nondeterministic threads.
 Implementation-wise, the \v{nondet\_begin} function marks the calling
@@ -152,16 +152,16 @@ queues.
 %% operation. It gets turn, removes it self from \emph{run queue}, 
 %% and then passes the turn to the thread in the head of the \emph{run queue}. 
 %% This operation ensures that  while a thread is doing a \nondet operation,
-%% it self is not in the \emph{run queue} of \xxx, so that the \xxx runtime 
+%% it self is not in the \emph{run queue} of \parrot, so that the \parrot runtime 
 %% does not enforce any order between it and other threads within the runtime 
 %%  (deadlock-free). The second one \v{wakeup()} is called 
 %%  after a thread gets back from a \nondet opeartion. It appends the thread 
 %%  itself to a \emph{wakeup queue} , an extra data structure for \nondet 
-%%  operations. In \xxx, after each thread gets its turn, it  will check this 
+%%  operations. In \parrot, after each thread gets its turn, it  will check this 
 %%  \emph{wakeup queue} and put the threads from this queue back to
 %%  \emph{runq queue}. A thread getting back from \nondet operations to
-%% \xxx runtme is not allowed to put itself back to the \emph{runq 
-%% queue}  directly, because our \xxx runtime ensures that only the 
+%% \parrot runtme is not allowed to put itself back to the \emph{runq 
+%% queue}  directly, because our \parrot runtime ensures that only the 
 %% head of \emph{runq queue} is allowed to modify the \emph{runq queue}.
 
 \subsection{Synchronizations} \label{sec:sync}
@@ -184,18 +184,18 @@ queues.
 % to give up the turn by moving the calling thread to the tail of the run
 % or wait queue.
 
-\xxx handles all synchronizations on \pthread mutexes, read-write
+\parrot handles all synchronizations on \pthread mutexes, read-write
 locks, condition variables, semaphores, and barriers. It also handles thread
 creation, join, and exit.  It need not implement the other \pthread
 functions such as thread ID operations, another advantage of leveraging
-existing \pthread runtimes. In total, \xxx has \npthreadsync synchronization
+existing \pthread runtimes. In total, \parrot has \npthreadsync synchronization
 wrappers.  They ensure a total (round-robin) order of synchronizations by
 (1) using the scheduler primitives to ensure that at most one wrapper has
 the turn and (2) executing the actual synchronizations only when the turn
 is held.
 
-%  Below we illustrate how we implemented the \xxx runtime for three example synchronizations.
-% (Interested readers may refer to \xxx's source code~\cite{parrot-github}
+%  Below we illustrate how we implemented the \parrot runtime for three example synchronizations.
+% (Interested readers may refer to \parrot's source code~\cite{parrot-github}
 % for others.)
 
 % \subsubsection{Locks}
@@ -207,11 +207,11 @@ deadlock: if the head of run queue is blocked waiting for a lock before
 giving up the turn, no other thread can get the turn.
 
 %% For \v{pthread\_mutex\_lock} but the lock is already held,
-%% \xxx moves the current thread from the head of the run queue to the tail
+%% \parrot moves the current thread from the head of the run queue to the tail
 %% of the wait queue and record the address of the mutex the thread is
-%% waiting for.  For \v{pthread\_mutex\_unlock}, \xxx wakes up the first
+%% waiting for.  For \v{pthread\_mutex\_unlock}, \parrot wakes up the first
 %% thread waiting for the mutex if there is one from the wait queue.  After
-%% running the synchronizations, \xxx rotates the current thread to the end
+%% running the synchronizations, \parrot rotates the current thread to the end
 %% of the run queue if the synchronization did not cause it to block on the
 %% wait queue.  
 
@@ -222,7 +222,7 @@ giving up the turn, no other thread can get the turn.
 \begin{figure}[t]
 \centering
 \begin{minipage}[t]{.5\textwidth}
-\lgrindfile{code/cv.cpp}
+\lgrindfile{parrot/code/cv.cpp}
 \end{minipage}
 \vspace{-2 mm}
 \caption{{\em Wrapper of \v{pthread\_cond\_wait}.}} \label{fig:cv}
@@ -232,18 +232,18 @@ giving up the turn, no other thread can get the turn.
 Figure~\ref{fig:cv} shows the \v{pthread\_cond\_wait}
 wrapper.  It is slightly more complex than the lock and unlock wrappers
 for two reasons.  First, there is no try-version of
-\v{pthread\_cond\_wait}, so \xxx cannot use the same trick to avoid
-deadlock as in the lock wrapper.  Second, \xxx must ensure that unlocking
+\v{pthread\_cond\_wait}, so \parrot cannot use the same trick to avoid
+deadlock as in the lock wrapper.  Second, \parrot must ensure that unlocking
 the
 mutex and waiting on the conditional variable are atomic (to avoid the
-well-known lost-wakeup problem).  \xxx solves these issues by implementing
+well-known lost-wakeup problem).  \parrot solves these issues by implementing
 the wait with the scheduler's \v{wait} which atomically gives up the
 turn and blocks the calling thread on the wait queue.  The wrapper of
 \v{pthread\_cond\_signal} (not shown) calls the scheduler's \v{signal}
 accordingly.
 
-%% which blocks the calling thread regardless, \xxx must release the
-%% scheduler lock before the blocking to avoid deadlock.  Yet, if \xxx lets
+%% which blocks the calling thread regardless, \parrot must release the
+%% scheduler lock before the blocking to avoid deadlock.  Yet, if \parrot lets
 %% the synchronization run outside of
 
 %% \subsubsection{Thread Creation}
@@ -272,7 +272,7 @@ Thread creation is the most complex of all wrappers for two reasons.
 First, it must deterministically assign a logical thread ID
 to the newly created thread because the system's thread IDs are
 nondeterministic.  Second, it must also prevent the new thread from using
-the logical ID before the ID is assigned.  \xxx solves these issues by
+the logical ID before the ID is assigned.  \parrot solves these issues by
 synchronizing the current and new threads with two semaphores, one to make
 the new thread wait for the current thread to assign an ID, and the other to
 make the current thread wait until the child gets the ID.
@@ -294,7 +294,7 @@ make the current thread wait until the child gets the ID.
 
 %% One complication is the wrapper of \v{pthread\_cond\_wait(cond, mutex)}.
 %% This synchronization blocks the calling thread on condition variable
-%% \v{cond} regardless, so \xxx must release the scheduler lock before the
+%% \v{cond} regardless, so \parrot must release the scheduler lock before the
 %% blocking to avoid deadlock.  However, the semantics also requires that
 %% unlocking \v{mutex} and waiting on \v{cond} be atomic (to avoid the
 %% lost-wakeup problem).
@@ -310,9 +310,9 @@ make the current thread wait until the child gets the ID.
 %% \end{figure}
 
 %% Figure~\ref{fig:compute} shows the implementation of soft barrier, a
-%% reusable barrier with a deterministic timeout.  \xxx implements
+%% reusable barrier with a deterministic timeout.  \parrot implements
 
-\xxx implements performance hints using the scheduler primitives.  It
+\parrot implements performance hints using the scheduler primitives.  It
 implements the soft barrier as a reusable barrier with a deterministic
 timeout.  It implements the performance critical section by simply calling
 \v{nondet\_begin()} and \v{nondet\_end()}.
@@ -324,18 +324,18 @@ interfere.  Consider a deterministic thread $t_1$ trying to lock a mutex
 that a nondeterministic $t_2$ is trying to unlock.
 Nondeterministic thread $t_2$ always ``wins'' because the timing of
 $t_2$'s unlock directly influences $t_1$'s lock regardless of how hard
-\xxx tries to run $t_1$ deterministically.  An additional concern is
-deadlock: \xxx may move $t_1$ to the wait queue but never wake $t_1$ up
+\parrot tries to run $t_1$ deterministically.  An additional concern is
+deadlock: \parrot may move $t_1$ to the wait queue but never wake $t_1$ up
 because it cannot see  $t_2$'s unlock.
 
-To avoid the above interference, \xxx requires that synchronization variables accessed
+To avoid the above interference, \parrot requires that synchronization variables accessed
 in nondeterministic execution are isolated from those accessed in
 deterministic execution.  This \emph{strong isolation} is easy to achieve based
 on our experiments because, as discussed in~$\S$\ref{sec:hints}, the
 synchronizations causing high overhead on deterministic execution tend to
 be low-level synchronizations already isolated from other
 synchronizations. To help developers write performance critical sections
-that conform to strong isolation, \xxx checks this property at runtime:
+that conform to strong isolation, \parrot checks this property at runtime:
 it tracks two sets of synchronization variables accessed within
 deterministic and nondeterministic executions, and emits a warning when the
 two sets overlap.  Strong isolation is considerably stronger than
@@ -351,16 +351,16 @@ programs evaluated.
 
 %% One concern with our implementation of \nondet hints is deadlock.  The
 %% system scheduler runs all threads in nondeterministic regions, whereas
-%% \xxx runs all other threads.  The system scheduler and \xxx may attempt to
+%% \parrot runs all other threads.  The system scheduler and \parrot may attempt to
 %% enforce contradictory constraints, causing deadlocks like in
 %% Figure~\ref{fig:deadlock}.
 
 %% We sketch a proof that our implementation of performance critical section
 %% does not introduce deadlocks.  Suppose a program has no deadlock running
-%% with either the system's scheduler or \xxx, but it has a deadlock when
+%% with either the system's scheduler or \parrot, but it has a deadlock when
 %% running with both.  There are two scenarios.  First, the head of run queue
 %% is blocked without giving up the turn. The blocking synchronization must
-%% be done by a nondeterministic thread, or \xxx would have noticed.
+%% be done by a nondeterministic thread, or \parrot would have noticed.
 %% However, this scenario is impossible because a nondeterministic thread
 %% cannot be the head of run queue.  Second, some thread on wait queue should
 %% have been signaled but was not.  The lost signal must be done by a
@@ -382,13 +382,13 @@ programs evaluated.
 %% back to the \emph{wakeup queue}, and the next thread 
 %% getting the turn will put all threads from \emph{wakeup 
 %% queue} back to \emph{run queue}. The system scheduler schedules 
-%% all threads in nondet region.  \xxx schedulers all other threads.
+%% all threads in nondet region.  \parrot schedulers all other threads.
 
 %% Mixing deterministic and nondeterministic executions is tricky because
 %% they can interfere.  Consider two threads: $t_1$ in deterministic
 %% execution trying to lock a mutex and $t_2$ in nondeterministic execution
 %% trying to unlock the same mutex.  The nondeterministic thread $t_2$ always
-%% ``wins'' because regardless of how hard \xxx tries to run $t_1$
+%% ``wins'' because regardless of how hard \parrot tries to run $t_1$
 %% deterministically, the timing of $t_2$'s unlock directly influences
 %% $t_1$'s lock.  In general, each nondeterministic synchronization may
 %% interfere with deterministic execution.  As nondeterministic
@@ -401,7 +401,7 @@ programs evaluated.
 %% To avoid interference, we have carefully designed the semantics of \nondet
 %% hints to strongly isolate synchronization variables accessed in
 %% nondeterministic execution from those accessed in deterministic execution,
-%% which \xxx checks at run time (\S\ref{sec:hints-impl}).  This strong
+%% which \parrot checks at run time (\S\ref{sec:hints-impl}).  This strong
 %% isolation turned out to be pretty easy to achieve on the programs we
 %% evaluated because the synchronizations causing high overhead on
 %% deterministic execution tend to be frequent, low-level synchronizations
@@ -420,44 +420,44 @@ programs evaluated.
 
 %% In order to assist users to ensure strong isolation of synchronization
 %% variables accessed in deterministic and nondeterministic 
-%% regions, \xxx simply tracks the variables during their life time with two sets.
+%% regions, \parrot simply tracks the variables during their life time with two sets.
 %% For each synchronization, it adds the variable to the
-%% corresponding set protected by an internal spin lock. \xxx emits warnings
+%% corresponding set protected by an internal spin lock. \parrot emits warnings
 %% when the two sets overlap before each \nondet operation.
 %% Although this approach is crude, we find it pretty lightweight
 %% and the warnings are already quite helpful to us when adding \nondet hints.
 
 %% One concern with our implementation of \nondet hints is deadlock.  The
 %% system scheduler runs all threads in nondeterministic regions, whereas
-%% \xxx runs all other threads.  The system scheduler and \xxx may attempt to
+%% \parrot runs all other threads.  The system scheduler and \parrot may attempt to
 %% enforce contradictory constraints, causing deadlocks like in
 %% Figure~\ref{fig:deadlock}.
 
 %% We present a proof sketch that our \nondet hints do not introduce
 %% deadlocks.  Suppose a program has no deadlock running with either the
-%% system's scheduler or \xxx, but it has a deadlock when running with both.
+%% system's scheduler or \parrot, but it has a deadlock when running with both.
 %% There are two scenarios.  First, the head of the queue is blocked without
 %% giving up the turn. The blocking synchronization must be inside a
-%% nondeterministic region, like XXX in Figure~\ref{fig:deadlock}, or \xxx
+%% nondeterministic region, like XXX in Figure~\ref{fig:deadlock}, or \parrot
 %% would have noticed.  However, this scenario is impossible because a thread
-%% running in a nondeterministic region is removed from \xxx's run queue and
-%% cannot be the head of the queue.  Second, some thread on \xxx's wait queue
+%% running in a nondeterministic region is removed from \parrot's run queue and
+%% cannot be the head of the queue.  Second, some thread on \parrot's wait queue
 %% should have been signaled but was not.  The lost signal must be inside a
 %% nondeterministic region, but this scenario is also impossible because
 %% synchronization variables are strongly isolated.
 
 %% We present a proof sketch that our \nondet hints do not introduce
 %% deadlocks.  Suppose a program has no deadlock running with either the
-%% system's scheduler or \xxx, but it has a deadlock when running with both.
+%% system's scheduler or \parrot, but it has a deadlock when running with both.
 %% Consider the \emph{wait cycle} of the deadlock, a graph with
 %% synchronizations as vertexes and edges from synchronization $s_1$ to $s_2$
 %% if $s_1$ can run only after $s_2$.  Figure~\ref{fig:deadlock} is an
-%% example.  We use dotted lines to indicate the edges enforced by \xxx for
+%% example.  We use dotted lines to indicate the edges enforced by \parrot for
 %% round-robin, and solid lines for those due to synchronization semantics.
 %% The wait cycle of the deadlock must involve at least one synchronization
-%% blocked by \xxx for round-robin and another blocked by the system's
+%% blocked by \parrot for round-robin and another blocked by the system's
 %% scheduler due to synchronization semantics.  (Otherwise, the program has a
-%% deadlock with either the system's scheduler or \xxx.)  The path from the
+%% deadlock with either the system's scheduler or \parrot.)  The path from the
 %% latter synchronization to the former in the wait cycle must have an edge
 %% from a synchronization to a deterministic one.  Due to strong isolation,
 %% these two synchronizations must be in the same thread, like XX and XX in
@@ -466,19 +466,19 @@ programs evaluated.
 
 %% by the system's scheduler waiting be woken up by another
 %% synchronization. Otherwise, the program has a deadlock with either the
-%% system's scheduler or \xxx.  The path from the
+%% system's scheduler or \parrot.  The path from the
 
 %% one synchronization
-%% blocked by \xxx for the turn and another blocked by the system's scheduler
+%% blocked by \parrot for the turn and another blocked by the system's scheduler
 %% waiting be woken up by another synchronization.  
 
 \subsection{Network Operations} \label{sec:network}
 
-To handle network operations, \xxx leverages the \v{nondet\_begin} and
+To handle network operations, \parrot leverages the \v{nondet\_begin} and
 \v{nondet\_end} primitives.  Before a blocking operation such as \v{recv},
 it calls \v{nondet\_begin} to hand the thread to the OS scheduler.  When
-the operation returns, \xxx calls \v{nondet\_end} to add the thread back to
-deterministic scheduling.  \xxx supports \nioync network
+the operation returns, \parrot calls \v{nondet\_end} to add the thread back to
+deterministic scheduling.  \parrot supports \nioync network
 operations such as \v{send}, \v{recv}, \v{accept}, and \v{epoll\_wait}.
 This list suffices to run all evaluated programs that require network
 operations (\bdb, \openldap, \redis, and \aget).
@@ -492,23 +492,23 @@ deadlocks.  One deadlock example in our evaluation was running \pbzip with
 \dthreads: \dthreads ignores the timeout in
 \v{pthread\_cond\_timedwait}, but \pbzip sometimes relies on the timeout to finish.
 
-\xxx makes timeouts deterministic by proportionally converting them to a
+\parrot makes timeouts deterministic by proportionally converting them to a
 logical timeout.  When a thread registers a relative timeout that fires
-$\Delta t_r$ later in real time, \xxx converts $\Delta t_r$ to a relative
+$\Delta t_r$ later in real time, \parrot converts $\Delta t_r$ to a relative
 logical timeout $\Delta t_r /R$ where $R$ is a configurable conversion
 ratio. ($R$ defaults to 3 $\mu$s, which works for all evaluated programs.)
 Proportional conversion is better than a fixed logical timeout because it
 matches developer intents better (\eg, important activities
 run more often).  A nice fallout is that it makes some
 non-terminating executions terminate for model checking
-(\S\ref{sec:coverage}).  Of course, \xxx's logical time corresponds
+(\S\ref{sec:coverage}).  Of course, \parrot's logical time corresponds
 loosely to real time, and may be less useful for real-time applications.\footnote{
 dOS~\cite{dos:osdi10} discussed the possibility of converting real time to
 logical time but did not present how.}
 
-%% \xxx makes timeouts deterministic by proportionally converting them to a
+%% \parrot makes timeouts deterministic by proportionally converting them to a
 %% logical timeout.  When a thread registers a relative timeout that fires
-%% $\Delta t_r$ later in real time, \xxx converts $\Delta t_r$ to a relative
+%% $\Delta t_r$ later in real time, \parrot converts $\Delta t_r$ to a relative
 %% logical timeout $\Delta t_r /R$ where $R$ is a configurable conversion
 %% ratio (default is 3 $\mu$s), which worked for all evaluated programs.
 %% Proportional conversion is better than a fixed logical timeout because it
@@ -518,12 +518,12 @@ logical time but did not present how.}
 %% the relative ratio of the frequencies, and improves performance based on
 %% our experiments. A nice fallout is that it makes some non-terminating
 %% executions terminate for model checking (\S\ref{sec:coverage}).
-%% Of course, \xxx's logical time corresponds loosely to
+%% Of course, \parrot's logical time corresponds loosely to
 %% real time, and may be less useful for real-time applications.
 %% (dOS~\cite{dos:osdi10} discussed the possibility of converting real to
 %% logical time but did not present how.)
 
-When all threads are on the wait queue, \xxx spawns an idle thread to keep the
+When all threads are on the wait queue, \parrot spawns an idle thread to keep the
 logical time flowing. The thread repeatedly gets the turn, sleeps for time
 $R$, and gives up the turn.  An alternative to idling is
 fast-forwarding~\cite{modist:nsdi09,dos:osdi10}.  Our experiments show
@@ -534,10 +534,10 @@ external events (\eg, receiving a network packet) are done, wasting CPU cycles.
 %% Moreover, it fast-forwards logical time after all threads block, slower
 %% than using an idle thread.
 
-\xxx handles all common timed operations such as \v{sleep} and
+\parrot handles all common timed operations such as \v{sleep} and
 \v{pthread\_cond\_timedwait}, enough for all five evaluated programs
 that require timeouts (\pbzip, \bdb, \mplayer, \imagick, and \redis).
-\pthread timed synchronizations use absolute time, so \xxx provides
+\pthread timed synchronizations use absolute time, so \parrot provides
 developers a function \v{set\_base\_time} to pass in the base time.  It
 uses the delta between the base time and the absolute time argument as $\Delta
 t_r$.

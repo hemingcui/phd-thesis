@@ -1,15 +1,15 @@
 \section{Determinism Discussion} \label{sec:discussion}
 
-\xxx's determinism is relative to three factors: (1) external input (data
+\parrot's determinism is relative to three factors: (1) external input (data
 and timing), (2) \nondets, and (3) data races \wrt
 the enforced synchronization schedules.  Factor 1 is inherently
-nondeterministic, and \xxx mitigates it by reusing schedules on inputs.
+nondeterministic, and \parrot mitigates it by reusing schedules on inputs.
 Factor 2 is developer-intended.  Factor 3 can be easily eliminated, but we
 deemed it not worthwhile.  Below we explain how to make data races
-deterministic in \xxx and why it is not worthwhile.
+deterministic in \parrot and why it is not worthwhile.
 
 We designed a simple memory commit protocol to make data races
-deterministic in \xxx, similar to those in previous
+deterministic in \parrot, similar to those in previous
 work~\cite{grace:oopsla09,determinator:osdi10,dthreads:sosp11}.  Each
 thread maintains a private, copy-on-write mapping of shared memory.  When
 a thread has the turn, it commits updates and fetches other threads'
@@ -57,10 +57,10 @@ schedules~\cite{musuvathi:chess:osdi08}. In short, by vastly reducing
 schedules, \smt makes the problems caused by nondeterminism easy to solve.
 
 %% Making data races deterministic in
-%% \xxx is straightforward.  We have designed a memory commit protocol to do
+%% \parrot is straightforward.  We have designed a memory commit protocol to do
 %% so, similar to the protocols in \grace, \determinator, and \dthreads.  In
 %% our protocol, each thread maintains a private copy of the shared memory,
-%% and \xxx mains a common copy.  Copy-on-write can be used to reduce memory
+%% and \parrot mains a common copy.  Copy-on-write can be used to reduce memory
 %% and CPU
 %% overhead~\cite{grace:oopsla09,determinator:osdi10,dthreads:sosp11}.  When
 %% a thread has the turn, it synchronizes its copy of shared memory with the
