@@ -275,9 +275,9 @@ the overhead down to a reasonable level.  Aligning more stages did not help.
 
 \subsection{Performance} \label{sec:parrot-performance}
 
-\begin{figure*}[tb]
-\centering
-\includegraphics[width=\textwidth]{parrot/figures/overhead}
+\begin{figure}[t]
+%%\centering
+\includegraphics[width=0.57\textwidth]{parrot/figures/overhead.eps}
 \vspace{-.20in}
 \caption{{\em \parrot's performance normalized over nondeterministic
     execution.}  The patterns of the bars show the types of the hints the programs
@@ -285,7 +285,7 @@ the overhead down to a reasonable level.  Aligning more stages did not help.
   \computes, or \nondets.  The mean overhead is
   \meanoverhead (indicated by the horizontal line).} \label{fig:parrot-overhead}
 \vspace{-.05in}
-\end{figure*}
+\end{figure}
 
 Figure~\ref{fig:parrot-overhead} compares \parrot's performance to nondeterministic
 execution.  Even with the maximum number of threads (16--24), the mean
@@ -330,14 +330,14 @@ microarchitectural events.)
 %% \parrot because \parrot's schedules improved affinity.
 
 \begin{figure*}[tb]
-\centering
-\includegraphics[width=\textwidth]{parrot/figures/hints}
+%\centering
+\includegraphics[width=0.57\textwidth]{parrot/figures/hints}
 \vspace{-.20in}
 \caption{{\em Effects of performance hints.} They reduced \parrot's overhead from \overallnohints to \overallhints.} \label{fig:parrot-overhead-hints}
 \vspace{-.05in}
 \end{figure*}
 
-\begin{table}[b]
+\begin{table}[!hb]
 \footnotesize
 \centering
 \vspace{-.05in}
@@ -439,7 +439,7 @@ mainly from counting instructions. \ferret, \fluidanimate, \barnes, and
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\columnwidth]{parrot/figures/comparison}
+\includegraphics[width=0.57\textwidth]{parrot/figures/comparison}
 \vspace{-.2in}
 \caption{{\em \parrot, \dthreads, and \coredet overhead.}} \label{fig:parrot-comparison}
 \vspace{-.0in}
@@ -631,7 +631,7 @@ estimated state space sizes.
 %% programs, and we ran both the client and server processes with \dbug and
 %% \ecosys (for \aget, we setup a \mongoose server~\cite{mongoose}).
 
-\begin{table}[t]
+\begin{table}[!ht]
 \footnotesize
 \centering
 \begin{tabular}{ccl}
@@ -667,7 +667,7 @@ schedule and finished in 2 seconds. \dbug alone could finish only
 \nprogverifieddbug (out of 45 in bin A and B) within the time limit.
 % The reduction for the bins C and D ranges from \shrinkscale.
 
-\begin{table}[b]
+\begin{table}[!hb]
 \footnotesize
 \centering
 \vspace{-.05in}

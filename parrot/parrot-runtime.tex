@@ -485,7 +485,7 @@ operations (\bdb, \openldap, \redis, and \aget).
 
 \subsection{Timeouts} \label{sec:parrot-timeout}
 
-Real-world programs frequently use timeouts (\eg, \v{sleep},
+Real-world programs use timeouts (\eg, \v{sleep},
 \v{epoll\_wait}, and \v{pthread\_cond\_timedwait}) for periodic activities
 or timed waits.  Not handling them can lead to nondeterministic execution and
 deadlocks.  One deadlock example in our evaluation was running \pbzip with
@@ -534,7 +534,7 @@ external events (\eg, receiving a network packet) are done, wasting CPU cycles.
 %% Moreover, it fast-forwards logical time after all threads block, slower
 %% than using an idle thread.
 
-\parrot handles all common timed operations such as \v{sleep} and
+\parrot handles all such common operations as \v{sleep} and
 \v{pthread\_cond\_timedwait}, enough for all five evaluated programs
 that require timeouts (\pbzip, \bdb, \mplayer, \imagick, and \redis).
 \pthread timed synchronizations use absolute time, so \parrot provides

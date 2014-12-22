@@ -7,11 +7,17 @@ an example (\S\ref{sec:parrot-example}), and then describes \parrot's architectu
 \subsection{An Example} \label{sec:parrot-example}
 
 %% TODO: switch to use latex listings
-\begin{figure}[t]
+\begin{figure}[!ht]
+\vspace{-.1in}
 \centering
-\begin{minipage}{.5\textwidth}
-\lgrindfile{parrot/code/example.cpp.lineno}
+\begin{minipage}{.5\linewidth}
+\tiny \lgrindfile{parrot/code/example.cpp.lineno}
 \end{minipage}
+%%\centering \tiny \lgrindfile{tern/code/pbzip2.cpp.lineno}
+%%\begin{minipage}{.5\linewidth}
+%%\tiny \lgrindfile{parrot/code/example.cpp.lineno}
+%%\end{minipage}
+%%\centering \tiny \lgrindfile{tern/code/pbzip2.cpp.lineno}
 \vspace{-.1in}
 \caption{{\em Simplified \pbzip.} It uses the producer-consumer idiom to
   compress a file in parallel.} \label{fig:parrot-example}
@@ -20,7 +26,7 @@ an example (\S\ref{sec:parrot-example}), and then describes \parrot's architectu
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\columnwidth]{parrot/figures/dthreads_schedule}
+\includegraphics[width=0.5\columnwidth]{parrot/figures/dthreads_schedule}
 \vspace{-.2in}
 \caption{{\em A \dthreads schedule.}  All
   \v{compress} calls are serialized. \v{read\_block} runs much faster than
@@ -30,7 +36,7 @@ an example (\S\ref{sec:parrot-example}), and then describes \parrot's architectu
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\columnwidth]{parrot/figures/parrot_schedule}
+\includegraphics[width=0.5\columnwidth]{parrot/figures/parrot_schedule}
 \vspace{-.2in}
 \caption{{\em A \parrot schedule with performance
     hints.}}\label{fig:parrot-schedule}
