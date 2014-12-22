@@ -76,10 +76,8 @@ a race of this type.
 
 Second, if exactly one of the instructions is a branch instruction, the
 algorithm checks whether the instructions contained in the not-taken
-branch\footnote{\peregrine computes instructions contained in a not-taken
-  branch using an interprocedural \emph{post-dominator
-    analysis}~\cite{aho:dragon:06}.} of this instruction may race with the
-other instruction.
+branch of this instruction may race with the other instruction
+(using an interprocedural \emph{post-dominator analysis}~\cite{aho:dragon:06}).
 It must check the not-taken branch because a new
 execution may well take the not-taken branch and cause a race.  To avoid such a
 race, \peregrine adds the taken branch into the trace slice so that executions
@@ -125,8 +123,8 @@ data-dependencies of this target.\footnote{For readers familiar with
   L9 of thread $t_0$ in Figure~\ref{fig:peregrine-trace}.  \peregrine's goal is
   to deterministically resolve the race involving L9 of $t_0$, but it
   allows the value of \vv{result} to be different.  Thus, \peregrine does not
-  track dependencies for the value of \vv{result}; L15 of $t_0$ is elided
-  from the slice for this reason.}  \peregrine adds a branch
+  track dependencies for the value of \vv{result}, and L15 of $t_0$ is elided.}
+  \peregrine adds a branch
 instruction to the path slice if taking the opposite branch may cause the
 thread not to reach any instruction in the current (partial) path slice;
 L3 in Figure~\ref{fig:peregrine-trace} is added for this reason.
