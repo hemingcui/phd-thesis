@@ -63,10 +63,24 @@ multithreaded execution, including synchronizations (\eg, \vv{lock} and
 \vv{store} instructions to shared memory). Of all the schedules, most run
 fine, but some trigger concurrency errors, causing program crashes,
 wrong outputs, security breaches, and other failures. Consider the toy program
-below: \lgrindfile{code/sync-bug.cpp} \noindent The schedule in which thread 2
+below:
+
+\hspace{2in}
+\begin{minipage}{0.5\columnwidth}
+\lgrindfile{code/sync-bug.cpp}
+\end{minipage}
+\vspace{0.2in}
+
+\noindent The schedule in which thread 2
 gets the lock before thread 1 causes a dereference-of-NULL failure.  Consider
 another example.  The toy program below has data races on \vv{balance}:
-\lgrindfile{code/race-bug.cpp} \noindent The schedule with the statements
+
+\hspace{1.5in}
+\begin{minipage}{0.5\columnwidth}
+\lgrindfile{code/race-bug.cpp}
+\end{minipage}
+
+\noindent The schedule with the statements
 executed in the order shown corrupts \vv{balance}. We call the schedules that
 trigger concurrency errors \emph{buggy schedules}.  Strictly speaking, the
 errors are in the programs, triggered by a combination of inputs and schedules. 
@@ -129,24 +143,24 @@ that causes multithreaded programs extremely difficult to get right.
 
 \apache & Web server               & For a group of typical HTTP GET requests,\\
         &                          & same cache status. \\
-
+\hline
 \pbzip  & Compression              & Same number of threads. \\
 
 \aget   &  File download        & Same number of threads, similar file sizes.\\
-
+\hline
 \barnes & N-body simulation        & Same number of threads, same values of \\
         &                          & two configuration variables. \\
-
+\hline
 \fft    & Fast Fourier transform   & Same number of threads. \\
-
+\hline
 \luc    & Matrix decomposition     & Same number of threads, similar sizes of \\
         &                          & matrices and blocks. \\
-
+\hline
 \blackscholes & Option pricing     & Same number of threads, and the number of
 \\
               &               &  options is no less than the number of
 threads.\\
-
+\hline
 \swaptions &  Swaption pricing     & Same number of threads, and the number of
 \\
            &                &  swaptions is no less than the number ofthreads.\\
