@@ -13,7 +13,7 @@ set ytics nomirror
 set xrange[0:10]
 set yrange [0:40]
 
-set xtics rotate by 90 offset 0,0
+set xtics rotate by 90 offset 0,-6
 set xtics ("         aget" 1 , "          fft" 2 , \
            "lu-non-contig" 3 , "        radix" 4 , "water-spatial" 5, \
            "        ocean" 6 , "          fmm" 7 , "    swaptions" 8)

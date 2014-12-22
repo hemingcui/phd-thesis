@@ -13,7 +13,7 @@ set ytics nomirror
 set xrange[1:19]
 set yrange [0:80]
 
-set xtics rotate by 90 offset 0,0
+set xtics rotate by 90 offset 0,-7
 set xtics ("        Apache" 2 , "        PBZip2" 3 , \
            "          aget" 4 , "        pfscan" 5 , "        barnes" 6 , \
            "           fft" 7 , "     lu-contig" 8 , " lu-non-contig" 9,  \
