@@ -1,9 +1,32 @@
 \chapter{Conclusion} \label{sec:conclusion}
 
-TBD.
+Mulithreading is notoriously difficult to get right, and our research reveals
+that a key reason is: a multithreaded program may run into exponentially many
+possible schedules for all inputs at runtime, which brings a series of
+significant reliability and security challenges on understanding,
+testing, debugging, analyzing, verification, and replication of multithreaded
+programs.
 
-%Through conceiving, building, applying, and evaluating \smt systems, we have
-%demonstrated that \smt is feasible; it can stabilize program behaviors
-%for better reliability, work both efficiently and deterministically, and
-%greatly improve precision of static analysis. We invite readers to join us in exploring this fertile and
-%exciting direction of stable multithreading and reliable parallelism.
+To reduce the number of possible schedules and make multithreaded
+programs easier to get right, we have invented a new idea called Stable
+Multithreading (or \smt) that reuses each schedule on a wide range of inputs,
+greatly reducing the number of possible schedules for all inputs. Through
+building three \smt systems, \tern, \peregrine, and \parrot, with each addresing
+a distinct research challenge, we have shown that \smt can be made simple, fast,
+and deployable. Through applying \smt to make reproducing concurrency bugs
+easier, to improve precision of static program analysis, and to increase
+coverage of model checking tools, we have quantitatively shown that \smt can
+make multithreaded programs much easier to get right. All the source code,
+benchmarks, and raw evaluation results of our latest \smt system \parrot is
+available at: \github. In addition to our effort on building and applying \smt
+systems, ome techniques and ideas in our \tern and \peregrine systems have been
+leveraged by University of Washington researchers to compute a small set of
+schedules to cover all inputs of multithreaded programs.
+
+By addressing the key reaon that makes multithreading difficult to get right,
+\smt has broad applications. In the future, we plan to apply \smt to make
+replication and verification of multitheraded programs easier, and to defend
+against security vulnerabilities that leverage concurrency bugs. We believe that
+all these combined effort will make \smt a simple, fast, reliabile, and secure
+multithreading runtime, potentially benfiting all individuals, governments,
+organizations, and software vendors. 
