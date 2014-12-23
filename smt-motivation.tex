@@ -90,7 +90,7 @@ occurs for all inputs allowed by the schedule).  Thus, recent research on
 testing multithreaded programs (\eg,~\cite{musuvathi:chess:osdi08}) is
 focused on effectively testing schedules to find the buggy ones.
 
-\subsection{Key Reason: Too Many Schedules For All Inputs}
+\subsection{Key Reason: Too Many Schedules for All Inputs}
 
 A typical multithreaded program has an enormous number of schedules.  For
 a single input, the number of schedules is asymptotically exponential in
@@ -100,7 +100,7 @@ yielding $\frac{(mk)!}{(k!)^m} \ge (m!)^k$ total schedules---a number
 exponential in both $m$ and $k$. Aggregated over all inputs, the number of
 schedules is even greater. Figure~\ref{fig:nondet} depicts the traditional
 multithreading approach. Conceptually, traiditional multithreading runtimes
-(\eg, Pthreads) maintain a many-to-many mapping from inputs to schedules, where
+(\eg, \pthread) maintain a many-to-many mapping from inputs to schedules, where
 one input may execute under many schedules depending on such factors as hardware
 timings and OS scheduling, and many inputs may execute under one schedule
 because a schedule fixes the order of the communication operations but allows
@@ -127,12 +127,12 @@ effectively found new harmful concurrency bugs in real-world software.
 Unfortunately, despite of these great
 effort, these tools still can not cover more than a tiny fraction of all
 exponentially many schedules, and concurency bugs within an unchecked schedule
-can show up in production runs and lead to critical failures. Due to this poor
-coverage, ``replicating execution states"~\cite{paxos:practical}, a critical
+can show up in production runs and lead to severe failures. Due to this poor
+coverage, state machine replication~\cite{paxos:practical}, a critical
 fault-tolerance technique, can easily break when running with multithreaded
-programs, because concurrency bugs may show up in some replicas and cause
-execution states across replicas to diverge. Therefore, we argue that the
-exponentially many schedules for all inputs is the key reason
+programs, because buggy schedules may show up in some replicas and cause
+program execution states across replicas to diverge. Therefore, we argue that
+the exponentially many schedules for all inputs is the key reason
 that causes multithreaded programs extremely difficult to get right.
 
 
@@ -150,7 +150,7 @@ that causes multithreaded programs extremely difficult to get right.
         &                          & same cache status. \\
 \hline
 \pbzip  & Compression              & Same number of threads. \\
-
+\hline
 \aget   &  File download        & Same number of threads, similar file sizes.\\
 \hline
 \barnes & N-body simulation        & Same number of threads, same values of \\
@@ -191,7 +191,7 @@ make the needles easier to find.
 We investigated this question on a diverse set of popular multithreaded
 programs, ranging from server programs such as \apache, to desktop utilities
 such as parallel compression utility \pbzip, to parallel implementations of
-computation-intensive algorithms such as FFT.  These programs use diverse
+computation-intensive algorithms such as \fft.  These programs use diverse
 synchronization primitives such as mutex locks, semaphores, condition variables,
 and barriers.  Our investigation reveals the following two insights.
 
@@ -232,7 +232,7 @@ representations (Chapter~\ref{sec:peregrine}), our systems incurred less than
 overhead enforcing schedules on different inputs for most evaluated programs.
 Relevant systems (\eg,~\cite{kendo:asplos09, determinator:osdi10}) also show
 that
-carefully enforcing schedules can achieve only modest overhead. Afterall,
+carefully enforcing schedules can achieve only moderate overhead. Afterall,
 considering the reliability benefits introduced by \smt, We believe
 this moderate overhead is worthwhile.
 
@@ -268,8 +268,8 @@ schedules effectively covers from 1 to 16 threads.  Given that (1) \pbzip
 achieves peak performance when the number of threads is identical or close to
 the number of cores and (2) a typical machine has up to 16 cores, 32 tested
 schedules can practically cover most schedules executed in the field.
-Researchers have computed a small set of schedules to practically cover all
-inputs for some multithreaded programs~\cite{ics:oopsla13} by leveraging some
+Researchers have computed a small set of schedules to cover all or most
+inputs for multithreaded programs~\cite{ics:oopsla13} by leveraging some
 techniques and ideas in our \smt systems~\cite{cui:tern:osdi10,
 peregrine:sosp11}.
 
@@ -284,8 +284,8 @@ Chapter~\ref{sec:tern} and Chapter~\ref{sec:peregrine}.
 
 \para{Avoiding errors at runtime.}  Programs can also adaptively learn correct
 schedules in the field, then reuse them on future inputs to avoid unknown,
-potentially buggy schedules.  We will describe this benefit in more
-details in Chapter~\ref{sec:tern}.
+potentially buggy schedules.  We will describe this benefit in details in
+Chapter~\ref{sec:tern}.
 
 \para{Analyzing and verifying programs.} Static analysis can now focus
 only on the set of schedules enforced in the field, gaining
@@ -298,12 +298,13 @@ number of programs that \dbug can exhaust searching schedules under our
 evaluation settings. More details will be given in Chapter~\ref{sec:parrot}.
 Interactive theorem proving becomes much easier, too, because verifiers
 need to prove theorems only on the set of schedules enforced in the field.  We
-will describe these benefits in more details in Chapter~\ref{sec:peregrine}.
+will describe these benefits in details in Chapter~\ref{sec:peregrine}.
 
-\para{Replicating execution states.} By running the same \smt runtime on each
-replication node, we can enforce the same small set of schedules across replicas
-and avoid divergence of execution states. We will describe our system design on
-integrating \smt with replication service in Chapter~\ref{sec:crane}.
+\para{State Machine Replication.} By running the same \smt runtime on each
+replication node (or replica), we can enforce the same small set of schedules
+for a multithreaded program on all replicas and avoid divergence of execution
+states across replicas. We will describe our \crane design on integrating
+\smt with state machine replication service in Chapter~\ref{sec:crane}.
 
 
 \subsection{Caveats}
@@ -335,7 +336,7 @@ using annotations.
 A multithreaded program is \emph{nondeterministic} because even with the same
 program and input, different executions may still run into different schedules
 and trigger different behaviors, depending on such factors as physical timings
-and OS scheduling. For instance, the two toy programs in the previous subsection
+and OS scheduling. For instance, the two toy programs in \S\ref{sec:smt-why}
 do not always run into the bugs.  Except for the schedules described, the
 other schedules lead to correct executions. This nondeterminism raises many
 challenges, especially in testing and debugging.  Suppose an input can execute
