@@ -52,7 +52,8 @@ per program; and (3) at most 8 cores (with three exceptions; see
 \S\ref{sec:parrot-related}). For instance, while a previous
 system~\cite{dthreads:sosp11} achieves reasonable performanace overhead on 14
 scientific benchmark programs, we observed
-this system incured 30$\times$ slowdown in many other programs in our evaluation.
+this system incured 30$\times$ slowdown in many other programs in our
+evaluation.
 
 This open challenge comes from the design choices of existing \smt systems. 
 Reducing schedules improves correctness
@@ -203,13 +204,12 @@ they
 
 We have released \parrot's source code, entire benchmark suite, and
 raw results~\cite{Parrot:github}. In the remaining of this chapter,
-$\S$\ref{sec:parrot-design} contrasts \parrot with 
-prior systems on an example and gives an overview of \parrot's 
-architecture.~$\S$\ref{sec:parrot-hints} describes the performance hint
-abstractions \parrot
-provides,~$\S$\ref{sec:parrot-runtime} the \parrot runtime,
-and~$\S$\ref{sec:parrot-mc} the
-\parrot-\dbug ecosystem.~$\S$\ref{sec:parrot-discussion} discusses \parrot's
-determinism,~$\S$\ref{sec:parrot-eval}
-presents evaluation results,~$\S$\ref{sec:parrot-related}
-discusses related work, and~$\S$\ref{sec:parrot-summary} concludes.
+\S\ref{sec:parrot-design} contrasts \parrot with 
+prior systems on an example and gives a high-level design of
+\parrot. \S\ref{sec:parrot-hints} describes the performance hint abstractions
+\parrot provides,\S\ref{sec:parrot-runtime} the \parrot runtime,
+and \S\ref{sec:parrot-mc} the
+\parrot-\dbug ecosystem.\S\ref{sec:parrot-discussion} discusses \parrot's
+determinism, \S\ref{sec:parrot-eval}
+presents evaluation results, \S\ref{sec:parrot-related}
+discusses related work, and \S\ref{sec:parrot-summary} concludes.

@@ -2,7 +2,7 @@ The last chapter presents \tern, the first \smt and \dmt system. However, \tern
 enforces best-effort determinism, and its executions may be nondeterministic
 when data races exist. To overcome this limitation, this chapter presents
 \peregrine, our second \smt and \dmt system that can still frequently reuse
-schedules on many inputs, and can effoce fully determinism with reasonable
+schedules on many inputs, and can enforce full determinism with reasonable
 overhead.
 
 \section{Introduction} \label{sec:peregrine-intro}
@@ -11,18 +11,16 @@ overhead.
 %% All inputs, each input (define nondeterminism). Must refer to Chapter 2:
 %% motivation.
 As described in Chapter~\ref{sec:smt-motivation}, our research reveals that a
-key reason that multithreaded programs is so difficult to get right is: thes
+key reason that multithreaded programs are so difficult to get right is: these
 programs have \emph{too many} possible thread interleavings (or schedules) at
 runtime. Even running on the same input, the concurrently running threads of a
 program may interleave in too many different ways, depending on such factors as
-hardware timings and OS scheduling. The community calls the phenomenon that
-multithreaded programs may run into different schedules on the same input
-``nondeterminism". Considering all inputs, the number of possible schedules is
-even greater. In this traditional multithreading manner, it is
-extremely challenging to understand, test, analyze, or verify all these
-schedules in a multithreaded program and make sure they are free of concurrency
-bugs. Therefore, a concurency bug within an untested schedule can show up in
-production runs and lead to critical failures and vulnerabilities.
+hardware timings and OS scheduling. This is the so called ``nondeterminism".
+Considering all inputs, the number of possible schedules is even greater. It is
+extremely challenging to understand, test, analyze, verify, or replicate all
+these schedules in a multithreaded program. Therefore, a concurency bug within
+an unchecked schedule can show up in production runs and lead to severe
+failures and vulnerabilities.
 
 %% Two complementary techniques have been proposed to address this difficulty.
 %% SMT and DMT. However, it is still an open challenge to enforce a fully
@@ -142,7 +140,7 @@ schedule-reuse rates.
 How can \peregrine compute sufficient preconditions to avoid new races and
 ensure that a schedule is feasible?  How can \peregrine filter out unnecessary
 branches to increase schedule-reuse rates?  Our previous
-work~\cite{cui:tern:osdi10} requires developers to grovel through the
+work, \tern~\cite{cui:tern:osdi10}, requires developers to grovel through the
 code and mark the input affecting schedules; even so, it does not
 guarantee full determinism if there are data races.
 
@@ -195,7 +193,8 @@ The hybrid schedules it computes are fully deterministic for programs that
 inputs tracked by \peregrine and (2) adhere to the assumptions of the tools
 \peregrine uses.
 
-We evaluated \peregrine on a diverse set of \peregrinenprog programs, including the
+We evaluated \peregrine on a diverse set of \peregrinenprog programs, including
+the
 \apache web server~\cite{apache}; three desktop programs, such as
 \pbzip~\cite{pbzip2}, a parallel compression utility; implementations of
 12 computation-intensive algorithms in the popular \splash and \parsec
@@ -222,9 +221,14 @@ multithreaded programs.
 We believe these ideas apply beyond \peregrine (\S\ref{sec:peregrine-deploy}).
 
 The remainder of this chapter is organized as follows.  We first present a
-detailed overview of \peregrine (\S\ref{sec:peregrine-design}).  We then describe its
+high-level design of \peregrine (\S\ref{sec:peregrine-design}).  We then
+describe its
 core ideas: hybrid schedules (\S\ref{sec:peregrine-schedule}),
-determinism-preserving slicing (\S\ref{sec:peregrine-slice}), and schedule-guided
-simplification (\S\ref{sec:peregrine-guide}).  We then present implementation issues
-(\S\ref{sec:peregrine-impl}) and evaluation (\S\ref{sec:peregrine-eval}).  We finally discuss
-related work (\S\ref{sec:peregrine-related}) and conclude (\S\ref{sec:peregrine-summary}).
+determinism-preserving slicing (\S\ref{sec:peregrine-slice}), and
+schedule-guided
+simplification (\S\ref{sec:peregrine-guide}).  We then present implementation
+issues
+(\S\ref{sec:peregrine-impl}) and evaluation (\S\ref{sec:peregrine-eval}).  We
+finally discuss
+related work (\S\ref{sec:peregrine-related}) and conclude
+(\S\ref{sec:peregrine-summary}).
