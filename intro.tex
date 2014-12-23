@@ -26,7 +26,7 @@ possible schedules in multithreaded programs running in a traditional
 multithreading manner. In this traditional multithreading manner, it is
 extremely challenging to understand, test, analyze, verify, or
 replicate\footnote{ The replication technique this thesis focuses on is
-``state-machine replication"~\cite{paxos:practical}. } these schedules in a
+``state machine replication"~\cite{paxos:practical}. } these schedules in a
 multithreaded program and make sure they are free of concurrency bugs.
 Therefore, a concurency bug within an untested schedule can show up in
 production runs and lead to critical failures and vulnerabilities.
@@ -145,8 +145,8 @@ prior evaluations combined, shows that, these hints are easy to add and make
 \parrot is open source for deployment.
 
 %% P5: StableMT's applications.
-To demonstrate \smt's potential, we have been broadly appling \smt to improve
-several reliability tools. First, we have applied \tern~\cite{cui:tern:osdi10}
+To demonstrate \smt's potential, we have been broadly applying \smt to improve
+reliability tools. First, we have applied \tern~\cite{cui:tern:osdi10}
 and \peregrine~\cite{peregrine:sosp11} to reproduce several real-world
 concurrency bugs, and found that \smt's schedules can consistently mask or
 reproduce these bugs, and these schedules are stable to input perturbations.
@@ -158,13 +158,13 @@ of magnitudes for model checking, an advanced technique that systematically
 tests schedules and try to find bugs~\cite{parrot:sosp13, dbug:spin11,
 modist:nsdi09}. Each of the three systems can benefit all these three
 reliability techniques with modest engineering effort, because many techniques
-in our three \smt systems are similar. For instance, \parrot can also make
+in our three \smt systems are common. For instance, \parrot can also make
 reproducing concurrency bugs much more easier because it enforces a similar form
 of schedule to that in \tern. In addition to the above three demonstrated \smt
 applications, we have also proposed \crane, a priliminary system design that
-leverages \smt to build practical multithreaded state-machine replication, a
-critical and popular fault-tolerant technique in today's distributed systems and
-clouds.
+leverages \smt to provide practical multithreaded state machine replication
+service, a critical and popular fault-tolerant technique in today's distributed
+systems and clouds.
 
 These \smt applications have attrated the community's interests, and
 some of our \smt techniques and ideas have been leveraged by University of
@@ -172,16 +172,16 @@ Washington researchers to compute a small set of schedules to cover all inputs
 for some multithreaded programs~\cite{bergan:oopsla13}.
 
 The rest of the thesis is organized as follows. Chapter~\ref{sec:smt-motivation}
-presents motivation and background of \smt. Chapter~\ref{sec:tern} presents
+presents the motivation and background of \smt. Chapter~\ref{sec:tern} presents
 the \tern system, and our results on applying it to make reproducing concurrency
 bugs easier. Chapter~\ref{sec:peregrine} describes the \peregrine system, and
-how mucch it can improve precision of existing program analysis techniques as
+how much it can improve precision of existing program analysis techniques as
 well as making reproducing concurrency bugs easier. Chapter~\ref{sec:parrot}
 introduces the \parrot system, and our advances on applying it to greatly
-improve coverage of model checking. Chapter~\ref{sec:ref} proposes \crane, our
-preliminary system that leverages \smt to provide practical fault-tolerant
-replication service for multithreaded programs. Chapter~\ref{sec:conclusion}
-concludes.
+improve coverage of model checking. Chapter~\ref{sec:crane} proposes \crane, our
+preliminary system design that leverages \smt to provide practical
+fault-tolerant replication service for multithreaded programs.
+Chapter~\ref{sec:conclusion} concludes.
 
 
 

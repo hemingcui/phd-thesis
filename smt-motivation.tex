@@ -130,7 +130,7 @@ exponentially many schedules, and concurency bugs within an unchecked schedule
 can show up in production runs and lead to critical failures. Due to this poor
 coverage, ``replicating execution states"~\cite{paxos:practical}, a critical
 fault-tolerance technique, can easily break when running with multithreaded
-programs, because concurrency bugs can show up in some replicas and make
+programs, because concurrency bugs may show up in some replicas and cause
 execution states across replicas to diverge. Therefore, we argue that the
 exponentially many schedules for all inputs is the key reason
 that causes multithreaded programs extremely difficult to get right.
@@ -268,6 +268,10 @@ schedules effectively covers from 1 to 16 threads.  Given that (1) \pbzip
 achieves peak performance when the number of threads is identical or close to
 the number of cores and (2) a typical machine has up to 16 cores, 32 tested
 schedules can practically cover most schedules executed in the field.
+Researchers have computed a small set of schedules to practically cover all
+inputs for some multithreaded programs~\cite{ics:oopsla13} by leveraging some
+techniques and ideas in our \smt systems~\cite{cui:tern:osdi10,
+peregrine:sosp11}.
 
 \para{Debugging.} Reproducing a bug now does not require the exact input,
 as long as the original and the altered inputs map to the same schedule.
@@ -276,7 +280,7 @@ the program do not affect the schedule.  Users may remove private
 information such as credit card numbers from their bug reports. Developers
 may reproduce the bugs in different environments or add \vv{printf}
 statements. We will describe this benefit in more details in
-Chapter~\ref{sec:tern}.
+Chapter~\ref{sec:tern} and Chapter~\ref{sec:peregrine}.
 
 \para{Avoiding errors at runtime.}  Programs can also adaptively learn correct
 schedules in the field, then reuse them on future inputs to avoid unknown,
@@ -299,7 +303,7 @@ will describe these benefits in more details in Chapter~\ref{sec:peregrine}.
 \para{Replicating execution states.} By running the same \smt runtime on each
 replication node, we can enforce the same small set of schedules across replicas
 and avoid divergence of execution states. We will describe our system design on
-integrating \smt with replication service in Chapter~\ref{sec:rep}.
+integrating \smt with replication service in Chapter~\ref{sec:crane}.
 
 
 \subsection{Caveats}
@@ -351,7 +355,7 @@ reproducing a concurrency error now requires only the input.
 
 However, \dmt only focuses on reducing the number schedules on each input, and
 it does not help much on reducing the number of schedules for all inputs, the
-key reason that makes multithreading difficulty to get right.  We believe the
+key reason that makes multithreading difficult to get right.  We believe the
 community has charged nondeterminism more
 than its share of the guilt and overlooked the main culprit---a rather
 quantitative cause that multithreaded programs simply have too many schedules.
@@ -385,11 +389,11 @@ the altered input happens to be correct. Besides inputs, na\"{i}vely implemented
 determinism can destabilize program behaviors on minor code changes, so adding a
 debug \vv{printf} causes the bug to deterministically disappear.
 Chapter~\ref{sec:tern} will analyze why this instability problem is
-inherent in existing \dmt systems and our concrete evaluation results that
-confirms this problem. Due to this problem, when running with \dmt, the
-number of possible schedules for all inputs remains enormous, so a multithreaded
-program is still extremely difficult to understand, test, analyze, verify, or
-replicate.
+inherent in existing \dmt systems and present our evaluation results
+that confirms this problem. Because of this problem, when running with
+\dmt, the number of possible schedules for all inputs remains enormous, so a
+multithreaded program is still extremely difficult to understand, test, analyze,
+verify, or replicate.
 
 In practice, to mitigate these problems, researchers have to augment
 determinism with other techniques.  To support debug \vv{printf}, some
@@ -429,5 +433,6 @@ the choices of schedules are only a few (\eg, a small constant such as two), so
 the challenges caused by nondeterminism are easy to solve. Our \tern,
 \peregrine, and \parrot systems and others' \dthreads~\cite{dthreads:sosp11}
 built subsequently to \tern combine \dmt with \smt to frequently reuse schedules
-on a wide range of inputs for stability. The following three chapters will
-present our three systems respectively.
+on a wide range of inputs for stability.
+Chapter~\ref{sec:tern}--\ref{sec:parrot} will present the three systems we
+built.
