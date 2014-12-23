@@ -1,0 +1,115 @@
+This chapter presents \crane, the first practical system design that supports
+multithreading for state machine replication (or \smr), a critical
+fault-tolerance technique in today's clouds and distributed systems.
+
+\section{Introduction} \label{sec:rep-intro}
+
+A typical \smr system runs the same program on a
+number of server machines (or replicas),
+and makes all replicas reach consensus on the same sequence of input requests.
+Because replicas perform the same execution state transitions on the input
+sequence and their executions never diverge, SMR makes a program highly
+fault-tolerant for cloud providers and users, as long as more than half of
+replicas still run and communicate normally. Unfortunately, as more and more
+programs shift
+from single-threaded to multithreaded in order to leverage multi-core speed,
+SMR can easily break: the concurrently running threads within a program may
+interleave in too many different ways at runtime, then replicas can easily run
+into divergent thread interleavings and have divergent execution states. To
+support multithreading in SMR, 
+existing research work require developers to manually annotate shared thread
+states in each program, which could be time consuming, error-prone, and thus
+impractical.
+
+% This project aims to build the first practical multi-threaded SMR system
+%5called
+% \crane. Our key to avoiding manual annotation efforts is Stable
+%Multi-Threading
+% (or StableMT), a runtime technique that can avoid divergent executions by
+% greatly reducing the number of possible thread interleavings at runtime.
+% However, although the outcome of integrating StableMT with SMR is promising,
+% there are two major research challenges. First, in different replicas, each
+% request may arrive and be processed in different physical timings by StableMT,
+% causing divergent thread interleavings. One may consider to assign each
+%request
+% a time value and let replicas reach consensus on this value, but as analyzed
+%in
+% the following sections, this approach can cause significant slowdown or even
+% StableMT deadlocks. To address this challenge, we propose a new algorithm that
+% efficiently enforces consistent time values across replica without requiring
+% consensus. Second, to avoid execution divergence on extreme cases such as
+% machine failures, 
+% \crane requires an efficient program checkpoint scheme for application-level
+% states, including memory, threads, file systems, and network sockets. However,
+% to our best knowledge, a suitable solution does not exist. We propose to
+% leverage the latest advances in hardware-accelerated virtualization to track
+% memory states efficiently, and we propose a careful design of the \crane
+% architecture to systematically checkpoint threads, file systems, and sockets.
+
+% This project aims to make state machine replication (or SMR) support
+% multi-threading, so that cloud providers, developers, and users can enjoy
+% highly available services as well as fast performance on multi-core hardware.
+% SMR systems, including the Google Chubby lock service, the Microsoft MPS Paxos
+% library, and the Apache ZooKeeper coordination service, is a fault-tolerance
+% technique widely used in today's clouds and distributed systems. By running
+% the same program on replicas, and enforcing a consistent input sequence for
+% all these replicas, SMR can enforce all replicas to perform the same execution
+% state transitions and never diverge. Unfortunately, as more and more programs
+% shift from single-threaded to multi-threaded in order to leverage multi-core
+% speed, existing thread runtimes allow too many possible thread interleavings,
+% which can cause different replicas to easily run into diverge interleavings
+% and execution states. This problem has isolated the multi-core performance
+% benefits from the SMR's 
+% availability and reliability benefits. To address this problem, several work
+% have been published in recent years' top systems conferences. However, these
+% work require developers to manually annotate shared states in a program, which
+% is time consuming, error-prone, and thus impractical.
+
+This chapter proposes \crane, the first practical multithreaded SMR system
+design.
+\crane avoids manual annotation efforts by leveraging Stable
+Multithreading (or StableMT), a reliable runtime technique invented by my
+collaborators and me. By greatly reducing the number of possible thread
+interleavings at runtime with low performance overhead, StableMT automatically
+enforces the same thread interleavings among replicas on the same request and
+avoids
+execution divergence. However, although the outcome of integrating StableMT with
+SMR is promising,
+there are two major research challenges. First, in different replicas, each
+request may arrive and be processed in different physical timings by StableMT,
+causing divergent thread interleavings. One may consider to assign each request
+a time value and let replicas reach consensus on this value, but as analyzed in
+the following sections, this approach can cause significant slowdown or even
+StableMT deadlocks. To address this challenge, we propose a new algorithm that
+efficiently enforces consistent time values across replica without requiring
+consensus. Second, to avoid execution divergence on extreme cases such as
+machine failures, 
+\crane requires an efficient program checkpoint scheme for application-level
+states, including memory, threads, file systems, and network sockets. However,
+to the best of our best knowledge, a suitable solution does not exist. We
+propose to leverage the latest advances in hardware-accelerated virtualization
+to track memory states efficiently, and we propose a careful design of the
+\crane architecture to systematically checkpoint threads, file systems, and sockets.
+
+We expect \crane to make today's clouds and distributed systems enjoy both
+fast multi-core performance and high availability and reliability, potentially
+benefiting all cloud providers, developers, and users.
+
+We further expect \crane to greatly advance other reliability and security
+analysis tools by the native replication feature in \crane. Existing analysis
+tools (\eg, runtime concurrency error detectors and runtime secure data flow
+trackers) that enhance reliability and security often introduce significant
+slowdown at runtime (e.g., about 30x for the Google ThreadSanitizer), making
+these tools hard to deploy. Fortunately, with \crane, we can deploy such
+analysis tools in only one replica (we call this replica ``analyzer"), then the
+other replicas (we call them ``workers") can still process input requests
+rapidly, because these workers form a majority and they can reach consensus
+almost synchronously. By ensuring the same input sequence and thread
+interleavings for all replicas, all the reliability and security benefits in the
+analyzer will also hold for the workers. In a word, \crane can mostly mask
+performance slowdown for analysis tools by its native replication architecture,
+and make these tools more adoptable. 
+
+The remaining of this chapter first proposes \crane's system
+design (\S\ref{sec:crane-plan}), and then introduces related
+work (\S\ref{sec:crane-related}).

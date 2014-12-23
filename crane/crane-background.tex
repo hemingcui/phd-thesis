@@ -1,0 +1,147 @@
+
+\section{Related Work} \label{sec:crane-related}
+
+This chapter proposes \crane, the first practical multithreaded SMR system
+design. Our key weapon is Stable Multithreading (or \smt), a reliable
+multithreading runtime technique invented by my collaborators and me. \smt can
+avoid diverged thread interleavings by greatly reducing the number of possible
+thread interleavings at runtime, making replications of multithreaded programs
+almost as easy as single-threaded ones. \crane is related to three strands
+of the literature:  SMR systems, stable and deterministic multithreading
+systems, and checkpointing techniques.
+
+%%\subsection{Related Work by Others} \label{sec:crane-others-work}
+
+\para{State machine replication (SMR).}  SMR has been studied by the literature
+for decades, and it is recognized by both industry and academia as a powerful
+fault-tolerance technique in clouds and distributed systems~\cite{lamportclock,
+smr:tutorial}. As a common standard, SMR uses \paxos~\cite{paxos} as the
+consensue protocol to ensure that all replicas see the same input request
+sequence. In this standard, replicas first ``agree" on a total order of input
+request as a input sequence, and then ``execute" the requests that have reached
+this consensus. This typical SMR approach is called ``agree-execute". SMR
+systems, including Chubby~\cite{chubby:osdi}, ZooKeeper~\cite{zookeeper}, and
+the Microsoft \paxos~\cite{paxos} implementation, have been widely used to
+maintain critical distributed systems configurations (\eg, group leaders,
+distributed locks, and storage meta data). SMR has also been applied broadly to
+build various highly available services, including
+storage~\cite{paxos:datastore} and wide-area 
+network~\cite{mencius:osdi08}. These systems all require single-threading in the
+replicated service.
+
+%% Work to support multithreading.
+In order to support multithreading in SMR, Eve~\cite{eve:osdi12} introduces a
+new ``execute-verify" approach: it first executes a batch of requests
+speculatively, and then verifies whether these requests have conflicts that
+cause execution state divergence. If so, Eve rolls back the program to a state
+before executing these requests and re-execute these requests sequentially. Both
+Eve's execution divergence verification and rollbacks require developers to
+annotate all shared states (\eg, global variables abd heaps) of a program, which
+could be time consuming and error-prone. CBASE~\cite{cbase:dsn04} is similar to
+Eve, but it assumes no conflicts on requests it batches.
+
+Rex~\cite{rex:eurosys14} addresses the thread interleaving divergence problem
+with a ``execute-agree-follow" approach: it first records thread interleavings
+on the primary replica by executing requests, and then replays these
+interleavings on the other replicas. If the executed interleavings in the
+primary may not be agreed on the other nodes, then Rex will rollback the
+primary's states. These rollbacks/checkpoints also require developers' manual
+efforts for every program. Furthermore, Rex requires frequently shipping thread
+interleavings across replicas, which may be much slower than our \smt approach
+that schedules each replica indepently. NonStop Advanced
+Architecture~\cite{nonstop:dsn05} is similar to Rex, but it can only do
+replications on a local machine.
+
+There are other work that support restricted concurrency such as
+transactions~\cite{vandiver:sosp07, kobus:icdcs13} in SMR, but they are not for
+replicating general multithreaded programs.
+
+\para{\smt and \dmt systems.}  In order to make multithreading easier to
+undertand, test, analyze, and replicate, researchers have built two types of
+reliabile multithreading systems: (1) stable multithreading systems (or
+\smt)~\cite{grace:oopsla09, dthreads:sosp11, determinator:osdi10} that aim to
+reduce the number of possible thread interleavings for program all inputs, and
+(2) deterministic multithreading systems (or \dmt)~\cite{dpj:oopsla09,
+dmp:asplos09, kendo:asplos09, coredet:asplos10, dos:osdi10, ddos:asplos13,
+ics:oopsla13} that aim to reduce the number of possible thread interleavings on
+each program input. Typically, these systems use deterministic logical clocks
+instead of nondeterministic physical clocks to make sure inter-thread
+communications (\eg, \mutexlock and accesses to global variables) can only
+happen at some specific logical clocks. Therefore, given the same or similar
+inupts, these systems can enforce the same thread interleavings and eventually
+the same executions. These systems 
+have shown to greatly improve software reliability, including coverage of
+testing inputs~\cite{ics:oopsla13} and speed of recording
+executions\cite{dos:osdi10} for debugging.
+
+Typical DMT systems, including \kendo~\cite{kendo:asplos09},
+\coredet~\cite{coredet:asplos10}, and \coredet-related systems~\cite{dos:osdi10,
+ddos:asplos13}, improve performance by balancing each thread's load with
+low-level instruction counts, so they are not stable to input perturbations.
+Therefore, we argue that \smt is more useful than \dmt for software reliability.
+
+%% First introduce checkpoint techniques that do not support threads.
+\para{Checkpointing program states.} Checkpointing is a common technique in
+systems with critical fault-tolerance demands, and the specific checkpoint
+requirements depend on the target system design. In the last few decades,
+checkpointing distributed systems~\cite{beguelin:jpdc97, dejavu:ipdps07,
+dmtcp:ipdps09, oren:atc07} is well studied. These systems focus on checkpointing
+execution states of a distributed system consistently, and they didn't aim to
+address the challenges of checkpointing multiple threads in a program.
+
+%% Introduce techniques that support threads.
+Recently, checkpointing threads on multi-core is studied in a debugging
+technique called deterministic
+replay~\cite{smp-revirt:vee08,pres:sosp09,odr:sosp09,scribe:sigmetrics10,
+capo:asplos09}.
+For instance, SMP-ReVirt~\cite{smp-revirt:vee08} and
+Scribe~\cite{scribe:sigmetrics10} use clever page protection tricks to record
+memory accesses. Unfortunately, these checkpoint techniques do not meet \crane's
+purpose, because the replayed executions in these systems are mainly for
+debugging and don't need to go live (\eg, the network sockets and file
+descriptors are normally fake). However, our proposed \crane system requires
+that the checkpointed executions must be live on remote replicas and can serve
+future requests.
+
+Prior multithreaded SMR systems mentioned in this section~\cite{eve:osdi12,
+rex:eurosys14} provide checkpointing schemes under their systems design, but
+these schemes require developers' manual efforts to annotate shared thread
+states, which our \crane system expects to avoid.
+
+
+A key requirement to making SMR practically support multithreading is that all
+replicas must run the same thread interleavings so that the replica executions
+won't diverge. \smt~\cite{smt:cacm}, an advanced reliable multithreading
+runtime technique invented by my collaborators and me, meets this requirement.
+This is because \smt can greatly reduce the number of possible thread
+interleavings in multithreaded programs for all inputs with low performance
+overhead, making replications of multithreaded programs almost as easy as
+single-threaded ones. In the last four years, we have been collaborating with
+Columbia and CMU researchers to build three \smt systems,
+\tern~\cite{cui:tern:osdi10}, \peregrine~\cite{peregrine:sosp11}, and
+\parrot~\cite{parrot:sosp13}, with each addressing distinct research challenges.
+Notably, \parrot, our latest system, is the first \smt runtime system that is
+fast (12.7\% mean overhead for all evaluated programs) on a wide range of 100+
+popular multithreaded programs. We have 
+put all \parrot's source code and raw evaluation results on
+\url{http://github.com/columbia/smt-mc} for future research and industrial
+deployments. Due to \parrot's high practicality, we plan to leverage it in this
+proposed \crane system.
+
+To show \smt's potential, we have applied these systems to greatly improving
+software reliability and security, including improving precision and simplicity
+of program analysis and verification~\cite{wu:pldi12}, making debugging
+concurrency errors much easier~\cite{cui:tern:osdi10}, and improving coverage of
+model checking~\cite{parrot:sosp13}. Our work have also been leveraged by the
+community: some techniques in our \tern system~\cite{cui:tern:osdi10} has been
+used by University of Washington Seatle researchers on computing a small set of
+thread interleavings covering all inputs~\cite{ics:oopsla13}, and our \parrot
+runtime system has been integrated with a CMU software model
+checker~\cite{dbug:spin11}.
+
+% %%Our experience on building \smt runtime sytems can address the two
+% aforementioned major research challanges of the \smt and SMR integration. In
+% addition, our techniques on program analysis, verification, and model checking
+% can be deployed in \crane replicas and enhance their reliability and security.
+
+
