@@ -25,20 +25,21 @@ Second, how to combine \dmt with \smt? Existing \dmt
 systems~\cite{dmp:asplos09,coredet:asplos10,kendo:asplos09} constrain a
 multithreaded program to always use the same thread schedule for the same input,
 greatly increaseing testing confidence and making bug reproduction much more
-easier. Unfortunately, these \dmt systems may be defeat the input stability
+easier. Unfortunately, these \dmt systems may defeat the input stability
 benefit in \smt: when scheduling the threads to process an
-input, they consider only this input and ignore previous similar inputs.  This
-stateless design makes schedules over-dependent on inputs, so that a slight
-change to inputs may force a program to (ad)venture into a vastly different,
-potentially buggy schedule, defeating the key stability benefit of \smt.  We
-call this the \emph{instability} problem. This problem is confirmed by our
-results (\S\ref{sec:tern-bug-stable}) from an existing \dmt
+input, existing \dmt systems consider only current input and ignore previous
+similar inputs.  This stateless design makes schedules over-dependent on inputs,
+so that a slight change to inputs may force a program to (ad)venture into a
+vastly different, potentially buggy schedule, defeating the key stability
+benefit of \smt.  We call this the \emph{instability} problem. This problem is
+confirmed by our results (\S\ref{sec:tern-bug-stable}) from an existing \dmt
 system~\cite{coredet:asplos10}. In fact, even with the same input, existing \dmt
 systems may still force a program into different schedules for minor changes in
 the execution environment such as processor type and shared library.  Thus,
 developers may no longer be able to reproduce bugs by running their
 program on the bug-inducing input, because their machine may differ from
-the machine where the bug occurred.
+the machine where the bug occurred. \S\ref{sec:dmt-background} will analyze in
+details why this instability problem is inherent in existing \dmt systems.
 
 This chapter presents \tern, a schedule-centric, stateful \smt and \dmt system. 
 It addresses the aformentioned two research challenges with a new idea called
@@ -55,7 +56,8 @@ central goal of \smt. This stateful approach stabilizes program behaviors
 on input perturbations and avoids the instability problem. In sum, \tern's
 schedule memoization is the first approach that implements \smt, and the first
 approach that combines \smt and \dmt, greatly reducing the number of schedules
-on all inputs as well as the number of schdules on each input (down to one).
+on all inputs as well as the number of schdules on each input (down to one)
+barring some limitations~\ref{sec:tern-limit}.
 
 \tern's schedule memoization approach has two major benefits on software
 reliability. First, by reusing schedules shown to work, \tern can avoid
@@ -137,7 +139,7 @@ benchmarks used by \apache and \mysql developers.  Our results show that
 \end{enumerate}
 
 Our main conceptual contributions are that we addressed the two research
-challenges on building a both \smt and \dmt system with a new idea
+challenges on building a system that is both \smt and \dmt with a new idea
 called schedule memoization. To make \tern practically support server programs
 that have input timing nondeterminism and infinite schedules, we proposed
 another new idea called windowing. Our engineering contributions include the
@@ -146,7 +148,8 @@ another new idea called windowing. Our engineering contributions include the
 nondeterminism, and the first shown to work on programs as large, complex, and
 nondeterministic as \apache and \mysql.
 
-This chapter is organized as follows.  We first present a high-level design of
+This chapter is organized as follows.  We first present a background
+(\S\ref{sec:tern-background}) and high-level design of
 \tern (\S\ref{sec:tern-design}). We then describe \tern's interface
 (\S\ref{sec:tern-annotations}), schedule memoization for batch programs
 (\S\ref{sec:tern-batch}), and windowing to extend \tern to server programs
