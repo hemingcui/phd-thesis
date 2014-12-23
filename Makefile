@@ -1,11 +1,11 @@
 SRC = thesis
 FILES = $(SRC).lot $(SRC).lof $(SRC).out $(SRC).toc $(SRC).bbl \
 	$(SRC).aux $(SRC).blg $(SRC).dvi *.log $(SRC).ps $(SRC).pdf *~
-export TEXINPUTS=$(PWD)/tern:$(PWD)/peregrine:$(PWD)/parrot:.:
+export TEXINPUTS=$(PWD)/tern:$(PWD)/peregrine:$(PWD)/parrot:$(PWD)/crane:.:
 
 all:: bbl texts
 
-texts: *.tex bib/biblio.bib tern/*.tex peregrine/*.tex mc/*.tex bugs/*.tex parrot/*.tex
+texts: *.tex bib/biblio.bib tern/*.tex peregrine/*.tex mc/*.tex bugs/*.tex parrot/*.tex crane/*.tex
 	dvipdf $(SRC).dvi >> $(SRC).build.log 2>&1
 	dvips -o $(SRC).ps -t letter $(SRC).dvi >> $(SRC).build.log 2>&1
 

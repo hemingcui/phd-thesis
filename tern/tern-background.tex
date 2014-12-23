@@ -1,9 +1,10 @@
 \section{Background}
 \label{sec:background}
 
-This section presents a analytical background of \tern. We first explain the instability
-problem of existing \dmt systems (\S\ref{sec:dmt-background}), and then our choice
-of schedule representation in \tern (\S\ref{sec:define-schedule}).
+This section first explains why the instability
+problem is inherent in existing \dmt systems (\S\ref{sec:dmt-background}),
+and then our choice of schedule representation in \tern
+(\S\ref{sec:tern-define-schedule}).
 
 \subsection{The Instability Problem in \dmt} \label{sec:dmt-background}
 
@@ -19,7 +20,8 @@ We argue that this problem is inherent in existing \dmt systems because
 they are stateless.  They must provide the same schedule for an input
 across different runs, using information only from the current run.
 To force threads to communicate (\eg, acquire locks or access shared memory)
-deterministically, existing \dmt systems cannot rely on physical clocks.  Instead, they
+deterministically, existing \dmt systems cannot rely on physical clocks. 
+Instead, they
 maintain a logical clock per thread that ticks deterministically based on
 the code this thread has run.  Moreover, threads may communicate only when
 their logical clocks have deterministic values (\eg, smallest across the
@@ -38,7 +40,38 @@ a small change to the input or execution environment may cascade into a
 much different (\eg, correct vs. buggy) schedule.  
 
 
+\subsection{Schedule Representation}
+\label{sec:tern-define-schedule}
 
+Typical \smt or \dmt systems have considered two types of schedules: (1) a
+deterministic order of shared memory
+accesses~\cite{dmp:asplos09,coredet:asplos10} and (2) a synchronization
+order (\ie, a total order of synchronization operations)~\cite{kendo:asplos09}. 
+The first type of schedules are truly deterministic even if there are races, but
+they are costly to enforce on commodity hardware (\eg, up to 10 times
+overhead~\cite{coredet:asplos10}).  The second type can be efficiently enforced
+(\eg, 16\% overhead~\cite{kendo:asplos09}) because most code is not
+synchronization code and can run in parallel; however, they are deterministic
+only for inputs that lead to race-free runs~\cite{recplay:tocs,kendo:asplos09}.
+
+\tern represents schedules as synchronization orders for efficiency.  An
+additional benefit is that synchronization orders can be reused more
+frequently than memory access orders (cf next subsection).
+Moreover, researchers have found that many concurrency errors
+are not data races, but atomicity and order
+violations~\cite{lu:concurrency-bugs}.  These errors can be
+deterministically reproduced or avoided using only  synchronization orders.
+
+Although data races may still make runs which reuse schedules nondeterministic,
+\tern is less prone to this problem than existing \dmt
+systems~\cite{kendo:asplos09} because it has the flexibility to select
+schedules.  If it detects a race in a memoized schedule, it can simply
+discard this schedule and memoize another.  This selection task is often
+easy because most schedules are race-free.  In rare cases, \tern may be
+unable to find a race-free schedule, resulting in nondeterministic runs.
+However, we argue that input nondeterminism cannot be fully eliminated
+anyway, so we may as well tolerate some scheduling nondeterminism,
+following the end-to-end argument.
 
 
 

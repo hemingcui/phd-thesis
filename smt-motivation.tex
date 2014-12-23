@@ -1,16 +1,15 @@
-\chapter{Motivation and Background of Stable Multithreading (\smt)}
+\chapter{Motivation and Background of \smt}
 \label{sec:smt-motivation}
 
 This chapter first analyzes why multithreaded programs are so
 difficult to get right (\S\ref{sec:smt-why}), and then introduces
-\smt, our new approach that can greatly reduce the number of schedules for all
-inputs, making multithreaded programs much easier to get right
-(\S\ref{sec:smt-potential}). \smt is not the only technique to reduce the number
-of schedules, and previously researchers have proposed a complementary technique
-called Dterministic Multithreading (or \dmt) that reduces the number of
-schedules
-for each input, so this chapter also compares \smt with \dmt
-(\S\ref{sec:smt-dmt}).
+Stable Multithreading (or \smt), our new approach that can greatly reduce the
+number of schedules for all inputs, making multithreaded programs much easier to
+get right (\S\ref{sec:smt-potential}). \smt is not the only technique to reduce
+the number of schedules, and previously researchers have proposed a
+complementary technique called Dterministic Multithreading (or \dmt) that
+reduces the number of schedules for each input, so this chapter also compares
+\smt with \dmt (\S\ref{sec:smt-dmt}).
 
 \section{Why Are Multithreaded Programs So Hard to Get Right?}
 \label{sec:smt-why}
@@ -109,7 +108,8 @@ the local computations to operate on any input data.
 
 Finding a few buggy schedules in these exponentially many schedules raises
 a series of ``needle-in-a-haystack" challenges on understanding, testing,
-analyzing, and verification of multithreaded programs. For instance, when facing
+analyzing, verification, and replication of multithreaded programs. For
+instance, when facing
 these excessive schedules, developers' understanding are prone to mistakes, and
 we have seen tons of concurrency bug reports sent to the developers' email
 lists. Various forms of testing tools suffer, too.  Stress testing
@@ -122,12 +122,17 @@ and these tools have included several remarkable reduction algorithms
 schedules and improve schedule coverage. Recent advanced program
 analysis and verification tools (\eg,~\cite{demeter:sosp11}) also make notable
 attempts to increase the number of checked schedules based on these reduction
-algorithms. All these advanced tools have effectively found new harmful
-concurrency bugs in real-world software. Unfortunately, despite of these great
+algorithms. All these systematic testing, analysis, and verification tools have
+effectively found new harmful concurrency bugs in real-world software.
+Unfortunately, despite of these great
 effort, these tools still can not cover more than a tiny fraction of all
 exponentially many schedules, and concurency bugs within an unchecked schedule
-can show up in production runs and lead to critical failures. Therefore, we
-argue that the exponentially many schedules for all inputs is the key reason
+can show up in production runs and lead to critical failures. Due to this poor
+coverage, ``replicating execution states"~\cite{paxos:practical}, a critical
+fault-tolerance technique, can easily break when running with multithreaded
+programs, because concurrency bugs can show up in some replicas and make
+execution states across replicas to diverge. Therefore, we argue that the
+exponentially many schedules for all inputs is the key reason
 that causes multithreaded programs extremely difficult to get right.
 
 
@@ -235,7 +240,8 @@ Leveraging these two insights, we have invented Stable Multithreading (or \smt),
 a new multithreading approach that reuses each schedule on a wide range of
 inputs, mapping all inputs to a dramatically reduced set of schedules.
 By vastly shrinking the haystack, it addresses all the ``needle-in-a-haystack"
-challenges in understanding, testing, analyzing, and verification of
+challenges in understanding, testing, analyzing, verification, and replication
+of
 multithreaded programs at once, making these programs much easier to get
 right.
 
@@ -272,6 +278,11 @@ may reproduce the bugs in different environments or add \vv{printf}
 statements. We will describe this benefit in more details in
 Chapter~\ref{sec:tern}.
 
+\para{Avoiding errors at runtime.}  Programs can also adaptively learn correct
+schedules in the field, then reuse them on future inputs to avoid unknown,
+potentially buggy schedules.  We will describe this benefit in more
+details in Chapter~\ref{sec:tern}.
+
 \para{Analyzing and verifying programs.} Static analysis can now focus
 only on the set of schedules enforced in the field, gaining
 precision.  Dynamic analysis enjoys the same benefits as testing.  Model
@@ -285,10 +296,11 @@ Interactive theorem proving becomes much easier, too, because verifiers
 need to prove theorems only on the set of schedules enforced in the field.  We
 will describe these benefits in more details in Chapter~\ref{sec:peregrine}.
 
-\para{Avoiding errors at runtime.}  Programs can also adaptively learn correct
-schedules in the field, then reuse them on future inputs to avoid unknown,
-potentially buggy schedules.  We will describe this benefit in more
-details in Chapter~\ref{sec:tern}.
+\para{Replicating execution states.} By running the same \smt runtime on each
+replication node, we can enforce the same small set of schedules across replicas
+and avoid divergence of execution states. We will describe our system design on
+integrating \smt with replication service in Chapter~\ref{sec:rep}.
+
 
 \subsection{Caveats}
 
@@ -372,11 +384,12 @@ developers retry, because the schedule chosen by the deterministic system for
 the altered input happens to be correct. Besides inputs, na\"{i}vely implemented
 determinism can destabilize program behaviors on minor code changes, so adding a
 debug \vv{printf} causes the bug to deterministically disappear.
-Chapter~\ref{sec:tern} will give more concrete results on this
-instability problem, and how \tern, our first \smt system, addresses this
-problem. In a word, when running with \dmt, the number of possible schedules for
-all inputs remains enormous, so a multithreaded program is still extremely
-difficult to understand, test, analyze, or verify.
+Chapter~\ref{sec:tern} will analyze why this instability problem is
+inherent in existing \dmt systems and our concrete evaluation results that
+confirms this problem. Due to this problem, when running with \dmt, the
+number of possible schedules for all inputs remains enormous, so a multithreaded
+program is still extremely difficult to understand, test, analyze, verify, or
+replicate.
 
 In practice, to mitigate these problems, researchers have to augment
 determinism with other techniques.  To support debug \vv{printf}, some
