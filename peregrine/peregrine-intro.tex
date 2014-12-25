@@ -18,15 +18,15 @@ program may interleave in too many different ways, depending on such factors as
 hardware timings and OS scheduling. This is the so called ``nondeterminism".
 Considering all inputs, the number of possible schedules is even greater. It is
 extremely challenging to understand, test, analyze, verify, or replicate all
-these schedules in a multithreaded program. Therefore, a concurency bug within
+these schedules in a multithreaded program. Therefore, a concurrency bug within
 an unchecked schedule can show up in production runs and lead to severe
 failures and vulnerabilities.
 
 %% Two complementary techniques have been proposed to address this difficulty.
-%% SMT and DMT. However, it is still an open challenge to enforce a fully
+%% AMT and MT. However, it is still an open challenge to enforce a fully
 %% deterministic schedules efficiently.
 To reduce the number of possible schedules and make multithreading easier to get
-right, two complementary techniques have been invented by reserachers recently.
+right, two complementary techniques have been invented by researchers recently.
 Stable Multithreading (\smt)~\cite{determinator:osdi10, cui:tern:osdi10}, which
 is created by my collaborators and me, aims to reduce the number possibles
 schedules on all inputs. Deterministic Multithreading
@@ -41,7 +41,7 @@ commodity multiprocessors.  Existing \dmt systems either incur prohibitive
 overhead, or are not fully deterministic if there are data races.
 
 %% Why hard. Introduce two forms of schedules
-%%(1) synch schedule can be made efficient, but not fully determnistic.
+%%(1) sync schedule can be made efficient, but not fully determnistic.
 %%(2) Mem schedule can be made fully determinsitic, but not efficient.
 
 %% Our core technique. Schedule relaxation.
@@ -78,7 +78,7 @@ deterministic order of synchronization
 operations~\cite{kendo:asplos09,cui:tern:osdi10}, such as
 \vv{lock()/unlock()}.  Enforcing a mem-schedule is truly deterministic even
 for programs with data races, but may incur prohibitive overhead (\eg,
-roughly 1.2X-6X~\cite{coredet:asplos10}).  Enforcing a sync-schedule is
+roughly 1.2\X-6\X~\cite{coredet:asplos10}).  Enforcing a sync-schedule is
 efficient (\eg, average 16\% slowdown~\cite{kendo:asplos09}) because
 most code does not control synchronization and can still run in
 parallel, but a sync-schedule is only deterministic for race-free
@@ -121,7 +121,7 @@ over 90\% of the workloads for real programs such as
 % bugs to appear or disappear.
 
 Before reusing a schedule on an input, \peregrine must check that the input
-satisfies the input constrints (or \emph{preconditions}) of the schedule, so
+satisfies the input constraints (or \emph{preconditions}) of the schedule, so
 that (1) the schedule is feasible, \ie, the execution on the input will reach
 all events in the same deterministic order as in the schedule and (2) the
 execution will not introduce new races. (New races may occur if they are

@@ -24,7 +24,7 @@ but the computations may be complex and their overhead high.
 Second, how to combine \dmt with \smt? Existing \dmt
 systems~\cite{dmp:asplos09,coredet:asplos10,kendo:asplos09} constrain a
 multithreaded program to always use the same thread schedule for the same input,
-greatly increaseing testing confidence and making bug reproduction much more
+greatly increasing testing confidence and making bug reproduction much more
 easier. Unfortunately, these \dmt systems may defeat the input stability
 benefit in \smt: when scheduling the threads to process an
 input, existing \dmt systems consider only current input and ignore previous
@@ -42,7 +42,7 @@ the machine where the bug occurred. \S\ref{sec:dmt-background} will analyze in
 details why this instability problem is inherent in existing \dmt systems.
 
 This chapter presents \tern, a schedule-centric, stateful \smt and \dmt system. 
-It addresses the aformentioned two research challenges with a new idea called
+It addresses the aforementioned two research challenges with a new idea called
 \emph{schedule memoization} that memoizes past working schedules and reuses them
 for future inputs.  Specifically, \tern maintains a cache of past schedules and
 the input constraints required to reuse these schedules.  When an input arrives,
@@ -56,7 +56,7 @@ central goal of \smt. This stateful approach stabilizes program behaviors
 on input perturbations and avoids the instability problem. In sum, \tern's
 schedule memoization is the first approach that implements \smt, and the first
 approach that combines \smt and \dmt, greatly reducing the number of schedules
-on all inputs as well as the number of schdules on each input (down to one)
+on all inputs as well as the number of schedules on each input (down to one)
 barring some limitations~\ref{sec:tern-limit}.
 
 \tern's schedule memoization approach has two major benefits on software

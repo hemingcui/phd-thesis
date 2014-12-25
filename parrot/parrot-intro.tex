@@ -4,7 +4,7 @@ systems~\cite{determinator:osdi10, dthreads:sosp11, ics:oopsla13} to improve
 software reliability. However, despite of these recent advances, it remains an
 open challenge that whether \smt can be made simple, fast, and deployable on a
 wide range of multithreaded programs, because existing work either require
-sophiscated program analysis~\cite{cui:tern:osdi10, peregrine:sosp11,
+sophisticated program analysis~\cite{cui:tern:osdi10, peregrine:sosp11,
 ics:oopsla13}, or incur prohibitive performance overhead (\eg, 30$\times$
 slowdown in a previous system~\cite{dthreads:sosp11} with many programs in our
 evaluation (\S\ref{sec:parrot-eval}).
@@ -12,12 +12,12 @@ evaluation (\S\ref{sec:parrot-eval}).
 To address this open challenge, this chapter presents \parrot, a simple, fast,
 and deployable \smt and \dmt runtime system, simplifying deployment. \parrot
 recovers lost performance caused by \smt schedules with a new programming
-construct call \emph{performanct hints} (\S\ref{sec:parrot-hints}).
+construct call \emph{performance hints} (\S\ref{sec:parrot-hints}).
 
 \section{Introduction} \label{sec:parrot-intro}
 
 To reduce the number of possible schedules and make multithreading easier to get
-right, two complementary techniques have been invented by reserachers recently.
+right, two complementary techniques have been invented by researchers recently.
 First, Stable Multithreading (\smt)~\cite{determinator:osdi10, cui:tern:osdi10,
 dthreads:sosp11, peregrine:sosp11}, which
 is created by my collaborators and me, aims to reduce the number possibles
@@ -50,9 +50,9 @@ evaluation of prior systems which often used (1) synthetic benchmarks, not
 real-world programs, from incomplete benchmark suites; (2) one workload
 per program; and (3) at most 8 cores (with three exceptions; see
 \S\ref{sec:parrot-related}). For instance, while a previous
-system~\cite{dthreads:sosp11} achieves reasonable performanace overhead on 14
+system~\cite{dthreads:sosp11} achieves reasonable performance overhead on 14
 scientific benchmark programs, we observed
-this system incured 30$\times$ slowdown in many other programs in our
+this system incurred 30$\times$ slowdown in many other programs in our
 evaluation.
 
 This open challenge comes from the design choices of existing \smt systems. 
