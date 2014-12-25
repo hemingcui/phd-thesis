@@ -9,14 +9,14 @@ and more multithreaded programs on these platforms. Second, the emerging cloud
 computing trend requires networking services (\eg, \http servers and database
 servers) to process more and more requests concurrently, which also pushes
 developers to write more and more multithreaded programs. These two trends will
-continue and multithreading will become increaingly pervasive and critical.
+continue and multithreading will become increasingly pervasive and critical.
 
 %% P2: However, it is hard to get right.
 Unfortunately, despite decades of effort from both academia and industry,
 multithreaded programs are still notoriously difficult to get right, and these
 programs are plagued with harmful concurrency bugs that can cause wrong outputs,
 program crashes, security breaches, and so on. Our research reveals that a key
-reason of this difficulty is: multithreded programs have \emph{too many}
+reason of this difficulty is: multithreaded programs have \emph{too many}
 possible thread interleavings (or schedules) at runtime. Even running on the
 same input, the concurrently running threads of a program may interleave in too
 many different ways, depending on such factors as hardware timings and OS
@@ -28,7 +28,7 @@ extremely challenging to understand, test, analyze, verify, or
 replicate\footnote{ The replication technique this thesis focuses on is
 ``state machine replication"~\cite{paxos:practical}. } these schedules in a
 multithreaded program and make sure they are free of concurrency bugs.
-Therefore, a concurency bug within an unchecked schedule can show up in
+Therefore, a concurrency bug within an unchecked schedule can show up in
 production runs and lead to severe failures and vulnerabilities.
 
 %% P3: DMT: one possible approach. And its limitations.
@@ -40,11 +40,11 @@ program on each input. However, as we will further analyze in
 Chapter~\ref{sec:smt-motivation}, although \dmt is useful, it is not as useful
 as commonly perceived. The reason is because a typical \dmt system can enforce
 very different schedules on slightly different inputs, artificially reducing
-programs's robustness on input perturbations, and the number of possible
+programs' robustness on input perturbations, and the number of possible
 schedules on all inputs are still enormous. Therefore, multithreaded programs
 are still very hard to understand, test, analyze, verify, or replicate.
 
-%% P4: StableMT: our new approach and thesis.
+%% P: StableMT: our new approach and thesis.
 In order to reduce the number of schedules for all inputs, we have studied the
 relation between inputs and schedules of real-world programs, and made an
 eye-opening discovery: many programs need only a small set of schedules to
@@ -63,7 +63,7 @@ the three multithreading manners: the traditional multithreading, the
 deterministic multithreading (\dmt), and the stable multithreading (\smt).
 
 
-%% P6: intro to the systems we built: with each addressing different challenges.
+%% P: intro to the systems we built: with each addressing different challenges.
 To make \smt real, I have worked with Columbia and CMU researchers to build
 three \smt (and also \dmt) systems, \tern~\cite{cui:tern:osdi10},
 \peregrine~\cite{peregrine:sosp11}, and \parrot~\cite{parrot:sosp13}, with each
@@ -143,7 +143,7 @@ any prior \smt or \dmt evaluation, and about 4$\times$ more programs than all
 prior evaluations combined, shows that, these hints are easy to add and make
 \parrot fast (merely 12.7\% mean overhead on 24-core machines). To encourage
 deployment, we have made \parrot's source code, entire benchmarks, and raw
-evluation results public at: \github.
+evaluation results public at: \github.
 
 %% P5: StableMT's applications.
 To justify \smt's potential, we have been broadly applying \smt to improve
@@ -164,12 +164,12 @@ reliability tools with modest engineering effort, because many techniques
 in our \smt systems are common. For instance, \parrot can also make
 reproducing concurrency bugs much easier because it enforces a similar form
 of schedule to that in \tern. In addition to the above three demonstrated \smt
-applications, Chapter~\ref{sec:crane} has also proposed \crane, a priliminary
+applications, Chapter~\ref{sec:crane} has also proposed \crane, a preliminary
 system design that leverages \smt to create practical state machine replication
 service~\cite{paxos:practical}, a critical and popular fault-tolerant technique
 in today's distributed systems and clouds, for multithreaded programs.
 
-These \smt applications have attrated the community's interests. For instance,
+These \smt applications have attracted the community's interests. For instance,
 some of our \smt techniques and ideas have been leveraged by University of
 Washington researchers to compute a small set of schedules to cover all or most
 inputs for some multithreaded programs~\cite{bergan:oopsla13}.

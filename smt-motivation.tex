@@ -7,7 +7,7 @@ Stable Multithreading (or \smt), our new approach that can greatly reduce the
 number of schedules for all inputs, making multithreaded programs much easier to
 get right (\S\ref{sec:smt-potential}). \smt is not the only technique to reduce
 the number of schedules, and previously researchers have proposed a
-complementary technique called Dterministic Multithreading (or \dmt) that
+complementary technique called Deterministic Multithreading (or \dmt) that
 reduces the number of schedules for each input, so this chapter also compares
 \smt with \dmt (\S\ref{sec:smt-dmt}).
 
@@ -99,7 +99,7 @@ lock $k$ times, each order of lock acquisitions forms a schedule, easily
 yielding $\frac{(mk)!}{(k!)^m} \ge (m!)^k$ total schedules---a number
 exponential in both $m$ and $k$. Aggregated over all inputs, the number of
 schedules is even greater. Figure~\ref{fig:nondet} depicts the traditional
-multithreading approach. Conceptually, traiditional multithreading runtimes
+multithreading approach. Conceptually, traditional multithreading runtimes
 (\eg, \pthread) maintain a many-to-many mapping from inputs to schedules, where
 one input may execute under many schedules depending on such factors as hardware
 timings and OS scheduling, and many inputs may execute under one schedule
@@ -126,7 +126,7 @@ algorithms. All these systematic testing, analysis, and verification tools have
 effectively found new harmful concurrency bugs in real-world software.
 Unfortunately, despite of these great
 effort, these tools still can not cover more than a tiny fraction of all
-exponentially many schedules, and concurency bugs within an unchecked schedule
+exponentially many schedules, and concurrency bugs within an unchecked schedule
 can show up in production runs and lead to severe failures. Due to this poor
 coverage, state machine replication~\cite{paxos:practical}, a critical
 fault-tolerance technique, can easily break when running with multithreaded
@@ -168,7 +168,7 @@ threads.\\
 \hline
 \swaptions &  Swaption pricing     & Same number of threads, and the number of
 \\
-           &                &  swaptions is no less than the number ofthreads.\\
+           &                &  swaptions is no less than the number of threads.\\
 
 \end{tabular}
 \vspace{-.05in}
@@ -232,7 +232,7 @@ representations (Chapter~\ref{sec:peregrine}), our systems incurred less than
 overhead enforcing schedules on different inputs for most evaluated programs.
 Relevant systems (\eg,~\cite{kendo:asplos09, determinator:osdi10}) also show
 that
-carefully enforcing schedules can achieve only moderate overhead. Afterall,
+carefully enforcing schedules can achieve only moderate overhead. After all,
 considering the reliability benefits introduced by \smt, We believe
 this moderate overhead is worthwhile.
 
@@ -400,7 +400,7 @@ In practice, to mitigate these problems, researchers have to augment
 determinism with other techniques.  To support debug \vv{printf}, some
 propose to temporarily revert to nondeterministic
 execution~\cite{dmp:asplos09}.  DMP~\cite{dmp:asplos09},
-CoreDet~\cite{coredet:asplos10}, and Kendo~\cite{kendo:asplos09} change
+\coredet~\cite{coredet:asplos10}, and Kendo~\cite{kendo:asplos09} change
 schedules only if the inputs change low-level instructions executed.
 Although better than mapping each input to an arbitrary schedule, they
 still allow small input perturbations to destabilize schedules
