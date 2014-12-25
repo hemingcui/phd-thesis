@@ -1,6 +1,6 @@
 \chapter{Conclusion} \label{sec:conclusion}
 
-Mulithreading is notoriously difficult to get right, and our research reveals
+Multithreading is notoriously difficult to get right, and our research reveals
 that a key reason is: a multithreaded program may run into exponentially many
 possible schedules for all inputs at runtime, which brings a series of
 significant reliability and security challenges on understanding,
@@ -11,7 +11,7 @@ To reduce the number of possible schedules and make multithreaded
 programs easier to get right, we have invented a new idea called Stable
 Multithreading (or \smt) that reuses each schedule on a wide range of inputs,
 greatly reducing the number of possible schedules for all inputs. Through
-building three \smt systems, \tern, \peregrine, and \parrot, with each addresing
+building three \smt systems, \tern, \peregrine, and \parrot, with each addressing
 a distinct research challenge, we have shown that \smt can be made simple, fast,
 and deployable. Through applying \smt to make reproducing concurrency bugs
 easier, to improve precision of static program analysis, and to increase
@@ -23,10 +23,10 @@ systems, some techniques and ideas in our \tern and \peregrine systems have been
 leveraged by University of Washington researchers to compute a small set of
 schedules to cover all or most inputs of multithreaded programs.
 
-By addressing the key reaon that makes multithreading difficult to get right,
+By addressing the key reason that makes multithreading difficult to get right,
 \smt has broad applications. In the future, we plan to apply \smt to make
-replication and verification of multitheraded programs easier, and to defend
+replication and verification of multithreaded programs easier, and to defend
 against security vulnerabilities that leverage concurrency bugs. We believe that
-all these combined effort will make \smt a simple, fast, reliabile, and secure
-multithreading runtime, potentially benfiting all individuals, governments,
+all these combined effort will make \smt a simple, fast, reliable, and secure
+multithreading runtime, potentially benefiting all individuals, governments,
 organizations, and software vendors. 
