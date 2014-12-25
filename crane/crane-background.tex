@@ -16,7 +16,7 @@ systems, and checkpointing techniques.
 for decades, and it is recognized by both industry and academia as a powerful
 fault-tolerance technique in clouds and distributed systems~\cite{lamportclock,
 smr:tutorial}. As a common standard, SMR uses \paxos~\cite{paxos} as the
-consensue protocol to ensure that all replicas see the same input request
+consensus protocol to ensure that all replicas see the same input request
 sequence. In this standard, replicas first ``agree" on a total order of input
 request as a input sequence, and then ``execute" the requests that have reached
 this consensus. This typical SMR approach is called ``agree-execute". SMR
@@ -36,7 +36,7 @@ speculatively, and then verifies whether these requests have conflicts that
 cause execution state divergence. If so, Eve rolls back the program to a state
 before executing these requests and re-execute these requests sequentially. Both
 Eve's execution divergence verification and rollbacks require developers to
-annotate all shared states (\eg, global variables abd heaps) of a program, which
+annotate all shared states (\eg, global variables and heaps) of a program, which
 could be time consuming and error-prone. CBASE~\cite{cbase:dsn04} is similar to
 Eve, but it assumes no conflicts on requests it batches.
 
@@ -48,7 +48,7 @@ primary may not be agreed on the other nodes, then Rex will rollback the
 primary's states. These rollbacks/checkpoints also require developers' manual
 efforts for every program. Furthermore, Rex requires frequently shipping thread
 interleavings across replicas, which may be much slower than our \smt approach
-that schedules each replica indepently. NonStop Advanced
+that schedules each replica independently. NonStop Advanced
 Architecture~\cite{nonstop:dsn05} is similar to Rex, but it can only do
 replications on a local machine.
 
@@ -57,8 +57,8 @@ transactions~\cite{vandiver:sosp07, kobus:icdcs13} in SMR, but they are not for
 replicating general multithreaded programs.
 
 \para{\smt and \dmt systems.}  In order to make multithreading easier to
-undertand, test, analyze, and replicate, researchers have built two types of
-reliabile multithreading systems: (1) stable multithreading systems (or
+understand, test, analyze, and replicate, researchers have built two types of
+reliable multithreading systems: (1) stable multithreading systems (or
 \smt)~\cite{grace:oopsla09, dthreads:sosp11, determinator:osdi10} that aim to
 reduce the number of possible thread interleavings for program all inputs, and
 (2) deterministic multithreading systems (or \dmt)~\cite{dpj:oopsla09,
@@ -68,7 +68,7 @@ each program input. Typically, these systems use deterministic logical clocks
 instead of nondeterministic physical clocks to make sure inter-thread
 communications (\eg, \mutexlock and accesses to global variables) can only
 happen at some specific logical clocks. Therefore, given the same or similar
-inupts, these systems can enforce the same thread interleavings and eventually
+inputs, these systems can enforce the same thread interleavings and eventually
 the same executions. These systems 
 have shown to greatly improve software reliability, including coverage of
 testing inputs~\cite{ics:oopsla13} and speed of recording
@@ -134,7 +134,7 @@ of program analysis and verification~\cite{wu:pldi12}, making debugging
 concurrency errors much easier~\cite{cui:tern:osdi10}, and improving coverage of
 model checking~\cite{parrot:sosp13}. Our work have also been leveraged by the
 community: some techniques in our \tern system~\cite{cui:tern:osdi10} has been
-used by University of Washington Seatle researchers on computing a small set of
+used by University of Washington Seattle researchers on computing a small set of
 thread interleavings covering all inputs~\cite{ics:oopsla13}, and our \parrot
 runtime system has been integrated with a CMU software model
 checker~\cite{dbug:spin11}.

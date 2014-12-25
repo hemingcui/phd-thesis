@@ -1,4 +1,4 @@
-\section{Building Transparent Multithreaded SMR System} \label{sec:crane-plan}
+\section{Building Practical Multithreaded SMR System} \label{sec:crane-plan}
 
 This section proposes the preliminary design of \crane. As this project moves
 forward and our case study goes broadly, significant refinements on the design
@@ -61,10 +61,9 @@ the replicated multithreaded application are within the same process, and this
 process is forked from the proxy component as a replica launches. We leverage
 our prior work \parrot system as our \smt runtime because of its high
 practicality. The \parrot runtime intercepts Pthreads synchronization operations
-(\eg, \
-mutexlock) of the replicated multithreaded application, and avoids divergent
-thread interleavings of this program by eliminating nondeterminism of these
-synchronization operations.
+(\eg, \mutexlock) of the replicated multithreaded application, and avoids
+divergent thread interleavings of this program by eliminating nondeterminism of
+these synchronization operations.
 
 To handle exceptional cases, including replica failures or network partitions,
 the proxy persistently logs operations that have reached consensus. If a replica
@@ -155,9 +154,9 @@ requires that applications be Pthreads-compatible, x86 binary, and use socket
 operations to accept requests.
 
 % \crane assumes a stateless OS kernel, because it performs application-level
-% program checkpoints. This assumption is common in existing SMR systems. In order
-% to handle minor systems resources divergence such as file descriptors, \crane
-% does a internal mapping between  \S~\ref{}
+% program checkpoints. This assumption is common in existing SMR systems. In
+order % to handle minor systems resources divergence such as file descriptors,
+\crane % does a internal mapping between  \S~\ref{}
 
 
 \subsection{The Timing Handling Algorithm} \label{sec:rep-time-algo}
@@ -169,14 +168,14 @@ integration.
 \subsubsection{Introduction to the \parrot \smt System} \label{sec:rep-parrot}
 \parrot is a pure runtime system that uses a Linux technique called \ldpreload
 to interpose Pthreads synchronizations (\eg, \mutexlock), and to enforce a
-determinsitic total order for these synchronization operations at runtime,
+deterministic total order for these synchronization operations at runtime,
 greatly reducing the number of possible thread interleavings. For instance, in a
 traditional thread runtime, if multiple threads contend for the same mutex lock,
 then any thread may win, leading to a huge number of different thread
 interleavings. In \parrot, only a specific thread will win this lock across
 different executions.
 
-To enforce such a determinsitic total order of synchronization operations,
+To enforce such a deterministic total order of synchronization operations,
 \parrot works like a Linux kernel scheduler: \parrot has two thread queues, all
 runnable threads are put in a run queue, and un-runnable threads (\eg, threads
 running in a \mutexlock, but this mutex is being acquired by another thread) are
@@ -189,7 +188,7 @@ and finally, the thread is put to the tail of the run queue. By doing so,
 operations.
 
 
-\subsubsection{Algoritm Design} \label{sec:rep-algo-rules}
+\subsubsection{Algorithm Design} \label{sec:rep-algo-rules}
 To ensure a successful integration of \smt and SMR, one major research challenge
 is that all replicas must make each blocking socket operation ``execute" (more
 specifically, ``return") at the same logical time value in \smt. This is
@@ -214,12 +213,13 @@ consensus.
 % socket requests (\eg, \send or \connect) from the proxy and blocking socket
 % operations from the \smt runtime.
 
-% %Alternatively, adding an unspecific number on $C$ (\ie, waiting for all current
-% requests to be done and all threads to be quiescent, and then using current
-% logical clock for $T_{v}$) would greatly slow \crane down, because some threads
-% may have much longer request processing time and cause all the other threads to
-% wait. In a word, due to the difficulty of ``predicting the future," approaches
-% that predict a time value and then ask for consensus don't work in practice.
+% %Alternatively, adding an unspecific number on $C$ (\ie, waiting for all
+current % requests to be done and all threads to be quiescent, and then using
+current % logical clock for $T_{v}$) would greatly slow \crane down, because
+some threads % may have much longer request processing time and cause all the
+other threads to % wait. In a word, due to the difficulty of ``predicting the
+future," approaches % that predict a time value and then ask for consensus don't
+work in practice.
 
 %%in Figure~\ref{fig:msmr-wait-rule} 
 To address this timing challenge, Figure~\ref{fig:msmr-wait-rule} proposes a new
@@ -227,8 +227,8 @@ algorithm that efficiently enforces consistent time values across replica
 without requiring consensus for these values. The key idea is co-scheduling the
 \parrot run queue, wait queue, and the proxy's input sequence queue (for short,
 proxy queue) to ensure each socket operation is scheduled at the same logical
-timing across replicas without requireing consensus across replicas. This
-algorithm will be implemented as a plugin in the \parrot runtime according to
+timing across replicas without requiring consensus across replicas. This
+algorithm will be implemented as a plug-in in the \parrot runtime according to
 three intuitive rules:
 
 \textbf{(1) The basic rule:} all \recv or \select socket operations are treated
@@ -240,7 +240,7 @@ at the head of the proxy queue. If either of the two conditions do not satisfy,
 this thread becomes un-runnable and is put into the \parrot wait queue. This
 rule ensures that each blocking socket operation is scheduled at a deterministic
 point of the \parrot runtime by satisfying condition (1), and the execution of
-this operation can actually proceed and finish because of a mathing operation by
+this operation can actually proceed and finish because of a matching operation by
 having condition (2).
 
 \textbf{(2) The efficiency rule:} whenever a new socket operation (\eg, a \send)
@@ -273,32 +273,6 @@ can let the \parrot runtime run as is and the server can become quiescent.
 \vspace{-.05in}
 \end{figure}
 
-% %\para{The synchronization rule:} this rule synchronizes the \paxos queue with
-% the \smt run queue and wait queue. 
-
-%%Whenever an blocking socket operation is executed at the \smt run queue head,
-% if the wait queue has threads waiting for \paxos operations, current thread does
-% busy wait until this condition is true: the \paxos queue is not empty, or the
-% number of connection from client to proxy is 0. If the condition is true and the
-% \paxos queue is not empty, if it finds a corresponding server thread in the wait
-% queue, it dequeues the head \paxos operation, and put this thread into the head
-% of the run queue, and then let the thread execute the \paxos operation. 
-
-%Analysis on the wait rule: First, checking the \paxos queue is not empty is
-% critical, because sometimes some operations arrive at some replicas faster than
-% that at some other replicas, but whenever the \paxos queue is not empty, the
-% \smt runtime ``observes" a deterministic \paxos queue, and we can safely ensure
-% the same order for these \paxos operations. Note that if the wait queue has no
-% threads waiting for \paxos operation, the run queue head does not need to wait
-% for the \paxos queue to be non empty at all, which could reduce performance
-% impact of the ``waiting for \paxos queue to be not empty". Second, the
-% ``corresponding" above is easy to maintain because we see the socket pair
-% mapping from both proxy and server side, and this mapping is initially
-% established by seeing a connect() operation from a thread in the proxy side and
-% find a server thread blocking at accept() operation in the wait queue, and then
-% increment n\_conn by 1. Also, waiting for the condition guarantee to move
-% forward because we have 
-
 
 
 
@@ -326,7 +300,7 @@ Memory checkpoints are critical to program states. To ensure efficiency,
 existing schemes often use virtual machine monitors~\cite{remus:nsdi08} or OS
 page protection~\cite{oren:atc07} to incrementally checkpoint memory states
 modified by an application within each checkpoint period. However, these schemes
-still cause significant slowdown (\eg, 1.3x in Remus~\cite{remus:nsdi08}), which
+still cause significant slowdown (\eg, 1.3\times in Remus~\cite{remus:nsdi08}), which
 \crane hopes to mitigate. Fortunately, recent hardware-accelerated
 virtualization techniques~\cite{dune:osdi12} have shown promising performance
 results in the security field. Our \crane system is the first work to apply this
@@ -368,7 +342,7 @@ status of these socket pairs during the thread checkpoint.
 
 
 \subsection{Implementation-level Challenges} \label{sec:rep-impl}
-To fully implememnt \crane, we plan to addresses the following challenges.
+To fully implement \crane, we plan to addresses the following challenges.
 
 \subsubsection{Handling Nondeterministic Operations} \label{sec:rep-nondet}
 In reality, applications may call nondeterministic operations, including
