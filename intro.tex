@@ -49,7 +49,7 @@ In order to reduce the number of schedules for all inputs, we have studied the
 relation between inputs and schedules of real-world programs, and made an
 eye-opening discovery: many programs need only a small set of schedules to
 efficiently process a wide range of inputs~\cite{smt:cacm}! Leveraging this
-discovery, we have invented a new idea called Stable Multi-Threading (\smt)
+discovery, we have invented a new idea called Stable Multithreading (\smt)
 that reuses each schedule on a wide range of inputs. By reusing a schedule on as
 many as inputs, \smt stabilizes program behaviors against small input
 perturbations and greatly reduces the number of possible schedules for all
@@ -96,7 +96,7 @@ execution and replay for decades. Existing work typically enforces two types of
 schedules: a total order of shared memory accesses (for short, \memsched), and a
 total order of synchronization operations (for short, \syncsched). The
 \memscheds are fully deterministic even with data races, but they are several
-times slower than traditional multi-threading. The \syncscheds incur only modest
+times slower than traditional multithreading. The \syncscheds incur only modest
 overhead because most code is not synchronization and thus can still run in
 parallel, but these schedules may deviate if there are data races. Overall,
 despite much research effort, people can only choose either full determinism or
