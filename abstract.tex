@@ -16,7 +16,7 @@ bugs, thus multithreaded programs are extremely difficult to get right.
 In order to reduce the number of possible schedules and make multithreading
 easier to get right, we have studied the
 relation between inputs and schedules of real-world programs, and made an
-eye-opening discovery: many programs need only a small set of schedules to
+interesting discovery: many programs need only a small set of schedules to
 efficiently process a wide range of inputs! Leveraging this discovery, we have
 proposed a new idea called Stable Multithreading (StableMT) that reuses each
 schedule on a wide range of inputs, greatly reducing the number of possible
@@ -26,11 +26,11 @@ testing, analyzing, verification, and replication of multithreaded programs much
 easier. To realize \smt, we have built three StableMT systems, \tern,
 \peregrine, and \parrot, with each addressing a distinct research challenge.
 Evaluation on a wide range of 108 popular multithreaded programs in
-our latest \smt system, \parrot, shows that: \smt is simple, fast, and
+our latest \smt system, \parrot, shows that \smt is simple, fast, and
 deployable.
 
-To justify \smt's potential, we have quantitatively demonstrated that \smt can
-benefit existing reliability tools, including: (1) making reproducing
+To demonstrate \smt's potential, we have quantitatively demonstrated that \smt 
+can benefit existing reliability tools, including: (1) making reproducing
 real-world concurrency bugs much easier;  (2) greatly improving precision of
 static program analysis, leading to several new harmful data races detected in
 heavily-studied programs; and (3) greatly increasing coverage of model checking,
