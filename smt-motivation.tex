@@ -11,7 +11,7 @@ complementary technique called Deterministic Multithreading (or \dmt) that
 reduces the number of schedules for each input, so this chapter also compares
 \smt with \dmt (\S\ref{sec:smt-dmt}).
 
-\section{Why Are Multithreaded Programs So Hard to Get Right?}
+\section{Why is Multithreading So Hard to Get Right?}
 \label{sec:smt-why}
 
 \begin{figure*}[t]
@@ -30,17 +30,17 @@ Deterministic.}]{\includegraphics[width=.23\linewidth]{figures/dmt}
   \label{fig:smtn}}
 \vspace{-.05in}
 \caption{Different multithreading approaches. Red stars represent buggy
-schedules.  Traditional multithreading (\subref*{fig:nondet}) is a conceptual
+schedules.  Traditional multithreading (\ref{fig:nondet}) is a conceptual
 many-to-many mapping where one input may execute under many schedules depending
 on such factors as hardware timings or OS scheduling, and many inputs may
 execute under one schedule because a schedule fixes the order of the
 communication operations but allows the local computations to operate on any
-input data.  \dmt (\subref*{fig:dmt}) may map each input to an arbitrary
+input data.  \dmt (\ref{fig:dmt}) may map each input to an arbitrary
 schedule, reducing programs' robustness on input perturbations.  \smt
-(\subref*{fig:smt} and \subref*{fig:smtn}) reduces the total set of schedules
+(\ref{fig:smt} and \ref{fig:smtn}) reduces the total set of schedules
 for all inputs (represented by the shrunk ellipses), increasing robustness and
 improving reliability. \smt and \dmt are complementary: a \smt system can be
-deterministic (\subref*{fig:smt}) or nondeterministic (\subref*{fig:smtn}).}
+deterministic (\ref{fig:smt}) or nondeterministic (\ref{fig:smtn}).}
 \vspace{-.2in}
 \end{center}
 \end{figure*}
