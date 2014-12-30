@@ -163,18 +163,17 @@ analysis~\cite{wu:pldi12} and verification~\cite{wu:pldi12}, leading to several
 new harmful concurrency bugs detected in heavily-studied programs 
 (Chapter~\ref{sec:peregrine}). Third, we have quantitatively shown that \parrot 
 can increase the coverage by many orders
-of magnitudes (Chapter~\ref{sec:parrot}) for model checking, an advanced 
-technique that systematically
+of magnitudes (Chapter~\ref{sec:parrot}) for model checking, an advanced technique that systematically
 tests schedules and try to find bugs~\cite{parrot:sosp13, dbug:spin11,
 modist:nsdi09}. Each of our three \smt systems can benefit all these three
 reliability tools with modest engineering effort, because many techniques
 in our \smt systems are common. For instance, \parrot can also make
 reproducing concurrency bugs much easier because it enforces a similar form
 of schedule to that in \tern. In addition to the above three demonstrated \smt
-applications, Chapter~\ref{sec:crane} has also proposed \crane, a preliminary
+applications, we have also proposed \crane, a preliminary
 system design that leverages \smt to create practical state machine replication
-service~\cite{paxos:practical}, a critical and popular fault-tolerant technique
-in today's distributed systems and clouds, for multithreaded programs.
+service, a critical and popular fault-tolerant technique
+in today's distributed systems and clouds, for multithreaded programs (Chapter~\ref{sec:crane}).
 
 These \smt applications have attracted the community's interests. For instance,
 some of our \smt techniques and ideas have been leveraged by University of
