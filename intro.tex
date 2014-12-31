@@ -27,12 +27,7 @@ multithreading runtime. It is extremely challenging to understand, test,
 analyze, or verify all these schedules in a multithreaded program and 
 make sure that they are free of concurrency bugs. Therefore, a concurrency bug 
 within an unchecked schedule can show up in production runs and lead to severe 
-failures and vulnerabilities. For instance, state machine 
-replication~\cite{paxos:practical} (or \emph{replication}), a critical 
-reliability technique that replicates the same program execution states on 
-different machines to provide high fault-tolerance, now works poorly with 
-multithreaded programs, because concurrency bugs can show up on some machines, 
-causing execution states across machines to diverge.
+failures and vulnerabilities.
 
 %% P3: DMT: one possible approach. And its limitations.
 To make multithreading easier to get right, researchers have proposed an idea 
@@ -45,7 +40,7 @@ as commonly perceived. The reason is because a typical \dmt system can enforce
 very different schedules on slightly different inputs, artificially reducing
 programs' robustness on input perturbations, and the number of possible
 schedules on all inputs are still enormous. Therefore, multithreaded programs
-are still very hard to understand, test, analyze, verify, or replicate.
+are still very hard to understand, test, analyze, or verify.
 
 %% P: StableMT: our new approach and thesis.
 In order to reduce the number of schedules for all inputs, we have studied the
@@ -58,12 +53,12 @@ schedule on as many as inputs, \smt stabilizes program behaviors against small
 input perturbations and greatly reduces the number of possible schedules for all
 inputs. By addressing the key reason that makes multithreading difficult to get
 right, StableMT greatly simplifies understanding, testing, analyzing,
-verification, and replication of multithreaded programs. Actually, \smt is
-complementary to \dmt,
-and a system can be both stable and deterministic. To fully understand the
-potential of \smt, Chapter~\ref{sec:smt-motivation} will discuss in details on
-the three types of multithreading runtimes: the traditional multithreading, the
-deterministic multithreading (\dmt), and the stable multithreading (\smt).
+and verification of multithreaded programs. Actually, \smt is
+complementary to \dmt, and a system can be both stable and deterministic. To 
+fully understand the potential of \smt, Chapter~\ref{sec:smt-motivation} will 
+discuss in details on the three types of multithreading runtimes: the 
+traditional multithreading, the deterministic multithreading (\dmt), and the 
+stable multithreading (\smt).
 
 
 %% P: intro to the systems we built: with each addressing different challenges.
@@ -163,17 +158,14 @@ analysis~\cite{wu:pldi12} and verification~\cite{wu:pldi12}, leading to several
 new harmful concurrency bugs detected in heavily-studied programs 
 (Chapter~\ref{sec:peregrine}). Third, we have quantitatively shown that \parrot 
 can increase the coverage by many orders
-of magnitudes (Chapter~\ref{sec:parrot}) for model checking, an advanced technique that systematically
+of magnitudes (Chapter~\ref{sec:parrot}) for model checking, an advanced 
+technique that systematically
 tests schedules and try to find bugs~\cite{parrot:sosp13, dbug:spin11,
 modist:nsdi09}. Each of our three \smt systems can benefit all these three
 reliability tools with modest engineering effort, because many techniques
 in our \smt systems are common. For instance, \parrot can also make
 reproducing concurrency bugs much easier because it enforces a similar form
-of schedule to that in \tern. In addition to the above three demonstrated \smt
-applications, we have also proposed \crane, a preliminary
-system design that leverages \smt to create practical state machine replication
-service, a critical and popular fault-tolerant technique
-in today's distributed systems and clouds, for multithreaded programs (Chapter~\ref{sec:crane}).
+of schedule to that in \tern.
 
 These \smt applications have attracted the community's interests. For instance,
 some of our \smt techniques and ideas have been leveraged by University of
@@ -187,10 +179,7 @@ bugs easier. Chapter~\ref{sec:peregrine} describes the \peregrine system, and
 how much it can improve precision of existing program analysis techniques as
 well as making reproducing concurrency bugs easier. Chapter~\ref{sec:parrot}
 introduces the \parrot system, and our advances on applying it to greatly
-improve coverage of model checking. Chapter~\ref{sec:crane} proposes \crane, our
-preliminary system design that leverages \smt to create practical
-state machine replication service for multithreaded programs.
-Chapter~\ref{sec:conclusion} concludes.
+improve coverage of model checking. Chapter~\ref{sec:conclusion} concludes.
 
 
 

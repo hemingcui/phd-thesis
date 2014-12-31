@@ -108,32 +108,27 @@ the local computations to operate on any input data.
 
 Finding a few buggy schedules in these exponentially many schedules raises
 a series of ``needle-in-a-haystack" challenges on understanding, testing,
-analyzing, verification, and replication of multithreaded programs. For
-instance, when facing
-these excessive schedules, developers' understanding are prone to mistakes, and
-we have seen tons of concurrency bug reports sent to the developers' email
-lists. Various forms of testing tools suffer, too.  Stress testing
-is a common method for (indirectly) testing schedules, but it often redundantly
-tests the same schedules while missing others. To mitigate redundant testing
-effort, recent advanced testing tools (\eg,~\cite{musuvathi:chess:osdi08,
-modist:nsdi09, dbug:ssv10, demeter:sosp11}) can systematically test schedules,
-and these tools have included several remarkable reduction algorithms
-(\eg,~\cite{flanagan:dynamicpo, demeter:sosp11}) to avoid testing the same
-schedules and improve schedule coverage. Recent advanced program
-analysis and verification tools (\eg,~\cite{demeter:sosp11}) also make notable
-attempts to increase the number of checked schedules based on these reduction
-algorithms. All these systematic testing, analysis, and verification tools have
-effectively found new harmful concurrency bugs in real-world software.
-Unfortunately, despite of these great
+analyzing, and verification of multithreaded programs. For
+instance, when facing these excessive schedules, developers' understanding are 
+prone to mistakes, and we have seen tons of concurrency bug reports sent to the 
+developers' email lists. Various forms of testing tools suffer, too.  Stress 
+testing is a common method for (indirectly) testing schedules, but it often 
+redundantly tests the same schedules while missing others. To mitigate 
+redundant testing effort, recent advanced testing tools 
+(\eg,~\cite{musuvathi:chess:osdi08, modist:nsdi09, dbug:ssv10, demeter:sosp11}) 
+can systematically test schedules, and these tools have included several 
+remarkable reduction algorithms (\eg,~\cite{flanagan:dynamicpo, 
+demeter:sosp11}) to avoid testing the same schedules and improve schedule 
+coverage. Recent advanced program analysis and verification tools 
+(\eg,~\cite{demeter:sosp11}) also make notable attempts to increase the number 
+of checked schedules based on these reduction algorithms. These systematic 
+testing, analysis, and verification tools have effectively found new harmful 
+concurrency bugs in real-world software. Unfortunately, despite of these great
 effort, these tools still can not cover more than a tiny fraction of all
 exponentially many schedules, and concurrency bugs within an unchecked schedule
-can show up in production runs and lead to severe failures. Due to this poor
-coverage, state machine replication~\cite{paxos:practical}, a critical
-fault-tolerance technique, can easily break when running with multithreaded
-programs, because buggy schedules may show up in some replicas and cause
-program execution states across replicas to diverge. Therefore, we argue that
-the exponentially many schedules for all inputs is the key reason
-that causes multithreaded programs extremely difficult to get right.
+can show up in production runs and lead to severe failures and vulnerabilities. 
+Therefore, we argue that the exponentially many schedules for all inputs is the 
+key reason that causes a multithreaded program extremely difficult to get right.
 
 
 \section{Shrinking the Haystack with Stable Multithreading}
@@ -168,7 +163,8 @@ threads.\\
 \hline
 \swaptions &  Swaption pricing     & Same number of threads, and the number of
 \\
-           &                &  swaptions is no less than the number of threads.\\
+           &                &  swaptions is no less than the number of 
+threads.\\
 
 \end{tabular}
 \vspace{-.05in}
@@ -240,8 +236,7 @@ Leveraging these two insights, we have invented Stable Multithreading (or \smt),
 a new multithreading approach that reuses each schedule on a wide range of
 inputs, mapping all inputs to a dramatically reduced set of schedules.
 By vastly shrinking the haystack, it addresses all the ``needle-in-a-haystack"
-challenges in understanding, testing, analyzing, verification, and replication
-of
+challenges in understanding, testing, analyzing, and verification of
 multithreaded programs at once, making these programs much easier to get
 right.
 
@@ -299,12 +294,6 @@ evaluation settings. More details will be given in Chapter~\ref{sec:parrot}.
 Interactive theorem proving becomes much easier, too, because verifiers
 need to prove theorems only on the set of schedules enforced in the field.  We
 will describe these benefits in details in Chapter~\ref{sec:peregrine}.
-
-\para{State Machine Replication.} By running the same \smt runtime on each
-replication node (or replica), we can enforce the same small set of schedules
-for a multithreaded program on all replicas and avoid divergence of execution
-states across replicas. We will describe our \crane design on integrating
-\smt with state machine replication service in Chapter~\ref{sec:crane}.
 
 
 \subsection{Caveats}
@@ -394,7 +383,7 @@ inherent in existing \dmt systems and present our evaluation results
 that confirms this problem. Because of this problem, when running with
 \dmt, the number of possible schedules for all inputs remains enormous, so a
 multithreaded program is still extremely difficult to understand, test, analyze,
-verify, or replicate.
+or verify.
 
 In practice, to mitigate these problems, researchers have to augment
 determinism with other techniques.  To support debug \vv{printf}, some

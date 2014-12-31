@@ -9,7 +9,7 @@ schedules) at runtime, probably due to performance favor. Even given only a
 single input, a program may run into excessive schedules, depending on such
 factors as hardware timing and OS scheduling. Considering all inputs, the number
 of schedules is even much greater. It is extremely challenging to understand,
-test, analyze, verify, or replicate this huge amount of schedules for a
+test, analyze, or verify this huge amount of schedules for a
 multithreaded program and make sure all these schedules are free of concurrency
 bugs, thus multithreaded programs are extremely difficult to get right.
 
@@ -22,7 +22,7 @@ proposed a new idea called Stable Multithreading (StableMT) that reuses each
 schedule on a wide range of inputs, greatly reducing the number of possible
 schedules for all inputs. By addressing the key reason that makes multithreading
 difficult to get right, StableMT can make understanding,
-testing, analyzing, verification, and replication of multithreaded programs much
+testing, analyzing, and verification of multithreaded programs much
 easier. To realize \smt, we have built three StableMT systems, \tern,
 \peregrine, and \parrot, with each addressing a distinct research challenge.
 Evaluation on a wide range of 108 popular multithreaded programs in
