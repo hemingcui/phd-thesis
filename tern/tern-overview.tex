@@ -4,7 +4,7 @@ schedules for different inputs? The more reusable a schedule is, the fewer
 schedules are needed for all inputs. \tern is also built as a \dmt system,
 because determinism is especially useful in testing and debugging multithreaded
 programs. Building a multithreading system that is both stable and 
-deterministic is challenging, because as we described in 
+deterministic is challenging, because as we describes in 
 Chapter~\ref{sec:smt-motivation}, the instability problem in typical \dmt 
 systems destabilizes program behaviors on input perturbations,
 defeating the stability benefit brought by \smt. Therefore, this chapter
@@ -61,7 +61,7 @@ on input perturbations and avoids the instability problem. In sum, \tern's
 schedule memoization is the first approach that implements \smt, and the first
 approach that combines \smt and \dmt, greatly reducing the number of schedules
 on all inputs as well as the number of schedules on each input (down to one)
-barring some limitations~\ref{sec:tern-limit}.
+barring some limitations (\S\ref{sec:tern-limit}).
 
 \tern's schedule memoization approach has two major benefits on software
 reliability. First, by reusing schedules shown to work, \tern can avoid

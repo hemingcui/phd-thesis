@@ -53,7 +53,7 @@ discovery, we have invented a new idea called \emph{Stable Multithreading} (or
 schedule on as many as inputs, \smt stabilizes program behaviors against small 
 input perturbations and greatly reduces the number of possible schedules for all
 inputs. By addressing the key reason that makes multithreading difficult to get
-right, StableMT greatly simplifies understanding, testing, analyzing,
+right, \smt greatly simplifies understanding, testing, analyzing,
 and verification of multithreaded programs. Actually, \smt is
 complementary to \dmt, and a multithreading system can be both stable and 
 deterministic. To fully understand the potential of \smt, 
@@ -110,7 +110,7 @@ still race-free. Therefore, we can enforce a \syncscheds in the race-free
 portions of an execution and resort to a \memsched only in the racy portions,
 combining both the efficiency of sync-schedules and determinism of \memscheds. 
 \peregrine implements this form of hybrid-schedule with a new technique called
-\emph{schedule ralaxation}: it first records an execution trace of
+\emph{schedule relaxation}: it first records an execution trace of
 all executed instructions on a new input, and then relaxes the trace into a
 highly reusable hybrid-schedule. Evaluation on a diverse set of programs shows
 that \peregrine is deterministic and efficient, and can frequently reuse
