@@ -16,7 +16,7 @@ Unfortunately, despite decades of effort from both academia and industry,
 multithreaded programs are still notoriously difficult to get right, and these
 programs are plagued with harmful concurrency bugs that can cause wrong outputs,
 program crashes, security breaches, and so on. Our research reveals that a key
-reason of this difficulty is: multithreaded programs have too many
+reason of this difficulty is that multithreaded programs have too many
 possible thread interleavings (or \emph{schedules}) at runtime. Even running on 
 the same input, the concurrently running threads of a program may interleave in 
 too many different ways, depending on such factors as hardware timings and OS
@@ -65,30 +65,30 @@ Multithreading (or \dmt), and the Stable Multithreading (or \smt).
 %% P: intro to the systems we built: with each addressing different challenges.
 To make \smt real, I have worked with Columbia and CMU researchers to build
 three multithreading systems that are both stable and deterministic, 
-\tern~\cite{cui:tern:osdi10},
-\peregrine~\cite{peregrine:sosp11}, and \parrot~\cite{parrot:sosp13}, with each
-addressing a distinct research challenge. We identify and address these three
-challenges as follows.
+\tern~\cite{cui:tern:osdi10}, \peregrine~\cite{peregrine:sosp11}, and 
+\parrot~\cite{parrot:sosp13}, with each addressing a distinct research 
+challenge. We identify and address these three challenges as follows.
 
 \para{Challenge 1: How to compute highly reusable schedules for different
-inputs?} The more reusable a schedule is, the fewer schedules are needed.
+inputs?} The more reusable a schedule is, the fewer schedules are needed for 
+all inputs.
 However, finding highly reusable schedules is hard with existing static or
 dynamic techniques, because statically computed schedules are not guaranteed to
 work at runtime due to the halting problem, and dynamically computing schedules
 may cause prohibitive overhead.
 
-To address this challenge, our first \smt system, \tern~\cite{cui:tern:osdi10}
-(Chapter~\ref{sec:tern}), proposes a technique called \emph{schedule
-memoizatoin} that memoizes a set of past, working schedules, and then reuses
-these schedules on future inputs when possible. This technique is inspired by a
-real-world analogy that human and animals tend to migrate along past, familiar
-routes and avoid possible hazards in unknown ones. In order to find a schedule
-suitable for an input, \tern leverages a set of advanced program analysis
-techniques to compute preconditions on inputs that match a schedule. Evaluation
-on a diverse set of popular programs shows that \tern can reuse a small set of
-schedules to process a wide range of inputs. For instance, just 100 schedules
-for the \apache web server can process 90.3\% of a 4-day trace (122K requests)
-from the Columbia CS website.
+To address this challenge, our first \smt system, 
+\tern~\cite{cui:tern:osdi10} (Chapter~\ref{sec:tern}), proposes a technique 
+called \emph{schedule memoizatoin} that memoizes a set of past, working 
+schedules, and then reuses these schedules on future inputs when possible. This 
+technique is inspired by a real-world analogy that human and animals tend to 
+migrate along past, familiar routes and avoid possible hazards in unknown ones. 
+In order to find a schedule suitable for an input, \tern leverages a set of 
+advanced program analysis techniques to compute preconditions on inputs that 
+match a schedule. Evaluation on a diverse set of popular programs shows that 
+\tern can reuse a small set of schedules to process a wide range of inputs. For 
+instance, just 100 schedules for the \apache web server can process 90.3\% of a 
+4-day trace (122K requests) from the Columbia CS website.
 
 \para{Challenge 2: How to efficiently make executions follow schedules and do
 not deviate?} This challenge also exists in the area of deterministic
@@ -102,7 +102,7 @@ parallel, but these schedules may deviate if there are data races. Overall,
 despite much research effort, people can only choose either full determinism or
 efficiency, but not both.
 
-To address this challenge, our second \smt system,
+To address this challenge, our second \smt (and also \dmt) system,
 \peregrine~\cite{peregrine:sosp11} (Chapter~\ref{sec:peregrine}), stands out
 with an observation: although many programs have races, the races tend to occur
 only within minor portions of an execution, and the majority of the execution is
@@ -119,8 +119,8 @@ sites such as \acmtechnews, \tgdaily, and \physorg.
 
 \para{Challenge 3: How to make \smt simple, fast, and deployable?} In the last
 five years, \smt has achieved promising advances and attracted the research
-community's interest. Numerous notable \smt systems~\cite{determinator:osdi10,
-cui:tern:osdi10, peregrine:sosp11, dthreads:sosp11, ics:oopsla13} have been
+community's interests. Numerous notable \smt systems~\cite{determinator:osdi10,
+cui:tern:osdi10, peregrine:sosp11, dthreads:sosp11, bergan:oopsla13} have been
 built, including our \tern and \peregrine systems. However, it remains an open
 challenge whether \smt can be made simple, fast, and deployable. Existing \smt
 systems either run into slow schedules that \emph{serialize} parallel
@@ -142,30 +142,32 @@ without affecting correctness of a program. Evaluation on a wide range of 108
 popular programs (\eg, \bdb and \mplayer), roughly 10$\times$ more programs than
 any prior \smt or \dmt evaluation, and about 4$\times$ more programs than all
 prior evaluations combined, shows that, these hints are easy to add and make
-\parrot fast (merely 12.7\% mean overhead on 24-core machines). To encourage
-deployment, we have made \parrot's source code, entire benchmarks, and raw
+\parrot fast (merely 12.7\% mean overhead on 24-core machines). To encourage 
+\smt deployment, we have made \parrot's source code, entire benchmarks, and raw
 evaluation results public at: \github.
 
 %% P5: StableMT's applications.
-In addition to building the aforementioned three \smt systems, to encourage 
-\smt deployments, we have been applying \smt to improve several reliability 
-tools. First, we have applied 
-\tern~\cite{cui:tern:osdi10} and \peregrine~\cite{peregrine:sosp11} 
-respectively to reproduce several real-world concurrency bugs, and found that 
-\smt's schedules can consistently mask or reproduce these bugs, and these 
-schedules are stable to input perturbations (Chapter~\ref{sec:tern} 
-and~\ref{sec:peregrine}). Second, we have applied \peregrine to greatly improve 
-the precision of program analysis~\cite{wu:pldi12} and 
-verification~\cite{wu:pldi12}, leading to several new harmful concurrency bugs 
-detected in heavily-studied programs (Chapter~\ref{sec:peregrine}). Third, we 
-have quantitatively shown that \parrot can increase the coverage by many orders 
-of magnitudes (Chapter~\ref{sec:parrot}) for model checking, an advanced 
-technique that systematically tests schedules and try to find 
-bugs~\cite{parrot:sosp13, dbug:spin11, modist:nsdi09}. Each of our three \smt 
-systems can benefit all these three reliability tools with moderate engineering 
-effort, because many techniques in our \smt systems are common. For instance, 
-\parrot can also make reproducing concurrency bugs much easier because it 
-enforces a similar form of schedule to that in \tern.
+In addition to building \smt systems, we have also been applying \smt to 
+improve several reliability tools, which justifies its potential. First, we 
+have applied \tern~\cite{cui:tern:osdi10} and 
+\peregrine~\cite{peregrine:sosp11} respectively to reproduce several real-world 
+concurrency bugs, and found that \smt's schedules can consistently mask or 
+reproduce these bugs, and these schedules are stable to input perturbations 
+(Chapter~\ref{sec:tern} and~\ref{sec:peregrine}). In a traditional 
+multithreading approach, reproducing these concurrency bugs are 
+extremely hard because of the excessive amount of possible schedules. Second, 
+we have applied \peregrine to greatly improve the precision of program 
+analysis~\cite{wu:pldi12} and verification~\cite{wu:pldi12}, leading to several 
+new harmful concurrency bugs detected in heavily-studied programs 
+(Chapter~\ref{sec:peregrine}). Third, we have quantitatively shown that \parrot 
+can increase the coverage by many orders of magnitudes 
+(Chapter~\ref{sec:parrot}) for model checking, an advanced technique that 
+systematically tests schedules and try to find bugs~\cite{parrot:sosp13, 
+dbug:spin11, modist:nsdi09}. Each of our three \smt systems can benefit all 
+these three reliability tools with moderate engineering effort, because many 
+techniques in our \smt systems are similar. For instance, \parrot can also make 
+reproducing concurrency bugs much easier because it enforces a similar form of 
+schedule to that in \tern.
 
 These \smt applications have attracted the community's interests. For instance,
 some of our \smt techniques and ideas have been leveraged by University of

@@ -1,12 +1,12 @@
 The last two chapters have presented \tern and \peregrine, the two 
 multithreading systems that are both stable and deterministic. Other 
 researchers have also been building and applying \smt 
-systems~\cite{determinator:osdi10, dthreads:sosp11, ics:oopsla13} to improve 
+systems~\cite{determinator:osdi10, dthreads:sosp11, bergan:oopsla13} to improve 
 software reliability. However, despite of these recent advances, it remains an 
 open challenge that whether \smt can be made simple, fast, and deployable on a 
 wide range of multithreaded programs, because existing work either require 
 sophisticated program analysis~\cite{cui:tern:osdi10, peregrine:sosp11, 
-ics:oopsla13}, or incur prohibitive performance overhead (\eg, 30$\times$ 
+bergan:oopsla13}, or incur prohibitive performance overhead (\eg, 30$\times$ 
 slowdown in a previous system~\cite{dthreads:sosp11} with many programs in our 
 evaluation (\S\ref{sec:parrot-eval}).
 
@@ -26,14 +26,14 @@ dthreads:sosp11, peregrine:sosp11}, which
 is created by my collaborators and me, aims to reduce the number possibles
 schedules on all inputs. Other researchers have also been building and applying
 \smt
-systems~\cite{determinator:osdi10, dthreads:sosp11, ics:oopsla13} to improve
+systems~\cite{determinator:osdi10, dthreads:sosp11, bergan:oopsla13} to improve
 software reliability. These work have shown to greatly improve the
 reliability of multithreaded programs, including: (1) making reproducing
 concurrency bugs much easier~\cite{cui:tern:osdi10, peregrine:sosp11}, (2)
 improving precision of program analysis~\cite{peregrine:sosp11, wu:pldi12},
 leading to several new harmful data races detected in heavily-tested programs,
 and (3) computing a small set of schedules to get full input
-coverage~\cite{ics:oopsla13}.
+coverage~\cite{bergan:oopsla13}.
 Second, Deterministic Multithreading
 (or \dmt)~\cite{dmp:asplos09,kendo:asplos09,coredet:asplos10,
 dos:osdi10,grace:oopsla09} addresses the nondeterminism problem, and it focuses
