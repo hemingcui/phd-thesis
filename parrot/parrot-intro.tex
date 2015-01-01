@@ -1,20 +1,21 @@
-The last two chapters have presented \tern and \peregrine, the two 
+The last two chapters have presented \tern and \peregrine, our two 
 multithreading systems that are both stable and deterministic. Other 
 researchers have also been building and applying \smt 
 systems~\cite{determinator:osdi10, dthreads:sosp11, bergan:oopsla13} to improve 
 software reliability. However, despite of these recent advances, it remains an 
 open challenge that whether \smt can be made simple, fast, and deployable on a 
-wide range of multithreaded programs, because existing work either require 
+wide range of multithreaded programs. Existing systems either require 
 sophisticated program analysis~\cite{cui:tern:osdi10, peregrine:sosp11, 
 bergan:oopsla13}, or incur prohibitive performance overhead (\eg, 30$\times$ 
 slowdown in a previous system~\cite{dthreads:sosp11} with many programs in our 
-evaluation (\S\ref{sec:parrot-eval}).
+evaluation in \S\ref{sec:parrot-eval}), causing \smt difficult to be widely 
+deployed.
 
 To address this open challenge, this chapter presents \parrot, a simple, fast,
 and deployable multithreading runtime system that is both stable and 
-deterministic, simplifying deployment. \parrot
-recovers lost performance caused by \smt schedules with a new programming
-construct call \emph{performance hints} (\S\ref{sec:parrot-hints}).
+deterministic. The key novelty of \parrot is that it recovers lost performance 
+caused by enforcing \smt schedules with a new programming construct call 
+\emph{performance hints} (\S\ref{sec:parrot-hints}).
 
 \section{Introduction} \label{sec:parrot-intro}
 
@@ -32,8 +33,8 @@ reliability of multithreaded programs, including: (1) making reproducing
 concurrency bugs much easier~\cite{cui:tern:osdi10, peregrine:sosp11}, (2)
 improving precision of program analysis~\cite{peregrine:sosp11, wu:pldi12},
 leading to several new harmful data races detected in heavily-tested programs,
-and (3) computing a small set of schedules to get full input
-coverage~\cite{bergan:oopsla13}.
+and (3) computing a small set of schedules to cover all or most 
+inputs~\cite{bergan:oopsla13}.
 Second, Deterministic Multithreading
 (or \dmt)~\cite{dmp:asplos09,kendo:asplos09,coredet:asplos10,
 dos:osdi10,grace:oopsla09} addresses the nondeterminism problem, and it focuses
@@ -53,9 +54,9 @@ evaluation of prior systems which often used (1) synthetic benchmarks, not
 real-world programs, from incomplete benchmark suites; (2) one workload
 per program; and (3) at most 8 cores (with three exceptions; see
 \S\ref{sec:parrot-related}). For instance, while a previous
-system~\cite{dthreads:sosp11} achieves reasonable performance overhead on 14
-scientific benchmark programs, we observed
-this system incurred 30$\times$ slowdown in many other programs in our
+system \dthreads~\cite{dthreads:sosp11} achieves reasonable performance overhead on 14
+scientific benchmark programs, we observed that
+this system incurred 30$\times$ slowdown with many other programs in our
 evaluation.
 
 This open challenge comes from the design choices of existing \smt systems. 
@@ -79,8 +80,8 @@ requires sophisticated program analysis, complicating deployment.
 
 
 
-To tackle this open challenge, this chapter presents \parrot, our third \smt and
-\dmt system, with three contributions.
+To tackle this open challenge, this chapter presents \parrot, our third \smt (and
+also \dmt) system, with three contributions.
 First, \parrot is a simple, practical runtime that efficiently makes
 threads deterministic and stable by offering a new contract to developers.
 By default, it schedules synchronizations in each thread using
@@ -209,9 +210,9 @@ raw results~\cite{Parrot:github}. In the remaining of this chapter,
 \S\ref{sec:parrot-design} contrasts \parrot with 
 prior systems on an example and gives a high-level design of
 \parrot. \S\ref{sec:parrot-hints} describes the performance hint abstractions
-\parrot provides,\S\ref{sec:parrot-runtime} the \parrot runtime,
+\parrot provides, \S\ref{sec:parrot-runtime} the \parrot runtime,
 and \S\ref{sec:parrot-mc} the
-\parrot-\dbug ecosystem.\S\ref{sec:parrot-discussion} discusses \parrot's
+\parrot-\dbug ecosystem. \S\ref{sec:parrot-discussion} discusses \parrot's
 determinism, \S\ref{sec:parrot-eval}
 presents evaluation results, \S\ref{sec:parrot-related}
 discusses related work, and \S\ref{sec:parrot-summary} concludes.
