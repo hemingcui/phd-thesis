@@ -1,7 +1,8 @@
 \section{Summary}
 \label{sec:tern-summary}
 
-We have presented \tern, the first \smt and \dmt system that makes general
+We have presented \tern, the first stable and deterministic multithreading 
+system that makes general
 multithreaded programs stable by repeating the same schedules on different
 inputs.  \tern does so using schedule memoization: if a schedule is shown
 to work on an input, \tern memoizes the schedule; if a similar input
@@ -15,7 +16,8 @@ few lines of modifications to the multithreaded programs.  We evaluated
 \tern on a diverse set of real programs, including two server programs, one
 desktop program, and 11 scientific programs.  Our results show that
 \tern is easy to use, makes programs more deterministic and stable, and has
-reasonable overhead.  \tern is the first \smt and \dmt system shown to work on
+reasonable overhead.  \tern is the first stable and deterministic system shown 
+to work on
 applications as large, complex, and nondeterministic as \mysql and \apache.
 It demonstrates that \smt and \dmt have the potential to greatly improve
 understanding, testing, and debugging of multithreaded programs, making these

@@ -3,9 +3,10 @@ addresses the first challenge on building \smt: how to compute highly reusable
 schedules for different inputs? The more reusable a schedule is, the fewer
 schedules are needed for all inputs. \tern is also built as a \dmt system,
 because determinism is especially useful in testing and debugging multithreaded
-programs. Building a system that is both \smt and \dmt is challenging, because
-as we described in Chapter~\ref{sec:smt-motivation}, the instability problem in
-typical \dmt systems destabilizes program behaviors on input perturbations,
+programs. Building a multithreading system that is both stable and 
+deterministic is challenging, because as we described in 
+Chapter~\ref{sec:smt-motivation}, the instability problem in typical \dmt 
+systems destabilizes program behaviors on input perturbations,
 defeating the stability benefit brought by \smt. Therefore, this chapter
 also describes our solution on addressing this instability problem.
 
@@ -31,17 +32,20 @@ input, existing \dmt systems consider only current input and ignore previous
 similar inputs.  This stateless design makes schedules over-dependent on inputs,
 so that a slight change to inputs may force a program to (ad)venture into a
 vastly different, potentially buggy schedule, defeating the key stability
-benefit of \smt.  We call this the \emph{instability} problem. This problem is
+benefit of \smt.  This problem is defined as the instability problem in 
+Chapter~\ref{sec:smt-motivation}, and it has been
 confirmed by our results (\S\ref{sec:tern-bug-stable}) from an existing \dmt
-system~\cite{coredet:asplos10}. In fact, even with the same input, existing \dmt
-systems may still force a program into different schedules for minor changes in
-the execution environment such as processor type and shared library.  Thus,
-developers may no longer be able to reproduce bugs by running their
-program on the bug-inducing input, because their machine may differ from
-the machine where the bug occurred. \S\ref{sec:dmt-background} will analyze in
-details why this instability problem is inherent in existing \dmt systems.
+system~\cite{coredet:asplos10}. In fact, even with the same 
+input, existing \dmt systems may still force a program into different schedules 
+for minor changes in the execution environment such as processor type and 
+shared library.  Thus, developers may no longer be able to reproduce bugs by 
+running their program on the bug-inducing input, because their machine may 
+differ from the machine where the bug occurred. \S\ref{sec:dmt-background} will 
+analyze in details why this instability problem is inherent in existing \dmt 
+systems.
 
-This chapter presents \tern, a schedule-centric, stateful \smt and \dmt system. 
+This chapter presents \tern, a schedule-centric, stateful multithreading system 
+that is both stable and deterministic. 
 It addresses the aforementioned two research challenges with a new idea called
 \emph{schedule memoization} that memoizes past working schedules and reuses them
 for future inputs.  Specifically, \tern maintains a cache of past schedules and
@@ -62,12 +66,12 @@ barring some limitations~\ref{sec:tern-limit}.
 \tern's schedule memoization approach has two major benefits on software
 reliability. First, by reusing schedules shown to work, \tern can avoid
 potential errors in unknown schedules.  This advantage is illustrated in
-Figure~\ref{fig:tern-idea}. A real-world analogy to schedule memoization is the
-natural tendencies in humans and animals to follow familiar routes to avoid
-possible hazards along unknown routes.  Migrant birds, for example, often
-migrate along fixed ``flyways."  We thus name our system after the Arctic Tern,
-a bird species that migrates the farthest among all
-migrants~\cite{artic-tern-wiki}. Second, \tern makes schedules explicit,
+Figure~\ref{fig:smt} in Chapter~\ref{sec:smt-motivation}. A real-world analogy 
+to schedule memoization is the natural tendencies in humans and animals to 
+follow familiar routes to avoid possible hazards along unknown routes.  Migrant 
+birds, for example, often migrate along fixed ``flyways."  We thus name our 
+system after the Arctic Tern, a bird species that migrates the farthest among 
+all migrants~\cite{artic-tern-wiki}. Second, \tern makes schedules explicit,
 providing flexibility in deciding when to memoize certain schedules.  For
 instance, \tern allows developers to populate a schedule cache offline, to avoid
 the overhead of doing so online.  Moreover, \tern can check for errors (\eg,
@@ -88,16 +92,16 @@ server into \emph{windows} and lets the server quiesce in between, so that \tern
 can memoize and reuse schedules across windows.  Within a window, it admits
 requests only at fixed schedule points, reducing timing nondeterminism.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=.5\textwidth]{tern/figures/idea.eps}
-\caption{\small{\em Advantage of schedule memoization.}  Each solid shape
-  represents an input, and each curved line a schedule.  Schedule
-  memoization reuses schedules when possible, avoiding bugs in unknown
-  schedules and making program behaviors repeatable across similar
-  inputs.}
-\label{fig:tern-idea}
-\end{figure}%% % background on nondeterminism
+% \begin{figure}[t]
+% \centering
+% \includegraphics[width=.5\textwidth]{tern/figures/idea.eps}
+% \caption{\small{\em Advantage of schedule memoization.}  Each solid shape
+%   represents an input, and each curved line a schedule.  Schedule
+%   memoization reuses schedules when possible, avoiding bugs in unknown
+%   schedules and making program behaviors repeatable across similar
+%   inputs.}
+% \label{fig:tern-idea}
+% \end{figure}%% % background on nondeterminism
 
 
 We implemented \tern in Linux.  It runs as ``parasitic"
@@ -139,12 +143,14 @@ benchmarks used by \apache and \mysql developers.  Our results show that
 \end{enumerate}
 
 Our main conceptual contributions are that we addressed the two research
-challenges on building a system that is both \smt and \dmt with a new idea
-called schedule memoization. To make \tern practically support server programs
-that have input timing nondeterminism and infinite schedules, we proposed
+challenges on building a multithreading system that is both stable and deterministic with a 
+new idea called schedule memoization. To make \tern practically support server 
+programs that have input timing nondeterminism and infinite schedules, we 
+proposed
 another new idea called windowing. Our engineering contributions include the
 \tern system and its evaluation on real programs.  To the best of our knowledge,
-\tern is the first \smt and \dmt system, the first to mitigate input timing
+\tern is the first multithreading system that is both stable and deterministic, the first to 
+mitigate input timing
 nondeterminism, and the first shown to work on programs as large, complex, and
 nondeterministic as \apache and \mysql.
 

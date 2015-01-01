@@ -39,7 +39,7 @@ input data.  \dmt (\ref{fig:dmt}) may map each input to an arbitrary
 schedule, reducing programs' robustness on input perturbations.  \smt
 (\ref{fig:smt} and \ref{fig:smtn}) reduces the total set of schedules
 for all inputs (represented by the shrunk ellipses), increasing robustness and
-improving reliability. \smt and \dmt are complementary: a \smt system can be
+improving reliability. \smt is complementary to \dmt: a \smt system can be
 deterministic (\ref{fig:smt}) or nondeterministic (\ref{fig:smtn}).}
 \vspace{-.2in}
 \end{center}
@@ -99,12 +99,12 @@ lock $k$ times, each order of lock acquisitions forms a schedule, easily
 yielding $\frac{(mk)!}{(k!)^m} \ge (m!)^k$ total schedules---a number
 exponential in both $m$ and $k$. Aggregated over all inputs, the number of
 schedules is even greater. Figure~\ref{fig:nondet} depicts the traditional
-multithreading approach. Conceptually, traditional multithreading runtimes
-(\eg, \pthread) maintain a many-to-many mapping from inputs to schedules, where
-one input may execute under many schedules depending on such factors as hardware
-timings and OS scheduling, and many inputs may execute under one schedule
-because a schedule fixes the order of the communication operations but allows
-the local computations to operate on any input data.
+multithreading approach. Conceptually, traditional multithreading approaches
+(\eg, the \pthread runtime) maintain a many-to-many mapping from inputs to 
+schedules, where one input may execute under many schedules depending on such 
+factors as hardware timings and OS scheduling, and many inputs may execute 
+under one schedule because a schedule fixes the order of the communication 
+operations but allows the local computations to operate on any input data.
 
 Finding a few buggy schedules in these exponentially many schedules raises
 a series of ``needle-in-a-haystack" challenges on understanding, testing,
@@ -246,7 +246,7 @@ By vastly reducing the set of schedules, \smt brings numerous reliability
 benefits to multithreading.  We describe several:
 
 \para{Understanding.} Developers now only need to focus on understanding a much
-smaller set of schedules and make sure they are free of concurrency bugs, which
+smaller set of schedules and make sure that they are free of concurrency bugs, which
 can greatly reduce their burden. For instance, because \smt stabilizes program
 behaviors on a set of inputs that can share the same schedule, then
 after developers check that the program behavior on one input is correct, they

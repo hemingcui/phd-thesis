@@ -23,7 +23,7 @@ too many different ways, depending on such factors as hardware timings and OS
 scheduling. Considering all inputs, the number of possible schedules is even
 greater. Chapter~\ref{sec:smt-motivation} will quantify the number of
 possible schedules in multithreaded programs running in a traditional
-multithreading runtime. It is extremely challenging to understand, test, 
+multithreading approach. It is extremely challenging to understand, test, 
 analyze, or verify all these schedules in a multithreaded program and 
 make sure that they are free of concurrency bugs. Therefore, a concurrency bug 
 within an unchecked schedule can show up in production runs and lead to severe 
@@ -31,10 +31,11 @@ failures and vulnerabilities.
 
 %% P3: DMT: one possible approach. And its limitations.
 To make multithreading easier to get right, researchers have proposed an idea 
-called \emph{Deterministic Multithreading} (or \dmt)~\cite{dthreads:sosp11, 
-dpj:oopsla09, dmp:asplos09, kendo:asplos09, coredet:asplos10} that always 
-enforces the same schedule on the same input, greatly improving reliability for 
-a multithreaded program on each input. However, as we will further analyze in
+called \emph{Deterministic Multithreading} (or 
+\emph{\dmt})~\cite{dthreads:sosp11, dpj:oopsla09, dmp:asplos09, kendo:asplos09, 
+coredet:asplos10} that always enforces the same schedule on the same input, 
+greatly improving reliability for a multithreaded program on each input. 
+However, as we will further analyze in
 Chapter~\ref{sec:smt-motivation}, although \dmt is useful, it is not as useful
 as commonly perceived. The reason is because a typical \dmt system can enforce
 very different schedules on slightly different inputs, artificially reducing
@@ -45,25 +46,26 @@ are still very hard to understand, test, analyze, or verify.
 %% P: StableMT: our new approach and thesis.
 In order to reduce the number of schedules for all inputs, we have studied the
 relation between inputs and schedules of real-world programs, and made an
-interesting discovery: many programs need only a small set of schedules to
+exciting discovery: many programs need only a small set of schedules to
 efficiently process a wide range of inputs~\cite{smt:cacm}! Leveraging this
 discovery, we have invented a new idea called \emph{Stable Multithreading} (or 
-\smt) that reuses each schedule on a wide range of inputs. By reusing a 
+\emph{\smt}) that reuses each schedule on a wide range of inputs. By reusing a 
 schedule on as many as inputs, \smt stabilizes program behaviors against small 
 input perturbations and greatly reduces the number of possible schedules for all
 inputs. By addressing the key reason that makes multithreading difficult to get
 right, StableMT greatly simplifies understanding, testing, analyzing,
 and verification of multithreaded programs. Actually, \smt is
-complementary to \dmt, and a system can be both stable and deterministic. To 
-fully understand the potential of \smt, Chapter~\ref{sec:smt-motivation} will 
-discuss in details on the three types of multithreading runtimes: the 
-traditional multithreading, the deterministic multithreading (\dmt), and the 
-stable multithreading (\smt).
+complementary to \dmt, and a multithreading system can be both stable and 
+deterministic. To fully understand the potential of \smt, 
+Chapter~\ref{sec:smt-motivation} will discuss in details on the three types of 
+multithreading approaches: the traditional multithreading, the Deterministic 
+Multithreading (or \dmt), and the Stable Multithreading (or \smt).
 
 
 %% P: intro to the systems we built: with each addressing different challenges.
 To make \smt real, I have worked with Columbia and CMU researchers to build
-three \smt (and also \dmt) systems, \tern~\cite{cui:tern:osdi10},
+three multithreading systems that are both stable and deterministic, 
+\tern~\cite{cui:tern:osdi10},
 \peregrine~\cite{peregrine:sosp11}, and \parrot~\cite{parrot:sosp13}, with each
 addressing a distinct research challenge. We identify and address these three
 challenges as follows.
@@ -125,7 +127,7 @@ systems either run into slow schedules that \emph{serialize} parallel
 computation, or are fairly hard to deploy due to their high complexity (\eg,
 \tern and \peregrine require sophisticated program analysis).
 
-To address with this challenge, our third \smt system, 
+To address this challenge, our third \smt system, 
 \parrot~\cite{parrot:sosp13}
 (Chapter~\ref{sec:parrot}), presents a simple, deployable runtime that enforces
 a well-defined round-robin schedule for synchronization operations, vastly
@@ -145,32 +147,30 @@ deployment, we have made \parrot's source code, entire benchmarks, and raw
 evaluation results public at: \github.
 
 %% P5: StableMT's applications.
-In addition to implementing \smt systems, we have also been applying \smt to 
-improve several reliability tools and demonstrated \smt's potential. First, 
-we have applied \tern~\cite{cui:tern:osdi10} and 
-\peregrine~\cite{peregrine:sosp11}
-respectively to reproduce several real-world concurrency bugs, and found that
-\smt's schedules can consistently mask or reproduce these bugs, and these
+In addition to building the aforementioned three \smt systems, to encourage 
+\smt deployments, we have been applying \smt to improve several reliability 
+tools. First, we have applied 
+\tern~\cite{cui:tern:osdi10} and \peregrine~\cite{peregrine:sosp11} 
+respectively to reproduce several real-world concurrency bugs, and found that 
+\smt's schedules can consistently mask or reproduce these bugs, and these 
 schedules are stable to input perturbations (Chapter~\ref{sec:tern} 
 and~\ref{sec:peregrine}). Second, we have applied \peregrine to greatly improve 
-the precision of program
-analysis~\cite{wu:pldi12} and verification~\cite{wu:pldi12}, leading to several
-new harmful concurrency bugs detected in heavily-studied programs 
-(Chapter~\ref{sec:peregrine}). Third, we have quantitatively shown that \parrot 
-can increase the coverage by many orders
+the precision of program analysis~\cite{wu:pldi12} and 
+verification~\cite{wu:pldi12}, leading to several new harmful concurrency bugs 
+detected in heavily-studied programs (Chapter~\ref{sec:peregrine}). Third, we 
+have quantitatively shown that \parrot can increase the coverage by many orders 
 of magnitudes (Chapter~\ref{sec:parrot}) for model checking, an advanced 
-technique that systematically
-tests schedules and try to find bugs~\cite{parrot:sosp13, dbug:spin11,
-modist:nsdi09}. Each of our three \smt systems can benefit all these three
-reliability tools with modest engineering effort, because many techniques
-in our \smt systems are common. For instance, \parrot can also make
-reproducing concurrency bugs much easier because it enforces a similar form
-of schedule to that in \tern.
+technique that systematically tests schedules and try to find 
+bugs~\cite{parrot:sosp13, dbug:spin11, modist:nsdi09}. Each of our three \smt 
+systems can benefit all these three reliability tools with moderate engineering 
+effort, because many techniques in our \smt systems are common. For instance, 
+\parrot can also make reproducing concurrency bugs much easier because it 
+enforces a similar form of schedule to that in \tern.
 
 These \smt applications have attracted the community's interests. For instance,
 some of our \smt techniques and ideas have been leveraged by University of
 Washington researchers to compute a small set of schedules to cover all or most
-inputs for some multithreaded programs~\cite{bergan:oopsla13}.
+inputs for multithreaded programs~\cite{bergan:oopsla13}.
 
 The rest of the thesis is organized as follows. Chapter~\ref{sec:smt-motivation}
 presents the motivation and background of \smt. Chapter~\ref{sec:tern} presents

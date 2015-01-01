@@ -1,16 +1,18 @@
-The last two chapters have presented two \smt and \dmt systems, \tern and
-\peregrine. Other researchers have also been building and applying \smt
-systems~\cite{determinator:osdi10, dthreads:sosp11, ics:oopsla13} to improve
-software reliability. However, despite of these recent advances, it remains an
-open challenge that whether \smt can be made simple, fast, and deployable on a
-wide range of multithreaded programs, because existing work either require
-sophisticated program analysis~\cite{cui:tern:osdi10, peregrine:sosp11,
-ics:oopsla13}, or incur prohibitive performance overhead (\eg, 30$\times$
-slowdown in a previous system~\cite{dthreads:sosp11} with many programs in our
+The last two chapters have presented \tern and \peregrine, the two 
+multithreading systems that are both stable and deterministic. Other 
+researchers have also been building and applying \smt 
+systems~\cite{determinator:osdi10, dthreads:sosp11, ics:oopsla13} to improve 
+software reliability. However, despite of these recent advances, it remains an 
+open challenge that whether \smt can be made simple, fast, and deployable on a 
+wide range of multithreaded programs, because existing work either require 
+sophisticated program analysis~\cite{cui:tern:osdi10, peregrine:sosp11, 
+ics:oopsla13}, or incur prohibitive performance overhead (\eg, 30$\times$ 
+slowdown in a previous system~\cite{dthreads:sosp11} with many programs in our 
 evaluation (\S\ref{sec:parrot-eval}).
 
 To address this open challenge, this chapter presents \parrot, a simple, fast,
-and deployable \smt and \dmt runtime system, simplifying deployment. \parrot
+and deployable multithreading runtime system that is both stable and 
+deterministic, simplifying deployment. \parrot
 recovers lost performance caused by \smt schedules with a new programming
 construct call \emph{performance hints} (\S\ref{sec:parrot-hints}).
 
@@ -18,7 +20,8 @@ construct call \emph{performance hints} (\S\ref{sec:parrot-hints}).
 
 To reduce the number of possible schedules and make multithreading easier to get
 right, two complementary techniques have been invented by researchers recently.
-First, Stable Multithreading (\smt)~\cite{determinator:osdi10, cui:tern:osdi10,
+First, Stable Multithreading (or \smt)~\cite{determinator:osdi10, 
+cui:tern:osdi10,
 dthreads:sosp11, peregrine:sosp11}, which
 is created by my collaborators and me, aims to reduce the number possibles
 schedules on all inputs. Other researchers have also been building and applying
@@ -32,15 +35,15 @@ leading to several new harmful data races detected in heavily-tested programs,
 and (3) computing a small set of schedules to get full input
 coverage~\cite{ics:oopsla13}.
 Second, Deterministic Multithreading
-(\dmt)~\cite{dmp:asplos09,kendo:asplos09,coredet:asplos10,
+(or \dmt)~\cite{dmp:asplos09,kendo:asplos09,coredet:asplos10,
 dos:osdi10,grace:oopsla09} addresses the nondeterminism problem, and it focuses
 on reducing the number of possible schedules on each input down to one. \dmt is
 especially useful in testing and debugging multithreaded programs, however, we
 have previously stated in Chapter~\ref{sec:smt-motivation} that \dmt is not as
 useful as commonly perceived, and \smt is better for improving reliability of
-multithreaded programs. \smt and \dmt are complementary, and several systems
-(\eg, \cite{determinator:osdi10, dthreads:sosp11, cui:tern:osdi10,
-peregrine:sosp11}) are both \smt and \dmt.
+multithreaded programs. \smt is complementary to \dmt, and several 
+multithreading systems (\eg, \cite{determinator:osdi10, dthreads:sosp11, 
+cui:tern:osdi10, peregrine:sosp11}) are both stable and deterministic.
 
 However, despite of these recent advances, it remains an
 open challenge that whether \smt can be made simple, fast, and deployable on a
@@ -78,8 +81,7 @@ requires sophisticated program analysis, complicating deployment.
 
 To tackle this open challenge, this chapter presents \parrot, our third \smt and
 \dmt system, with three contributions.
-First, \parrot is \footnote{We name our system after one of the most
-  trainable birds.} a simple, practical runtime that efficiently makes
+First, \parrot is a simple, practical runtime that efficiently makes
 threads deterministic and stable by offering a new contract to developers.
 By default, it schedules synchronizations in each thread using
 round-robin, vastly reducing schedules and providing broad repeatability.
@@ -90,9 +92,9 @@ performance debugging by deterministically reproducing the bottlenecks.
 The hints are robust to developer mistakes as they can be safely ignored
 without affecting correctness. Like prior systems, \parrot's contract reduces
 schedules to favor correctness over performance.  Unlike prior systems, it
-allows advanced developers
-to optimize performance.  We believe this practical ``meet in the
-middle'' contract eases writing correct, efficient programs.
+allows advanced developers to optimize performance.  We believe this practical 
+``meet in the middle'' contract eases writing correct, efficient programs. For 
+this reason, we name this system \parrot, one of the most trainable birds.
 
 
 \parrot provides two performance hint abstractions.  A \emph{soft

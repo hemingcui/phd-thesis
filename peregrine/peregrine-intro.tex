@@ -1,9 +1,9 @@
-The last chapter presents \tern, the first \smt and \dmt system. However, \tern
-enforces best-effort determinism, and its executions may be nondeterministic
-when data races exist. To overcome this limitation, this chapter presents
-\peregrine, our second \smt and \dmt system that can still frequently reuse
-schedules on many inputs, and can enforce full determinism with reasonable
-overhead.
+The last chapter presents \tern, the first system that is both stable and 
+deterministic. However, \tern enforces best-effort determinism, and its 
+executions may be nondeterministic when data races exist. To overcome this 
+limitation, this chapter presents \peregrine, our second \smt (and also \dmt) 
+system that can still frequently reuse schedules on many inputs, and can 
+enforce full determinism with reasonable overhead.
 
 \section{Introduction} \label{sec:peregrine-intro}
 
@@ -27,14 +27,16 @@ failures and vulnerabilities.
 %% deterministic schedules efficiently.
 To reduce the number of possible schedules and make multithreading easier to get
 right, two complementary techniques have been invented by researchers recently.
-Stable Multithreading (\smt)~\cite{determinator:osdi10, cui:tern:osdi10}, which
+Stable Multithreading (or \smt)~\cite{determinator:osdi10, cui:tern:osdi10}, 
+which
 is created by my collaborators and me, aims to reduce the number possibles
 schedules on all inputs. Deterministic Multithreading
-(\dmt)~\cite{dmp:asplos09,kendo:asplos09,coredet:asplos10,
+(or \dmt)~\cite{dmp:asplos09,kendo:asplos09,coredet:asplos10,
 dos:osdi10,grace:oopsla09} addresses the nondeterminism problem, and it focuses
 on reducing the number of possible schedules on each input down to one. Notably,
-our \tern system described in Chapter~\ref{sec:tern} is the first \smt and \dmt
-system. Unfortunately, despite these efforts, an open challenge~\cite{wodet11}
+our \tern system described in Chapter~\ref{sec:tern} is the first multithreading 
+system that is both stable and deterministic. Unfortunately, despite these 
+efforts, an open challenge~\cite{wodet11}
 well recognized by the research community remains: how to build \emph{both
 deterministic and efficient} \dmt systems for general multithreaded programs on
 commodity multiprocessors.  Existing \dmt systems either incur prohibitive
@@ -213,7 +215,7 @@ techniques~\cite{idna:vee06}; and it requires no manual efforts except a
 few annotations for handling server programs and for improving precision.
 
 Our main contributions are the schedule-relaxation approach and \peregrine, an
- efficient \smt and \dmt system.  Additional contributions include
+ efficient stable and deterministic multithreading system.  Additional contributions include
 the ideas of hybrid schedules, determinism-preserving slicing, and
 schedule-guided simplification.  To our knowledge, our slicing technique
 is the first to compute correct (non-trivial) preconditions for
