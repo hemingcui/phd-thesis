@@ -9,7 +9,7 @@
 % knowledge, we are the first to distinguish these two separate
 % properties~\cite{smt:cacm,smt:hotpar13}.
 
-\para{DMT and \smt systems.} Implementation-wise, several previous systems are 
+\para{\smt and \dmt systems.} Implementation-wise, several previous systems are 
 not backward-compatible because they require new hardware~\cite{dmp:asplos09}, 
 new language~\cite{dpj:oopsla09}, or new programming model and
 OS~\cite{determinator:osdi10}.  Among backward-compatible systems, some
@@ -20,7 +20,7 @@ each thread's load with low-level instruction counts, so they are not
 stable.
 
 Five systems can be classified as \smt systems.  Our
-\tern~\cite{cui:tern:osdi10} and \peregrine~\cite{peregrine:sosp11} systems
+\tern~(Chapter~\ref{sec:tern}) and \peregrine~(Chapter~\ref{sec:peregrine}) systems
 require sophisticated program analysis to determine input and schedule
 compatibility, complicating deployment. Bergan {\it et
   al}~\cite{bergan:oopsla13} built upon the ideas in \tern and \peregrine
@@ -44,7 +44,7 @@ little previous work except ours~\cite{cui:tern:osdi10, peregrine:sosp11,
 wu:pldi12} has demonstrated how the approaches benefit testing or reported any 
 quantitative results on improving reliability, making it difficult for potential 
 adopters to justify the overhead.
- 
+
 \para{State-space reduction.} \parrot greatly reduces the state space of
 model checking, so it bears similarity to \emph{state-space reduction
   techniques} (\eg,~\cite{godefroid:verisoft, flanagan:dynamicpo,

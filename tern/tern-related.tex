@@ -1,17 +1,11 @@
 \section{Related Work} \label{sec:tern-related}
 
 \noindent
-{\bf Deterministic Execution} \tern differs from existing \dmt
-systems~\cite{dmp:asplos09,coredet:asplos10,kendo:asplos09} by making
-threads stable, \ie, repeating familiar behaviors across different inputs.
-Another difference is that \tern reduces timing nondeterminism for server
-programs through windowing.
-
-% \tern is a software-only approach for multithreaded programs with general
-% semantics (\eg, not fork-join~\cite{grace:oopsla09}) and written in legacy
-% languages such as C and C++, in contrast to new programming languages
-% (\eg~\cite{shim,streamit}), hardware-based approaches~\cite{dmp:asplos09}, and
-% systems for programs with restricted semantics~\cite{grace:oopsla09}.
+{\bf \smt and \dmt systems.} Although \tern provides determinism, it 
+differs from existing \dmt systems~\cite{dmp:asplos09, coredet:asplos10, 
+kendo:asplos09} by making threads stable, \ie, repeating familiar behaviors 
+across different inputs. Another difference is that \tern reduces timing 
+nondeterminism for server programs through the windowing approach.
 
 The closest system to \tern in this category is
 Kendo~\cite{kendo:asplos09}, a software-only \dmt system that also
@@ -30,18 +24,16 @@ programs with fork-join parallelism behave like sequential programs.  It
 runs each thread within a process and commits memory writes atomically and
 deterministically.  It detects memory access conflicts efficiently using
 hardware page protection.  Grace has been shown to perform and scale well
-on Phoenix benchmarks~\cite{phoenix-benchmarks} and a Cilk~\cite{cilk}
+on \phoenix benchmarks~\cite{phoenix-benchmarks} and a Cilk~\cite{cilk}
 benchmark.  Unlike Grace, \tern aims to make general multithreaded
 programs, not just fork-join programs, deterministic and stable.
 
-%Several new program languages can make programs
-%written in them deterministic.  Although a language-based approach may be
-%the ultimate solution to determinism and stability, existing 
-
 \noindent
 {\bf Deterministic Replay} Deterministic
-replay~\cite{r2:osdi,friday2007,srinivasan:flashback,revirt,dejavu,vmware-record-replay,smp-revirt:vee08,pres:sosp09,scribe:sigmetrics10,odr:sosp09,capo:asplos09}
-aims to replay the exact recorded executions, whereas \tern ``replays''
+replay~\cite{r2:osdi,friday2007,srinivasan:flashback,revirt,dejavu,
+vmware-record-replay,smp-revirt:vee08,pres:sosp09,scribe:sigmetrics10,odr:sosp09
+,capo:asplos09}
+aims to replay the exact recorded executions, whereas \tern ``replays"
 memoized schedules on different inputs.  Some recent deterministic replay
 systems include Scribe, which tracks page ownership to enforce
 deterministic memory access~\cite{scribe:sigmetrics10}; Capo, which defines
@@ -60,7 +52,8 @@ errors~\cite{lu:concurrency-bugs}, which can be deterministically
 reproduced or avoided using only synchronization orders.
 
 Much work exists on concurrency error
-detection~\cite{yu:racetrack:sosp,savage:eraser,racerx:sosp03,lu:muvi:sosp,avio:asplos06,conmem:asplos10},
+detection~\cite{yu:racetrack:sosp,savage:eraser,racerx:sosp03,lu:muvi:sosp,
+avio:asplos06,conmem:asplos10},
 diagnosis~\cite{racefuzzer:pldi08,ctrigger:asplos09,atomfuzzer:fse08}, and
 correction~\cite{dimmunix:osdi08,gadara:osdi08}.  \tern aims to make the
 executions of multithreaded programs deterministic and stable, and is
@@ -72,7 +65,9 @@ it selects.  Moreover, even for programs free of concurrency errors,
 \noindent {\bf Symbolic Execution} The combination of symbolic and
 concrete executions has been a hot research topic.  Researchers have built
 scalable and effective symbolic execution systems to detect
-errors~\cite{dart:pldi,cute:fse,godefroid:grammar-fuzzing,godefroid:whitebox-fuzzing,klee:osdi08,yang:malicious-disk:oakland06,cadar:exe:ccs06,s2e:hotdep09,taas:socc10},
+errors~\cite{dart:pldi,cute:fse,godefroid:grammar-fuzzing,
+godefroid:whitebox-fuzzing,klee:osdi08,yang:malicious-disk:oakland06,
+cadar:exe:ccs06,s2e:hotdep09,taas:socc10},
 block malicious inputs~\cite{castro:bouncer}, and preserve privacy in
 error reports~\cite{castro:bug-report-privacy}.  Compared to these
 systems, \tern applies symbolic execution to a new domain: tracking input
