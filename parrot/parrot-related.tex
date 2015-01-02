@@ -2,14 +2,14 @@
 \section{Related Work} \label{sec:parrot-related}
 \vspace{-.02in}
 
-\para{DMT and \smt systems.}  Conceptually, prior
+\para{DMT and \smt systems.}  Conceptually, previous
 work~\cite{dthreads:sosp11, cui:tern:osdi10, peregrine:sosp11,
   determinator:osdi10}, including ours~\cite{cui:tern:osdi10,
   peregrine:sosp11}, conflated determinism and stability.  To our
 knowledge, we are the first to distinguish these two separate
 properties~\cite{smt:cacm,smt:hotpar13}.
 
-Implementation-wise, several prior systems are not backward-compatible
+Implementation-wise, several previous systems are not backward-compatible
 because they require new hardware~\cite{dmp:asplos09}, new
 language~\cite{dpj:oopsla09}, or new programming model and
 OS~\cite{determinator:osdi10}.  Among backward-compatible systems, some
@@ -30,8 +30,8 @@ imbalance, so they are prone to the serialization problem
 ($\S$\ref{sec:parrot-example}). \grace also requires
 fork-join parallelism.
 
-Compared to \parrot's evaluation, prior evaluations have several limitations.
-First, prior work has reported results on a narrow set of programs,
+Compared to \parrot's evaluation, previous evaluations have several limitations.
+First, previous work has reported results on a narrow set of programs,
 typically less than 15.  The programs are mostly synthetic benchmarks, not
 real-world programs, from incomplete suites.  Second, the experimental
 setups are limited, often with one workload per program and up to 8
@@ -40,7 +40,7 @@ cores.\footnote{Three exceptions used more than 8 cores:
   \cite{aviram:thesis} (ran 9 selected programs from \parsec, \splashx, and
   \npb on 32 cores), and \cite{dmp:asplos09} (emulated 16 cores).}
 
-Lastly, little prior work except ours~\cite{wu:pldi12} has demonstrated how the
+Lastly, little previous work except ours~\cite{wu:pldi12} has demonstrated how the
 approaches benefit testing or reported any quantitative results on
 improving reliability, making it difficult for potential adopters to
 justify the overhead.
@@ -74,7 +74,7 @@ memory is implicitly protected and allows advanced developers the
 flexibility to remove protection.  It thus shares a similar high-level
 philosophy with \parrot, but the differences are obvious.  We are unaware of
 any publication describing a fully implemented AME system. \parrot is
-orthogonal to much prior work on concurrency error
+orthogonal to much previous work on concurrency error
 detection~\cite{yu:racetrack:sosp,savage:eraser,racerx:sosp03,lu:muvi:sosp,avio:asplos06,conmem:asplos10},
 diagnosis~\cite{racefuzzer:pldi08,ctrigger:asplos09,atomfuzzer:fse08}, and
 correction~\cite{dimmunix:osdi08,gadara:osdi08,wu:loom:osdi10,cfix:osdi12}. By

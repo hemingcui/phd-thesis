@@ -41,12 +41,12 @@ leverage existing code~\cite{dthreads:sosp11}.
 We deemed the effort not worthwhile for three reasons. First, making data
 races deterministic is often costly.  Second, many races are \emph{ad hoc
   synchronizations} (\eg, ``\v{while(flag)};'')~\cite{syncfinder:osdi10}
-which require manual annotations anyway in some prior systems that make
+which require manual annotations anyway in some previous systems that make
 races deterministic~\cite{dthreads:sosp11, grace:oopsla09}.  Third, most
 importantly, we believe that stability is much more useful for reliability
 than full determinism: once the set of schedules is much reduced, we can
 afford the nondeterminism introduced by a few data races.  Specifically,
-prior work has shown that data races rarely occur if a synchronization
+previous work has shown that data races rarely occur if a synchronization
 schedule is enforced.  For instance, \peregrine~\cite{peregrine:sosp11}
 reported at most 10 races in millions of shared memory accesses
 within an execution.  To reproduce failures caused by the few races, we

@@ -1,6 +1,6 @@
 \section{High-level Design} \label{sec:parrot-design}
 
-This section first compares two prior systems and \parrot using
+This section first compares two previous systems and \parrot using
 an example (\S\ref{sec:parrot-example}), and then describes \parrot's architecture design
 (\S\ref{sec:parrot-arch}).
 
@@ -52,7 +52,7 @@ the producer (main) thread reads file blocks, and multiple consumer
 threads compress them in parallel.  Once the number of threads and the
 number of blocks are given, one synchronization schedule suffices to
 compress \emph{any} file, regardless of file content or size.  Thus, this program appears
-easy to make deterministic and stable.  However, prior systems suffer from
+easy to make deterministic and stable.  However, previous systems suffer from
 various problems doing so, illustrated below using
 two representative, open-source systems.
 %% prior systems, chosen because they represent typical DMT or \smt

@@ -8,10 +8,10 @@ list of network operations we handle:
 
 Real-world programs frequently use timeouts (\eg, \v{sleep}, \v{epoll},
 and \v{pthread\_cond\_timedwait}) for periodic activities or timed waits.
-Yet most prior systems~\cite{xxx} ignored timeouts, causing executions to
+Yet most previous systems~\cite{xxx} ignored timeouts, causing executions to
 be nondeterministic because timeouts rely on real time.  Worse, they
 easily cause deadlocks.  One example deadlock in our experiments was
-running \pbzip with prior system \dthreads.  \pbzip deadlocked in
+running \pbzip with previous system \dthreads.  \pbzip deadlocked in
 \v{pthread\_cond\_timedwait} because \dthreads treats
 \v{pthread\_cond\_timedwait} just as \v{pthread\_cond\_wait}, but \pbzip
 sometimes relies on the timeout to terminate.
