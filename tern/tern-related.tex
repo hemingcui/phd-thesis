@@ -1,7 +1,6 @@
 \section{Related Work} \label{sec:tern-related}
 
-\noindent
-{\bf \smt and \dmt systems.} Although \tern provides determinism, it 
+\para{\smt and \dmt systems.} Although \tern provides determinism, it 
 differs from existing \dmt systems~\cite{dmp:asplos09, coredet:asplos10, 
 kendo:asplos09} by making threads stable, \ie, repeating familiar behaviors 
 across different inputs. Another difference is that \tern reduces timing 
@@ -28,11 +27,10 @@ on \phoenix benchmarks~\cite{phoenix-benchmarks} and a Cilk~\cite{cilk}
 benchmark.  Unlike Grace, \tern aims to make general multithreaded
 programs, not just fork-join programs, deterministic and stable.
 
-\noindent
-{\bf Deterministic Replay} Deterministic
-replay~\cite{r2:osdi,friday2007,srinivasan:flashback,revirt,dejavu,
-vmware-record-replay,smp-revirt:vee08,pres:sosp09,scribe:sigmetrics10,odr:sosp09
-,capo:asplos09}
+\para{Deterministic Replay.} Deterministic
+replay~\cite{r2:osdi, friday2007, srinivasan:flashback, revirt, dejavu, 
+vmware-record-replay, smp-revirt:vee08, pres:sosp09, scribe:sigmetrics10, 
+odr:sosp09, capo:asplos09}
 aims to replay the exact recorded executions, whereas \tern ``replays"
 memoized schedules on different inputs.  Some recent deterministic replay
 systems include Scribe, which tracks page ownership to enforce
@@ -44,8 +42,7 @@ one~\cite{pres:sosp09,odr:sosp09}; and SMP-ReVirt, which uses clever page
 protection trick for recording the order of conflicting memory
 accesses~\cite{smp-revirt:vee08}.
 
-\noindent
-{\bf Concurrency Errors} The complexity in developing multithreaded
+\para{Concurrency Errors.} The complexity in developing multithreaded
 programs has led to many concurrency errors~\cite{lu:concurrency-bugs}.  A
 significant number of them are not data races, but atomicity and order
 errors~\cite{lu:concurrency-bugs}, which can be deterministically
@@ -62,7 +59,7 @@ complementary to existing work on concurrency errors.  Specifically,
 it selects.  Moreover, even for programs free of concurrency errors,
 \tern still provides value by making their behaviors repeatable. 
 
-\noindent {\bf Symbolic Execution} The combination of symbolic and
+\para{Symbolic Execution.} The combination of symbolic and
 concrete executions has been a hot research topic.  Researchers have built
 scalable and effective symbolic execution systems to detect
 errors~\cite{dart:pldi,cute:fse,godefroid:grammar-fuzzing,
