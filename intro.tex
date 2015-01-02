@@ -99,7 +99,8 @@ total order of synchronization operations (for short, \syncsched). The
 times slower than traditional multithreading. The \syncscheds incur only modest
 overhead because most code is not synchronization and thus can still run in
 parallel, but these schedules may deviate if there are data races. Overall,
-despite of much research effort, people can only choose either full determinism or
+despite of much research effort, people can only choose either full determinism 
+or
 efficiency, but not both.
 
 To address this challenge, our second \smt (and also \dmt) system,
@@ -148,15 +149,14 @@ evaluation results public at \github.
 
 %% P5: StableMT's applications.
 In addition to building \smt systems, we have also been applying \smt to 
-improve several reliability tools, which justifies its potential. First, we 
-have applied \tern~\cite{cui:tern:osdi10} and 
-\peregrine~\cite{peregrine:sosp11} respectively to reproduce several real-world 
-concurrency bugs, and found that \smt's schedules can consistently mask or 
-reproduce these bugs, and these schedules are stable to input perturbations 
-(Chapter~\ref{sec:tern} and~\ref{sec:peregrine}). In a traditional 
-multithreading approach, reproducing these concurrency bugs are 
-extremely hard because of the excessive amount of possible schedules. Second, 
-we have applied \peregrine to greatly improve the precision of program 
+improve several reliability tools, which demonstrated its potential. First, we 
+have applied \tern and \peregrine respectively to reproduce several 
+real-world concurrency bugs, and found that \smt's schedules can consistently 
+mask or reproduce these bugs (Chapter~\ref{sec:tern} and~\ref{sec:peregrine}), 
+and these schedules are stable to input perturbations. In a traditional 
+multithreading approach, reproducing these concurrency bugs are extremely hard 
+because of the excessive amount of possible schedules. Second, we have applied 
+\peregrine to greatly improve the precision of program 
 analysis~\cite{wu:pldi12} and verification~\cite{wu:pldi12}, leading to several 
 new harmful concurrency bugs detected in heavily-studied programs 
 (Chapter~\ref{sec:peregrine}). Third, we have quantitatively shown that \parrot 
@@ -169,19 +169,20 @@ techniques in our \smt systems are similar. For instance, \parrot can also make
 reproducing concurrency bugs much easier because it enforces a similar form of 
 schedule to that in \tern.
 
-These \smt applications have attracted the community's interests. For instance,
-some of our \smt techniques and ideas have been leveraged by University of
-Washington researchers to compute a small set of schedules to cover all or most
-inputs for multithreaded programs~\cite{bergan:oopsla13}.
+Due to these demonstrated applications on improving software reliability, \smt 
+has attracted the community's interests. For instance, some of our \smt 
+techniques and ideas have been leveraged by University of Washington 
+researchers to compute a small set of schedules to cover all or most inputs for 
+multithreaded programs~\cite{bergan:oopsla13}.
 
 The rest of the thesis is organized as follows. Chapter~\ref{sec:smt-motivation}
 presents the motivation and background of \smt. Chapter~\ref{sec:tern} presents
 the \tern system, and our results on applying it to make reproducing concurrency
 bugs easier. Chapter~\ref{sec:peregrine} describes the \peregrine system, and
-how much it can improve precision of existing program analysis techniques as
+how much it can improve the precision of existing program analysis techniques as
 well as making reproducing concurrency bugs easier. Chapter~\ref{sec:parrot}
 introduces the \parrot system, and our advances on applying it to greatly
-improve coverage of model checking. Chapter~\ref{sec:conclusion} concludes.
+improve the coverage of model checking. Chapter~\ref{sec:conclusion} concludes.
 
 
 
