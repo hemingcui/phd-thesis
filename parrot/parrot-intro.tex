@@ -10,11 +10,11 @@ prohibitive performance overhead (\eg, a previous system~\cite{dthreads:sosp11}
 incurred 30$\times$ slowdown with many programs in our evaluation in 
 \S\ref{sec:parrot-eval}), causing \smt difficult to be widely deployed.
 
-To address this open challenge, this chapter presents \parrot, our third multithreading 
-system that is both stable and deterministic. By carefully designing 
-\parrot as a pure runtime system~(\S\ref{sec:parrot-runtime}) that works with 
-program executable files, \smt is made simple and easy to use. By creating a 
-new programming construct called \emph{performance 
+To address this open challenge, this chapter presents \parrot, our third 
+multithreading system that is both stable and deterministic. By carefully 
+designing \parrot as a pure runtime system~(\S\ref{sec:parrot-runtime}) that 
+works with default program executable files, \smt is made simple and easy to 
+use. By creating a new programming construct called \emph{performance 
 hints}~(\S\ref{sec:parrot-hints}), \parrot effectively recovers lost 
 performance caused by enforcing \smt schedules and runs fast. 
 Evaluation~(\S\ref{sec:parrot-eval}) on a wide range of \nprog popular 
@@ -219,7 +219,7 @@ they
 \end{enumerate}
 
 We have released \parrot's source code, entire benchmark suite, and
-raw results~\cite{Parrot:github}. In the remaining of this chapter,
+raw results at \github. In the remaining of this chapter,
 \S\ref{sec:parrot-design} contrasts \parrot with 
 previous systems on an example and gives a high-level design of
 \parrot. \S\ref{sec:parrot-hints} describes the performance hint abstractions

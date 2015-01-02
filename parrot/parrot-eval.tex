@@ -588,6 +588,53 @@ same result.
 
 \subsection{Model Checking Coverage} \label{sec:parrot-coverage}
 
+\begin{table}[!ht]
+\footnotesize
+\centering
+\begin{tabular}{ccl}
+{\bf Bin } & {\bf \# of Programs} & {\bf State Space Size with \dbug} \\
+\hline
+A & 27 & $1$ $\sim$ $14$ \\
+B & 18 & $28$ $\sim$ $47,330$ \\
+C & 25 & $3.99\times10^{6}$ $\sim$ $1.06\times10^{473}$ \\
+D & 25 & $4.75\times10^{511}$ $\sim$ $2.10\times10^{19734}$ \\
+%E & 1 & N/A \\
+\end{tabular}
+\vspace{-.05in}
+\caption{{\em Estimated \dbug's state space sizes on programs with no
+    \nondet nor network operation.}  } \label{tab:parrot-state-space-compute}
+\vspace{-.05in}
+\end{table}
+
+\begin{table}[!hb]
+\footnotesize
+\centering
+\vspace{-.05in}
+\begin{tabular}{lrrr}
+{\bf Program} & {\bf \dbug} & {\bf \ecosys} & {\bf Time} \\
+\hline\\[-2.3ex]
+%% redis smt+mc results not out yet.
+%% redis                                    & $1.40\times10^{178}$    & N/A   & No       \\
+\openldap                       & $2.40\times10^{2795}$        & $5.70\times10^{1048}$    & No        \\
+\redis                       & $1.26\times10^{8}$        & $9.11\times10^{7}$    & No        \\
+\pfscan                                   & $2.43\times10^{2117}$     & $32,268$   & $1,201$s     \\
+\aget                       & $2.05\times10^{17}$        & $5.11\times10^{10}$    & No        \\
+\nthelement                        & $1.35\times10^{7}$     & $8,224$   & $309$s      \\
+\partialsort                       & $1.37\times10^{7}$     & $8,194$   & $307$s      \\
+\partition                           & $1.37\times10^{7}$     & $8,194$   & $307$s      \\
+\fluidanimate                     & $2.72\times10^{218}$        & $2.64\times10^{218}$  & No        \\
+\cholesky                       & $1.81\times10^{371}$      & $5.99\times10^{152}$   & No   \\
+\fmm                           & $1.25\times10^{78}$       & $2.14\times10^{54}$   & No        \\
+\raytrace                       & $1.08\times10^{13863}$        &  $3.68\times10^{13755}$   & No        \\
+%% UA smt+mc results not out yet.
+%%\ua                                  & $>$ \v{DBL\_MAX}        & $>$ \v{DBL\_MAX}   & No        \\
+\end{tabular}
+\vspace{-.05in}
+\caption{{\em Estimated state space sizes for programs containing
+    \nondets.}  \ecosys finished 4 real-world programs (time in
+  last column), and \dbug none.} \label{tab:parrot-state-space-nondet}
+\end{table}
+
 %% We formed an \ecosys by integrating \parrot with \dbug. Within 
 %% this \ecosys, \parrot determinsitically schedules all \pthread synchronizations 
 %% for \dbug except those in \nondet, and \dbug systematically explores 
@@ -623,6 +670,9 @@ state-of-the-art DPOR~\cite{flanagan:dynamicpo} to evaluate how much more
 one day or until the checking session finished.  We then compared the
 estimated state space sizes.
 
+
+
+
 %% programs, and we ran both the client and server processes with \dbug and
 %% \ecosys (for \aget, we setup a \mongoose server~\cite{mongoose}).
 
@@ -631,23 +681,7 @@ estimated state space sizes.
 %% programs, and we ran both the client and server processes with \dbug and
 %% \ecosys (for \aget, we setup a \mongoose server~\cite{mongoose}).
 
-\begin{table}[!ht]
-\footnotesize
-\centering
-\begin{tabular}{ccl}
-{\bf Bin } & {\bf \# of Programs} & {\bf State Space Size with \dbug} \\
-\hline
-A & 27 & $1$ $\sim$ $14$ \\
-B & 18 & $28$ $\sim$ $47,330$ \\
-C & 25 & $3.99\times10^{6}$ $\sim$ $1.06\times10^{473}$ \\
-D & 25 & $4.75\times10^{511}$ $\sim$ $2.10\times10^{19734}$ \\
-%E & 1 & N/A \\
-\end{tabular}
-\vspace{-.05in}
-\caption{{\em Estimated \dbug's state space sizes on programs with no
-    \nondet nor network operation.}  } \label{tab:parrot-state-space-compute}
-\vspace{-.05in}
-\end{table}
+
 % Programs are divided  into four bins based on the estimated   sizes.
 
 %% in one day. Sorted by state space and
@@ -667,34 +701,6 @@ schedule and finished in 2 seconds. \dbug alone could finish only
 \nprogverifieddbug (out of 45 in bin A and B) within the time limit.
 % The reduction for the bins C and D ranges from \shrinkscale.
 
-\begin{table}[!hb]
-\footnotesize
-\centering
-\vspace{-.05in}
-\begin{tabular}{lrrr}
-{\bf Program} & {\bf \dbug} & {\bf \ecosys} & {\bf Time} \\
-\hline\\[-2.3ex]
-%% redis smt+mc results not out yet.
-%% redis                                    & $1.40\times10^{178}$    & N/A   & No       \\
-\openldap                       & $2.40\times10^{2795}$        & $5.70\times10^{1048}$    & No        \\
-\redis                       & $1.26\times10^{8}$        & $9.11\times10^{7}$    & No        \\
-\pfscan                                   & $2.43\times10^{2117}$     & $32,268$   & $1,201$s     \\
-\aget                       & $2.05\times10^{17}$        & $5.11\times10^{10}$    & No        \\
-\nthelement                        & $1.35\times10^{7}$     & $8,224$   & $309$s      \\
-\partialsort                       & $1.37\times10^{7}$     & $8,194$   & $307$s      \\
-\partition                           & $1.37\times10^{7}$     & $8,194$   & $307$s      \\
-\fluidanimate                     & $2.72\times10^{218}$        & $2.64\times10^{218}$  & No        \\
-\cholesky                       & $1.81\times10^{371}$      & $5.99\times10^{152}$   & No   \\
-\fmm                           & $1.25\times10^{78}$       & $2.14\times10^{54}$   & No        \\
-\raytrace                       & $1.08\times10^{13863}$        &  $3.68\times10^{13755}$   & No        \\
-%% UA smt+mc results not out yet.
-%%\ua                                  & $>$ \v{DBL\_MAX}        & $>$ \v{DBL\_MAX}   & No        \\
-\end{tabular}
-\vspace{-.05in}
-\caption{{\em Estimated state space sizes for programs containing
-    \nondets.}  \ecosys finished 4 real-world programs (time in
-  last column), and \dbug none.} \label{tab:parrot-state-space-nondet}
-\end{table}
 
 Table~\ref{tab:parrot-state-space-nondet} shows the results for all
 \nprognondetandnetwork programs containing network operations or
@@ -762,4 +768,5 @@ Table~\ref{tab:parrot-state-space-nondet}).
 %% Nontheless, normally people may care about correctness of real applications
 %% over benchmark programs (For \redis, currently we are working in progress on 
 %% running it with \ecosys.).
+
 
