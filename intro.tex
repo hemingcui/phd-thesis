@@ -150,7 +150,7 @@ benchmarks, and raw evaluation results public at \github.
 
 %% P5: StableMT's applications.
 In addition to building \smt systems, we have also been applying \smt to 
-improve several reliability tools, which demonstrated its advantages. First, we 
+improve three reliability tools, which demonstrated its advantages. First, we 
 have applied \tern and \peregrine respectively to reproduce several 
 real-world concurrency bugs, and found that \smt's schedules can consistently 
 mask or reproduce these bugs (Chapter~\ref{sec:tern} and~\ref{sec:peregrine}), 
@@ -161,18 +161,15 @@ because of the huge number of possible schedules. Second, we have applied
 analysis and verification (Chapter~\ref{sec:peregrine}), leading to several 
 new harmful concurrency bugs detected in heavily-studied 
 programs~\cite{wu:pldi12}. Third, we have quantitatively shown that \parrot 
-can increase the coverage of model checking, an advanced technique that 
+can greatly increase the coverage of model checking, an advanced technique that 
 systematically tests schedules for concurrency bugs~\cite{parrot:sosp13, 
 dbug:spin11, modist:nsdi09}, by many orders of magnitudes 
 (Chapter~\ref{sec:parrot}).
 
-% Each of our three \smt systems can benefit all 
-% these three reliability tools with moderate engineering effort, because many 
-% techniques in our \smt systems are similar. For instance, \parrot can also 
-% make 
-% reproducing concurrency bugs much easier because it enforces a similar form 
-% of 
-% schedule to that in \tern.
+Each of our three \smt systems can benefit all these three reliability tools 
+with moderate engineering effort, because many techniques in our \smt systems 
+are similar. For instance, \parrot can also make reproducing concurrency bugs 
+much easier because it enforces a similar form of schedule to that in \tern.
 
 Due to these demonstrated applications on improving software reliability, \smt 
 has attracted the community's interests. For instance, some of our \smt 
