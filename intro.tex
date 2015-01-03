@@ -150,41 +150,37 @@ encourage \smt deployment, we have made \parrot's source code, entire
 benchmarks, and raw evaluation results public at \github.
 
 %% P5: StableMT's applications.
-In addition to building \smt systems, we have also been applying \smt to 
+In addition to building \smt systems, we have also applied \smt to 
 improve three reliability techniques, which demonstrated its advantages. First, 
-we have applied \tern and \peregrine respectively to reproduce several 
-real-world concurrency bugs, and found that \smt's schedules can consistently 
-mask or reproduce these bugs (Chapter~\ref{sec:tern} and~\ref{sec:peregrine}), 
-and these schedules are stable to input perturbations. In a traditional 
-multithreading approach, reproducing these concurrency bugs is extremely hard 
-because of the huge number of possible schedules. Second, we have applied 
-\peregrine to greatly improve the precision of program 
-analysis and verification (Chapter~\ref{sec:peregrine}), leading to the 
-detection of several new harmful data races in heavily-tested 
-programs~\cite{wu:pldi12}. Third, we have quantitatively shown that \parrot 
-can greatly increase the coverage of model checking, an advanced technique that 
-systematically tests schedules for concurrency bugs~\cite{parrot:sosp13, 
-dbug:spin11, modist:nsdi09}, by many orders of magnitudes 
-(Chapter~\ref{sec:parrot}).
+we have shown that our \smt systems consistently avoided or reproduced several 
+real-world concurrency bugs across different executions~\cite{cui:tern:osdi10, 
+peregrine:sosp11}, while in a traditional \pthread runtime these bugs randomly 
+showed up or disappeared. Second, we have applied \smt to greatly improve the 
+precision of program analysis and verification, leading to the detection of 
+several new harmful data races in heavily-tested programs~\cite{wu:pldi12}. 
+Third, we have quantitatively shown that \smt can greatly increase the 
+coverage of model checking~\cite{demeter:sosp11, dbug:spin11, modist:nsdi09}, 
+an advanced technique that systematically tests schedules for concurrency bugs, 
+by many orders of magnitudes~\cite{parrot:sosp13}.
 
-Each of our three \smt systems can benefit all these three reliability 
-techniques with moderate engineering effort, because many techniques in our 
-\smt systems are similar. For instance, \parrot can also make reproducing 
-concurrency bugs much easier because it enforces a similar form of schedule to 
-that in \tern.
+% Each of our three \smt systems can benefit all these three reliability 
+% techniques with moderate engineering effort, because many techniques in our 
+% \smt systems are similar. For instance, \parrot can also make reproducing 
+% concurrency bugs much easier because it enforces a similar form of schedule 
+% to % that in \tern.
 
-Due to these demonstrated applications on improving software reliability, \smt 
-has attracted the community's interests. For instance, some of our \smt 
-techniques and ideas have been leveraged by University of Washington 
-researchers to compute a small set of schedules to cover all or most inputs for 
-multithreaded programs~\cite{bergan:oopsla13}.
+Due to its advantages on improving software reliability, \smt has attracted the 
+research community's interests. For instance, some techniques and ideas in our 
+\smt systems have been leveraged by University of Washington researchers to 
+compute a small set of schedules to cover all or most inputs for multithreaded 
+programs~\cite{bergan:oopsla13}.
 
 The rest of the thesis is organized as follows. Chapter~\ref{sec:smt-motivation}
 presents the motivation and background of \smt. Chapter~\ref{sec:tern} presents
-the \tern system, and our results on applying it to make reproducing concurrency
-bugs easier. Chapter~\ref{sec:peregrine} describes the \peregrine system, and
-how much it can improve the precision of existing program analysis techniques as
-well as making reproducing concurrency bugs easier. Chapter~\ref{sec:parrot}
+the \tern system, and our evaluation results on applying it to reproduce 
+concurrency bugs. Chapter~\ref{sec:peregrine} describes the \peregrine system, 
+and how much it can improve the precision of existing program analysis 
+techniques as well as reproducing concurrency bugs. Chapter~\ref{sec:parrot}
 introduces the \parrot system, and our advances on applying it to greatly
 improve the coverage of model checking. Chapter~\ref{sec:conclusion} concludes.
 

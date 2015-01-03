@@ -2,11 +2,9 @@
 \label{sec:smt-motivation}
 
 This chapter first points out that a key reason that causes multithreading
-difficult to get right is that a program has  exponentially many possible 
-schedules for all inputs at runtime (\S\ref{sec:smt-why}), and then introduces 
-Stable Multithreading (or \smt), our new approach that can greatly reduce the 
-number of schedules for all inputs, making multithreaded programs much easier 
-to get right (\S\ref{sec:smt-potential}). \smt is not the only technique to 
+difficult to get right (\S\ref{sec:smt-why}), and then introduces 
+\smt, our new approach addresses this key reason 
+(\S\ref{sec:smt-potential}). \smt is not the only technique to 
 reduce the number of schedules, and previously researchers have proposed a 
 complementary technique called Deterministic Multithreading (or \dmt) that 
 reduces the number of schedules for each input, so this chapter also compares 
@@ -130,7 +128,7 @@ Therefore, we argue that the exponentially many schedules for all inputs is a
 key reason that causes a multithreaded program extremely difficult to get right.
 
 
-\section{Shrinking the Haystack with Stable Multithreading}
+\section{Shrinking the Haystack with \smt}
 \label{sec:smt-potential}
 
 \begin{table*}[t]
@@ -336,7 +334,7 @@ reproducing a concurrency error now requires only the input.
 However, \dmt only focuses on reducing the number schedules on each input, and
 it does not help much on reducing the number of schedules for all inputs, the
 key reason that makes multithreading difficult to get right.  We believe the
-community has charged nondeterminism more
+research community has charged nondeterminism more
 than its share of the guilt and overlooked the main culprit---a rather
 quantitative cause that multithreaded programs simply have too many schedules.
 We argue that, although determinism has value, its value is smaller than
