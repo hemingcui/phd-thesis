@@ -10,9 +10,9 @@ enforce full determinism with reasonable overhead.
 %% Why multithreading is so difficult to get right. Too many schedules.
 %% All inputs, each input (define nondeterminism). Must refer to Chapter 2:
 %% motivation.
-As described in Chapter~\ref{sec:smt-motivation}, our research reveals that a
-key reason that multithreaded programs are so difficult to get right is: these
-programs have \emph{too many} possible thread interleavings (or schedules) at
+As described in Chapter~\ref{sec:smt-motivation}, a root cause that makes 
+multithreaded programs so difficult to get right is: these
+programs have exponentially many possible schedules for all inputs at
 runtime. Even running on the same input, the concurrently running threads of a
 program may interleave in too many different ways, depending on such factors as
 hardware timing and OS scheduling. This is the so called ``nondeterminism."

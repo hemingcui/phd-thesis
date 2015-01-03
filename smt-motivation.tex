@@ -1,22 +1,21 @@
 \chapter{Motivation and Background of \smt}
 \label{sec:smt-motivation}
 
-This chapter first points out that a key reason that causes multithreading
+This chapter first points out a root cause that makes multithreading
 difficult to get right (\S\ref{sec:smt-why}), and then introduces 
-\smt, our new approach addresses this key reason 
-(\S\ref{sec:smt-potential}). \smt is not the only technique to 
-reduce the number of schedules, and previously researchers have proposed a 
-complementary technique called Deterministic Multithreading (or \dmt) that 
-reduces the number of schedules for each input, so this chapter also compares 
-\smt with \dmt (\S\ref{sec:smt-dmt}).
+\smt, our radical approach to address this root cause 
+(\S\ref{sec:smt-potential}). \smt is not the only approach that aims to address 
+this root cause, and previously researchers have proposed a 
+complementary approach called Deterministic Multithreading (or \dmt), so this 
+chapter also compares \smt with \dmt (\S\ref{sec:smt-dmt}).
 
 \section{Why is Multithreading So Hard to Get Right?}
 \label{sec:smt-why}
 
 
 
-This section starts with preliminaries, and then points out a key reason that
-causes multithreading difficult to get right.
+This section starts with preliminaries, and then points out a root cause that
+makes multithreading difficult to get right.
 
 \subsection{Preliminaries: Inputs, Schedules, and Buggy Schedules}
 
@@ -59,7 +58,7 @@ occurs for all inputs allowed by the schedule).  Thus, recent research on
 testing multithreaded programs (\eg,~\cite{musuvathi:chess:osdi08}) is
 focused on effectively testing schedules to find the buggy ones.
 
-\subsection{Key Reason: Too Many Schedules for All Inputs}
+\subsection{Root Cause: Too Many Schedules for All Inputs}
 
 \begin{figure*}[t]
 \begin{center}
@@ -124,8 +123,8 @@ concurrency bugs in real-world software. Unfortunately, despite these great
 effort, these tools still can not cover more than a tiny fraction of all
 exponentially many schedules, and concurrency bugs within an unchecked schedule
 can show up in production runs and lead to severe failures and vulnerabilities. 
-Therefore, we argue that the exponentially many schedules for all inputs is a 
-key reason that causes a multithreaded program extremely difficult to get right.
+In a word, the exponentially many schedules for all inputs is a 
+root cause that makes a multithreaded program extremely difficult to get right.
 
 
 \section{Shrinking the Haystack with \smt}
@@ -332,9 +331,9 @@ testing execution now validates all future executions on the same input, and
 reproducing a concurrency error now requires only the input.
 
 However, \dmt only focuses on reducing the number schedules on each input, and
-it does not help much on reducing the number of schedules for all inputs, the
-key reason that makes multithreading difficult to get right.  We believe the
-research community has charged nondeterminism more
+it does not help much on reducing the excessive number of schedules for all 
+inputs, the root cause that makes multithreading difficult to get right.  We 
+believe the research community has charged nondeterminism more
 than its share of the guilt and overlooked the main culprit---a rather
 quantitative cause that multithreaded programs simply have too many schedules.
 We argue that, although determinism has value, its value is smaller than

@@ -23,9 +23,11 @@ simple, easy to use, fast, and deployable.
 
 \section{Introduction} \label{sec:parrot-intro}
 
-Multithreaded programs are extremely difficult to get right, and a key reason 
+As described in Chapter~\ref{sec:smt-motivation}, a root cause that makes 
+multithreading extremely difficult to get right
 is that, for decades, the contract between developers and thread runtimes has 
-favored performance over correctness.  In this contract, developers use 
+favored performance over correctness and grants exponentially many possible 
+schedules for all inputs.  In this contract, developers use 
 synchronizations to coordinate threads, while thread runtimes can
 use \emph{any} of the exponentially many thread interleavings (or schedules), 
 compliant with the synchronizations.  This large number of possible schedules 

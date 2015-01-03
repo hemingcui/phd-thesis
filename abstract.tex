@@ -5,7 +5,7 @@ programs remain notoriously difficult to get right, and they are plagued with
 harmful concurrency bugs that can cause wrong outputs, program crashes, security
 breaches, and so on.
 
-Our research reveals that a key reason of this difficulty is
+Our research reveals that a root cause of this difficulty is
 that multithreaded programs have too many possible thread interleavings (or
 \emph{schedules}) at runtime. Even given only a single input, a program may run 
 into a great number of schedules, depending on such factors as hardware timing 
@@ -22,7 +22,7 @@ a small set of schedules to efficiently process a wide range of inputs!
 Leveraging this discovery, we have proposed a new idea called \emph{Stable 
 Multithreading} (or \emph{\smt}) that reuses each schedule on a wide range of 
 inputs, greatly reducing the number of possible schedules for all inputs. By 
-addressing the key reason that causes multithreading difficult to get right, 
+addressing the root cause that makes multithreading difficult to get right, 
 \smt makes understanding, testing, analyzing, and verification of 
 multithreaded programs much easier.
 
