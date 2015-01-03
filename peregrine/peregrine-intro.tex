@@ -24,10 +24,9 @@ failures and vulnerabilities.
 
 To reduce the number of possible schedules and make multithreading easier to get
 right, two complementary techniques have been invented by researchers recently.
-Stable Multithreading (or \smt)~\cite{determinator:osdi10, cui:tern:osdi10}, 
+\smt~\cite{determinator:osdi10, cui:tern:osdi10}, 
 which is created by my collaborators and me, aims to reduce the number possibles
-schedules on all inputs. Deterministic Multithreading
-(or \dmt)~\cite{dmp:asplos09,kendo:asplos09,coredet:asplos10,
+schedules on all inputs. \dmt~\cite{dmp:asplos09,kendo:asplos09,coredet:asplos10,
 dos:osdi10,grace:oopsla09} addresses the nondeterminism problem, and it focuses
 on reducing the number of possible schedules on each input down to one. Notably,
 our \tern system described in Chapter~\ref{sec:tern} is the first 
@@ -119,7 +118,7 @@ over 90\% of the workloads for real programs such as
 % bugs to appear or disappear.
 
 Before reusing a schedule on an input, \peregrine must check that the input
-satisfies the input constraints (or \emph{preconditions}) of the schedule, so
+satisfies the input constraints of the schedule, so
 that (1) the schedule is feasible, \ie, the execution on the input will reach
 all events in the same deterministic order as in the schedule and (2) the
 execution will not introduce new races. (New races may occur if they are

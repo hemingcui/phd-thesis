@@ -24,7 +24,7 @@ benchmark suites to avoid biasing our results.  The programs together
 cover a good range of parallel programming models and idioms such as
 threads, \openmp, data partition, fork-join, pipeline, map-reduce, and
 workpile.  To the best of our knowledge, our evaluation of \parrot
-represents \overeach more programs than any previous DMT or \smt
+represents \overeach more programs than any previous \dmt or \smt
 evaluation, and \overcombined more than all previous
 evaluations combined.
 
@@ -540,30 +540,7 @@ We also ran \redis on 15 types of workloads, and \mencoder on
 robust to core count and workload scale/type. (See~\cite{Parrot:github}
 for detailed scalability results.)
 
-%% We scaled DMT and \smt to 24 and 32 threads, a significantly high level, and 
-%% we are the first DMT or \smt work to provide workload sensitivity results.
-%% Each workload amout cause each program to have a execution time difference 
-%% by xx times (at least 2 times, maybe? need to check). This shows our workload
-%% classes are significant different.
 
-%% Scalability over thread num, tbd (just talk about that based on the figures we 
-%% have).
-
-%% Scalability over workload, tbd. This shows our hints can tolerate workload 
-%% variation pretty well (shows the quality of our hints, very important point).
-
-%% Generally the data partition programs scale pretty well with workloads and/or 
-%% thread num, because the workload are mostly balanced among threads.
-
-%% An inteteresing point is, for all the pipeline programs we have, both workload and thread num 
-%% affect overhea. We only need to use \compute hints for these programs.
-%% \compute timeouts only happen at warmup and teardown of pipeline.
-%% If we fix thread num and increase workload, then the overhead 
-%% is smaller because steady phase could mask the overhead (Heming will add concrete results XXX).
-%% If we fix workload but increase thread num, timeout would increase drastically (square).
-
-%% redis: different workloads
-%% mplayer: different conversion, different data
 
 \subsection{Determinism} \label{sec:parrot-determinism}
 

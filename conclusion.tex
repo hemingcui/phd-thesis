@@ -1,15 +1,15 @@
 \chapter{Conclusion} \label{sec:conclusion}
 
-Multithreading is notoriously difficult to get right, and a root cause is that a 
-multithreaded program may run into exponentially many
+Multithreading is notoriously difficult to get right, and a root cause is that 
+a multithreaded program may run into exponentially many
 possible schedules for all inputs at runtime, which brings a series of
 significant reliability and security challenges on understanding,
 testing, debugging, analyzing, and verification of multithreaded
 programs.
 
 To reduce the number of possible schedules and make multithreaded
-programs easier to get right, we have invented a new idea called Stable
-Multithreading (or \smt) that reuses each schedule on a wide range of inputs,
+programs easier to get right, we have invented a new idea called \smt that 
+reuses each schedule on a wide range of inputs,
 greatly reducing the number of possible schedules for all inputs. Through
 building three \smt systems, \tern, \peregrine, and \parrot, with each 
 addressing

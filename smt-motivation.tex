@@ -6,7 +6,7 @@ difficult to get right (\S\ref{sec:smt-why}), and then introduces
 \smt, our radical approach to address this root cause 
 (\S\ref{sec:smt-potential}). \smt is not the only approach that aims to address 
 this root cause, and previously researchers have proposed a 
-complementary approach called Deterministic Multithreading (or \dmt), so this 
+complementary approach called \dmt, so this 
 chapter also compares \smt with \dmt (\S\ref{sec:smt-dmt}).
 
 \section{Why is Multithreading So Hard to Get Right?}
@@ -228,7 +228,7 @@ carefully enforcing schedules can achieve only moderate overhead. After all,
 considering the reliability benefits introduced by \smt, We believe
 this moderate overhead is worthwhile.
 
-Leveraging these two insights, we have invented Stable Multithreading (or \smt),
+Leveraging these two insights, we have invented \smt,
 a new multithreading approach that reuses each schedule on a wide range of
 inputs, mapping all inputs to a dramatically reduced set of schedules.
 By vastly shrinking the haystack, it addresses all the ``needle-in-a-haystack"
@@ -324,7 +324,7 @@ alone is not enough. Developers must also manage to reconstruct the buggy
 schedule out of $n$ possibilities.
 
 To address the challenges raised by nondeterminism, researchers have dedicated
-much effort and built several Deterministic Multithreading (or \dmt) systems
+much effort and built several \dmt systems
 that force a multithreaded program to always run the same schedule on the same
 input.  This determinism does have value for reliability.  For instance, one
 testing execution now validates all future executions on the same input, and 

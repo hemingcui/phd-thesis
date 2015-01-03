@@ -29,7 +29,7 @@ is that, for decades, the contract between developers and thread runtimes has
 favored performance over correctness and grants exponentially many possible 
 schedules for all inputs.  In this contract, developers use 
 synchronizations to coordinate threads, while thread runtimes can
-use \emph{any} of the exponentially many thread interleavings (or schedules), 
+use \emph{any} of the exponentially many schedules, 
 compliant with the synchronizations.  This large number of possible schedules 
 make it more likely to find an efficient schedule for a workload, but ensuring
 that all schedules are free of concurrency bugs is extremely challenging, and a 
@@ -38,8 +38,8 @@ critical failures and vulnerabilities~\cite{therac25-investigation,
 northeast-blackout, lu:concurrency-bugs,con:hotpar12}.
 
 Two recent techniques aim to flip this performance \vs correctness tradeoff
-by reducing the number of allowed schedules. First, Stable Multithreading (or 
-\smt)~\cite{determinator:osdi10, cui:tern:osdi10, dthreads:sosp11, 
+by reducing the number of allowed schedules. First, 
+\smt~\cite{determinator:osdi10, cui:tern:osdi10, dthreads:sosp11, 
 peregrine:sosp11}, which is created by my collaborators and me, aims to reduce 
 the number possibles schedules on all inputs. Other researchers have also been 
 building and applying \smt
@@ -50,8 +50,8 @@ concurrency bugs much easier~\cite{cui:tern:osdi10, peregrine:sosp11}, (2)
 improving the precision of program analysis~\cite{peregrine:sosp11, wu:pldi12},
 leading to the detection of several new harmful data races in heavily-tested 
 programs, and (3) computing a small set of schedules to cover all or most 
-inputs~\cite{bergan:oopsla13}. Second, Deterministic Multithreading
-(or \dmt)~\cite{dmp:asplos09,kendo:asplos09,coredet:asplos10,
+inputs~\cite{bergan:oopsla13}. Second, 
+\dmt~\cite{dmp:asplos09,kendo:asplos09,coredet:asplos10,
 dos:osdi10,grace:oopsla09} addresses the nondeterminism problem, and it focuses
 on reducing the number of possible schedules on each input down to one. \dmt is
 especially useful in testing and debugging multithreaded programs, however, we
@@ -131,7 +131,7 @@ performance, so they should be applied only when the schedules they add
 are thoroughly checked by tools or advanced developers.
 These simple abstractions
 let \parrot run fast on all programs evaluated, and
-may benefit other DMT or \smt systems and classic nondeterministic
+may benefit other \dmt or \smt systems and classic nondeterministic
 schedulers~\cite{coschedule:sigmetrics96, coschedule, partial-barrier:atc06}.
 
 
@@ -180,7 +180,7 @@ parallel programming models and idioms such as threads,
 \openmp~\cite{openmp}, fork-join, map-reduce, pipeline, and workpile.  To
 our knowledge, our
 evaluation uses roughly \overeach more programs than any previous
-DMT or \smt evaluation, and \overcombined more than all
+\dmt or \smt evaluation, and \overcombined more than all
 previous evaluations combined.
 Our experiments show:
 \begin{enumerate}

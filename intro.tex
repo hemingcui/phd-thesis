@@ -60,8 +60,7 @@ easier to get right. Actually, \smt is complementary to \dmt, and a
 multithreading system can be both stable and deterministic. To fully understand 
 the advantages of \smt, Chapter~\ref{sec:smt-motivation} will discuss in 
 details on the three types of multithreading approaches: the traditional 
-multithreading, the Deterministic Multithreading (or \dmt), and the Stable 
-Multithreading (or \smt).
+multithreading, the \dmt, and the \smt.
 
 
 %% P: intro to the systems we built: with each addressing different challenges.
@@ -86,11 +85,12 @@ schedules, and then reuses these schedules on future inputs when possible. This
 technique is inspired by a real-world analogy that human and animals tend to 
 migrate along past, familiar routes and avoid possible hazards in unknown ones. 
 In order to find a schedule suitable for an input, \tern leverages a set of 
-advanced program analysis techniques to compute preconditions on inputs that 
-match a schedule. Evaluation on a diverse set of popular programs shows that 
-\tern can reuse a small set of schedules to process a wide range of inputs. For 
-instance, just 100 schedules for the \apache web server can process 90.3\% of a 
-4-day trace (122K requests) from the Columbia CS website.
+advanced program analysis techniques to compute input constraints (or 
+\emph{preconditions}) that match a schedule. Evaluation on a diverse set of 
+popular programs shows that \tern can reuse a small set of schedules to process 
+a wide range of inputs. For instance, just 100 schedules for the \apache web 
+server can process 90.3\% of a 4-day trace (122K requests) from the Columbia CS 
+website.
 
 \para{Challenge 2: How to efficiently make executions follow schedules and do
 not deviate?} This challenge also exists in the area of deterministic
