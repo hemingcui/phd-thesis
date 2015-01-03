@@ -2,24 +2,16 @@ The last two chapters have presented \tern and \peregrine, our two
 multithreading systems that are both stable and deterministic. Other 
 researchers have also been building and applying \smt 
 systems~\cite{determinator:osdi10, dthreads:sosp11, bergan:oopsla13} to improve 
-software reliability. However, despite these recent advances, it remains an 
-open challenge that whether \smt can be made simple, fast, and deployable on a 
-wide range of multithreaded programs. Existing systems either require 
-sophisticated program analysis (\eg, our two previous systems), or incur 
-prohibitive performance overhead (\eg, a previous system~\cite{dthreads:sosp11} 
-incurred 30$\times$ slowdown with many programs in our evaluation in 
-\S\ref{sec:parrot-eval}), causing \smt difficult to be widely deployed.
-
-To address this open challenge, this chapter presents \parrot, our third 
-multithreading system that is both stable and deterministic. By carefully 
-designing \parrot as a pure runtime system~(\S\ref{sec:parrot-runtime}) that 
-works with default program executable files, \smt is made simple and easy to 
-use. By creating a new programming construct called \emph{performance 
-hints}~(\S\ref{sec:parrot-hints}), \parrot effectively recovers lost 
-performance caused by enforcing \smt schedules and runs fast. 
-Evaluation~(\S\ref{sec:parrot-eval}) on a wide range of \nprog popular 
-multithreaded programs (\eg, Berkeley DB and MPlayer) shows that \parrot is 
-simple, easy to use, fast, and deployable.
+software reliability. However, despite these latest advances, existing \smt 
+systems either require sophisticated program analysis (\eg, our two previous 
+systems), or incur prohibitive performance overhead (\eg, a previous 
+system~\cite{dthreads:sosp11} incurred 30$\times$ slowdown with many programs 
+in our evaluation in \S\ref{sec:parrot-eval}), causing \smt difficult to be 
+widely deployed. Thus, a third challenge on building \smt arises: how to make 
+\smt simple, fast, and deployable? To address this challenge, this chapter 
+presents \parrot, a simple, deployable \smt runtime system, and its 
+novel programming abstraction called \emph{performance hints} that makes 
+\parrot's schedules run fast.
 
 \section{Introduction} \label{sec:parrot-intro}
 

@@ -1,9 +1,11 @@
 The last chapter presents \tern, the first multithreading system that is both 
 stable and deterministic. However, \tern enforces best-effort determinism, and 
-its executions may be nondeterministic when data races exist. To overcome this 
-limitation, this chapter presents \peregrine, our second \smt (and also \dmt) 
-system that can still frequently reuse schedules on many inputs, and can 
-enforce full determinism with reasonable overhead.
+its executions may deviate from the memoized schedules when data races exist. 
+Thus, a second challenge on building \smt arises: how to efficiently make 
+executions follow schedules and do not deviate? This challenge also exists in 
+the area of deterministic execution and replay for decades. To address this 
+challenge, this chapter presents \peregrine, our second \smt (and also \dmt) 
+with a new technique called \emph{schedule relaxation}.
 
 \section{Introduction} \label{sec:peregrine-intro}
 
@@ -26,7 +28,8 @@ To reduce the number of possible schedules and make multithreading easier to get
 right, two complementary techniques have been invented by researchers recently.
 \smt~\cite{determinator:osdi10, cui:tern:osdi10}, 
 which is created by my collaborators and me, aims to reduce the number possibles
-schedules on all inputs. \dmt~\cite{dmp:asplos09,kendo:asplos09,coredet:asplos10,
+schedules on all inputs. 
+\dmt~\cite{dmp:asplos09,kendo:asplos09,coredet:asplos10,
 dos:osdi10,grace:oopsla09} addresses the nondeterminism problem, and it focuses
 on reducing the number of possible schedules on each input down to one. Notably,
 our \tern system described in Chapter~\ref{sec:tern} is the first 

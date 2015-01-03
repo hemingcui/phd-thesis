@@ -413,3 +413,27 @@ built subsequently to \tern combine \dmt with \smt to frequently reuse schedules
 on a wide range of inputs for stability.
 Chapter~\ref{sec:tern}--\ref{sec:parrot} will present the three systems we
 built.
+
+\section{Summary} \label{sec:smt-summary}
+
+A root cause that makes multithreading difficult to get right is that a 
+program may run into exponentially many possible schedules for all inputs 
+at runtime. This excessive number of possible schedules brings a series of 
+``needle-in-a-haystack" challenges on reliability and security, including 
+understanding, testing, analyzing, and verification of multithreaded programs. 
+
+To address these challenges, we have proposed \smt, a new approach that reuses 
+each schedule on a wide range of inputs, greatly reducing the number of 
+possible schedules for all inputs. By vastly shrinking the haystack, \smt 
+addresses all the ``needle-in-a-haystack" challenges in understanding, testing, 
+analyzing, and verification of multithreaded programs at once, making these 
+programs much easier to get right.
+
+\smt is not the only technique that aims to reduce the number of possible 
+schedules, and another technique called \dmt has already been proposed to 
+reduce the number of schedules on each input. However, although \dmt is useful, 
+we have explained that it is not as useful as commonly perceived, and that \smt 
+is better for reliability. \smt is complementary to \dmt, and a multithreading 
+system can be both stable and deterministic. Chapter~\ref{sec:tern} 
+to~\ref{sec:parrot} will present our three multithreading systems that are both 
+stable and deterministic.

@@ -1,14 +1,15 @@
 This chapter describes \tern, our first \smt system that
 addresses the first challenge on building \smt: how to compute highly reusable
 schedules for different inputs? The more reusable a schedule is, the fewer
-schedules are needed for all inputs. \tern is also built as a \dmt system,
-because determinism is especially useful in testing and debugging multithreaded
-programs. Building a multithreading system that is both stable and 
-deterministic is challenging, because as we describes in 
+schedules are needed for all inputs. We also aim to build \tern as a \dmt 
+system, because determinism is especially useful in testing and debugging 
+multithreaded programs. Building a multithreading system that is both stable 
+and deterministic is another significant challenge, because as we describe in 
 Chapter~\ref{sec:smt-motivation}, the instability problem in typical \dmt 
 systems destabilizes program behaviors on input perturbations,
-defeating the stability benefit brought by \smt. Therefore, this chapter
-also describes our solution on addressing this instability problem.
+defeating the stability benefit brought by \smt. \tern addresses these two 
+challenges at once with a new technique called \emph{schedule memoization}.
+
 
 \section{Introduction} \label{sec:tern-overview}
 
@@ -143,13 +144,15 @@ benchmarks used by \apache and \mysql developers.  Our results show that
 \end{enumerate}
 
 Our main conceptual contributions are that we addressed the two research
-challenges on building a multithreading system that is both stable and deterministic with a 
+challenges on building a multithreading system that is both stable and 
+deterministic with a 
 new idea called schedule memoization. To make \tern practically support server 
 programs that have input timing nondeterminism and infinite schedules, we 
 proposed
 another new idea called windowing. Our engineering contributions include the
 \tern system and its evaluation on real programs.  To the best of our knowledge,
-\tern is the first multithreading system that is both stable and deterministic, the first to 
+\tern is the first multithreading system that is both stable and deterministic, 
+the first to 
 mitigate input timing
 nondeterminism, and the first shown to work on programs as large, complex, and
 nondeterministic as \apache and \mysql.
