@@ -15,7 +15,7 @@ key reason that multithreaded programs are so difficult to get right is: these
 programs have \emph{too many} possible thread interleavings (or schedules) at
 runtime. Even running on the same input, the concurrently running threads of a
 program may interleave in too many different ways, depending on such factors as
-hardware timings and OS scheduling. This is the so called ``nondeterminism."
+hardware timing and OS scheduling. This is the so called ``nondeterminism."
 Considering all inputs, the number of possible schedules is even greater. It is
 extremely challenging to understand, test, analyze, or verify all
 these schedules in a multithreaded program. Therefore, a concurrency bug within

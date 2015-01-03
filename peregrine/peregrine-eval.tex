@@ -404,9 +404,9 @@ input-dependent branches for these programs.  We category these programs
 below.
 
 \para{Best case}: \pbzip, \fft, \luc, \blackscholes, \swaptions,
-  and \streamcluster. \peregrine computes the weakest (\ie, most relaxed) preconditions
-  for these programs.  The preconditions often allow \peregrine to reuse
-  one or two schedules for each number of threads, putting no
+  and \streamcluster. For these programs, \peregrine computes the weakest
+  (\ie, most relaxed) preconditions. The preconditions often allow \peregrine
+  to reuse one or two schedules for each number of threads, putting no
    or few constraints on the data processed.
   Schedule-guided simplification is crucial for
   these programs; without simplification, the preconditions

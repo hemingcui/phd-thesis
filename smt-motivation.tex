@@ -32,7 +32,7 @@ Deterministic.}]{\includegraphics[width=.23\linewidth]{figures/dmt}
 \caption{Different multithreading approaches. Red stars represent buggy
 schedules.  Traditional multithreading (\ref{fig:nondet}) is a conceptual
 many-to-many mapping where one input may execute under many schedules depending
-on such factors as hardware timings or OS scheduling, and many inputs may
+on such factors as hardware timing or OS scheduling, and many inputs may
 execute under one schedule because a schedule fixes the order of the
 communication operations but allows the local computations to operate on any
 input data.  \dmt (\ref{fig:dmt}) may map each input to an arbitrary
@@ -102,7 +102,7 @@ schedules is even greater. Figure~\ref{fig:nondet} depicts the traditional
 multithreading approach. Conceptually, traditional multithreading approaches
 (\eg, the \pthread runtime) maintain a many-to-many mapping from inputs to 
 schedules, where one input may execute under many schedules depending on such 
-factors as hardware timings and OS scheduling, and many inputs may execute 
+factors as hardware timing and OS scheduling, and many inputs may execute 
 under one schedule because a schedule fixes the order of the communication 
 operations but allows the local computations to operate on any input data.
 
@@ -324,7 +324,7 @@ using annotations.
 
 A multithreaded program is \emph{nondeterministic} because even with the same
 program and input, different executions may still run into different schedules
-and trigger different behaviors, depending on such factors as physical timings
+and trigger different behaviors, depending on such factors as hardware timing
 and OS scheduling. For instance, the two toy programs in \S\ref{sec:smt-why}
 do not always run into the bugs.  Except for the schedules described, the
 other schedules lead to correct executions. This nondeterminism raises many
