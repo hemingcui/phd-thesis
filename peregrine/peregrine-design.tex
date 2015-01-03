@@ -250,7 +250,7 @@ reuse the schedules on large workloads.
 Suppose we run this program again on different arguments ``\vv{2 1000 8}.''
 The replayer checks the new arguments against the preconditions in
 Figure~\ref{fig:peregrine-precond} using \klee's constraint checker, and finds that these
-arguments satisfy the preconditions, despite of the much larger data size.  
+arguments satisfy the preconditions, despite the much larger data size.  
 It can therefore reuse the hybrid schedule in Figure~\ref{fig:peregrine-trace}
 on this new input by enforcing
 the same order of synchronization operations and accesses
