@@ -37,14 +37,14 @@ coredet:asplos10} that always enforces the same schedule on the same input,
 greatly improving reliability for a multithreaded program on each input. 
 However, as we will further analyze in
 Chapter~\ref{sec:smt-motivation}, although \dmt is useful, it is not as useful
-as commonly perceived. The reason is because a typical \dmt system can enforce
+as commonly perceived. The reason is that a typical \dmt system can enforce
 very different schedules on slightly different inputs, artificially reducing
 programs' robustness on input perturbations, and the number of possible
 schedules on all inputs are still enormous. Therefore, multithreaded programs
 are still very hard to understand, test, analyze, or verify.
 
 %% P: StableMT: our new approach and thesis.
-In order to reduce the number of schedules for all inputs, we have studied the
+In order to reduce the number of schedules for all inputs, we looked into the
 relation between inputs and schedules of real-world programs, and made an
 exciting discovery: many programs need only a small set of schedules to
 efficiently process a wide range of inputs~\cite{smt:cacm}! Leveraging this
@@ -109,7 +109,7 @@ To address this challenge, our second \smt (and also \dmt) system,
 \peregrine (Chapter~\ref{sec:peregrine}), stands out
 with an observation: although many programs have races, the races tend to occur
 only within minor portions of an execution, and the majority of the execution is
-still race-free. Therefore, we can enforce a \syncscheds in the race-free
+still race-free. Therefore, we can enforce a \syncsched in the race-free
 portions of an execution and resort to a \memsched only in the racy portions,
 combining both the efficiency of sync-schedules and determinism of \memscheds. 
 \peregrine implements this form of hybrid-schedule with a new technique called
@@ -125,10 +125,12 @@ five years, \smt has achieved promising advances and attracted the research
 community's interests. Numerous notable \smt systems~\cite{determinator:osdi10,
 cui:tern:osdi10, peregrine:sosp11, dthreads:sosp11, bergan:oopsla13} have been
 built, including our \tern and \peregrine systems. However, it remains an open
-challenge whether \smt can be made simple, fast, and deployable. Existing \smt
-systems either run into slow schedules that \emph{serialize} parallel
-computation, or are fairly hard to deploy due to their high complexity (\eg,
-\tern and \peregrine require sophisticated program analysis).
+challenge that whether \smt can be made simple, fast, and deployable. Existing 
+\smt systems either run into slow schedules that \emph{serialize} parallel
+computation (\eg, we observed 30$\times$ slowdown when evaluating a notable 
+system~\cite{dthreads:sosp11} in Chapter~\ref{sec:parrot}), or are fairly hard 
+to deploy due to their high complexity (\eg, \tern and \peregrine require 
+sophisticated program analysis).
 
 To address this challenge, our third \smt system, \parrot 
 (Chapter~\ref{sec:parrot}), presents a simple, deployable runtime that enforces 
@@ -155,7 +157,7 @@ have applied \tern and \peregrine respectively to reproduce several
 real-world concurrency bugs, and found that \smt's schedules can consistently 
 mask or reproduce these bugs (Chapter~\ref{sec:tern} and~\ref{sec:peregrine}), 
 and these schedules are stable to input perturbations. In a traditional 
-multithreading approach, reproducing these concurrency bugs are extremely hard 
+multithreading approach, reproducing these concurrency bugs is extremely hard 
 because of the huge number of possible schedules. Second, we have applied 
 \peregrine to greatly improve the precision of program 
 analysis and verification (Chapter~\ref{sec:peregrine}), leading to several 
