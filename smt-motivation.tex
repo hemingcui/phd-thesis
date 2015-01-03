@@ -310,15 +310,6 @@ covers, developers can exclude the operations on this lock from the schedule
 using annotations.
 
 
-% \smt provides robustness and stability on small input and program
-% perturbations when they do not affect schedules.  However, there
-% is still room to improve.  For instance, when developers change their
-% programs by adding synchronizations, it may be more efficient to
-% update previously computed schedules rather than to recompute from
-% scratch. We leave this idea for future work.
-
-
-
 \section{Determinism: Not as Good as Commonly Perceived} \label{sec:smt-dmt}
 
 A multithreaded program is \emph{nondeterministic} because even with the same
@@ -381,7 +372,7 @@ Chapter~\ref{sec:tern} will analyze why this instability problem is
 inherent in existing \dmt systems and present our evaluation results
 that confirms this problem. Because of this problem, when running with
 \dmt, the number of possible schedules for all inputs remains enormous, so a
-multithreaded program is still extremely difficult to understand, test, analyze,
+multithreaded program remains extremely difficult to understand, test, analyze,
 or verify.
 
 In practice, to mitigate these problems, researchers have to augment

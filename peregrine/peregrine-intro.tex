@@ -22,14 +22,10 @@ these schedules in a multithreaded program. Therefore, a concurrency bug within
 an unchecked schedule can show up in production runs and lead to severe
 failures and vulnerabilities.
 
-%% Two complementary techniques have been proposed to address this difficulty.
-%% AMT and MT. However, it is still an open challenge to enforce a fully
-%% deterministic schedules efficiently.
 To reduce the number of possible schedules and make multithreading easier to get
 right, two complementary techniques have been invented by researchers recently.
 Stable Multithreading (or \smt)~\cite{determinator:osdi10, cui:tern:osdi10}, 
-which
-is created by my collaborators and me, aims to reduce the number possibles
+which is created by my collaborators and me, aims to reduce the number possibles
 schedules on all inputs. Deterministic Multithreading
 (or \dmt)~\cite{dmp:asplos09,kendo:asplos09,coredet:asplos10,
 dos:osdi10,grace:oopsla09} addresses the nondeterminism problem, and it focuses

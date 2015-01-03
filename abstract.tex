@@ -1,20 +1,19 @@
 Multithreaded programs have become pervasive and critical due to the rise of the
 multi-core hardware and the accelerating computational demand.
 Unfortunately, despite decades of research and engineering effort, these
-programs are still notoriously difficult to get right, and they are plagued with
+programs remain notoriously difficult to get right, and they are plagued with
 harmful concurrency bugs that can cause wrong outputs, program crashes, security
 breaches, and so on.
 
 Our research reveals that a key reason of this difficulty is
 that multithreaded programs have too many possible thread interleavings (or
-\emph{schedules}) at runtime, probably due to performance favor. Even given 
-only a single input, a program may run into a great number of schedules, 
-depending on such factors as hardware timing and OS scheduling. Considering all 
-inputs, the number of schedules is even much greater. It is extremely 
-challenging to understand, test, analyze, or verify this huge number of 
-schedules for a multithreaded program and make sure that all these schedules 
-are free of concurrency bugs, thus multithreaded programs are extremely 
-difficult to get right.
+\emph{schedules}) at runtime. Even given only a single input, a program may run 
+into a great number of schedules, depending on such factors as hardware timing 
+and OS scheduling. Considering all inputs, the number of schedules is even much 
+greater. It is extremely challenging to understand, test, analyze, or verify 
+this huge number of schedules for a multithreaded program and make sure that 
+all these schedules are free of concurrency bugs, thus multithreaded programs 
+are extremely difficult to get right.
 
 To reduce the number of possible schedules and make multithreading
 easier to get right, we looked into the relation between inputs and schedules 
@@ -24,26 +23,26 @@ Leveraging this discovery, we have proposed a new idea called \emph{Stable
 Multithreading} (or \emph{\smt}) that reuses each schedule on a wide range of 
 inputs, greatly reducing the number of possible schedules for all inputs. By 
 addressing the key reason that causes multithreading difficult to get right, 
-\smt can make understanding, testing, analyzing, and verification of 
+\smt makes understanding, testing, analyzing, and verification of 
 multithreaded programs much easier.
 
 To realize \smt, we have built three \smt systems, \tern, \peregrine, and 
 \parrot, with each addressing a distinct research challenge. Evaluation on a 
-wide range of 108 popular multithreaded programs in our latest \smt system, 
+wide range of 108 popular multithreaded programs with our latest \smt system, 
 \parrot, shows that \smt is simple, fast, and deployable. All \parrot's source 
 code, entire benchmarks, and raw evaluation results are available at \github.
 
 To encourage deployment, we have applied \smt to improve several reliability 
-tools, including: (1) making reproducing
-real-world concurrency bugs much easier;  (2) greatly improving the precision of
-static program analysis, leading to several new harmful data races detected in
-heavily-studied programs; and (3) greatly increasing the coverage of model 
-checking, a systematic testing technique, by many orders of magnitudes. \smt 
-has attracted the community's interests, and some techniques and ideas in our 
-\smt systems have been leveraged by other researchers to compute a small set of 
-schedules to cover all or most inputs for multithreaded programs.
+techniques, including: (1) making reproducing real-world concurrency bugs much 
+easier;  (2) greatly improving the precision of static program analysis, 
+leading to the detection of several new harmful data races in heavily-tested 
+programs; and (3) greatly increasing the coverage of model checking, a 
+systematic testing technique, by many orders of magnitudes. \smt has attracted 
+the community's interests, and some techniques and ideas in our \smt systems 
+have been leveraged by other researchers to compute a small set of schedules to 
+cover all or most inputs for multithreaded programs.
 
-We believe that all these advances on building and applying \smt will make it 
-an easy to use, fast, reliable, and secure multithreading approach, potentially 
-benefiting all individuals, governments, organizations, and software vendors. 
-
+% All these advances on building and applying \smt has made it an easy to use, 
+% fast, and much more reliable and secure multithreading approach, potentially 
+% benefiting all individuals, governments, organizations, and software vendors. 
+% 
