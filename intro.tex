@@ -54,8 +54,9 @@ reducing the huge number of possible schedules for all inputs, the root
 cause that makes multithreading difficult to get right. By reusing each 
 schedule on as many as inputs, \smt stabilizes program behaviors 
 against small input perturbations, making these behaviors repeatable. In a 
-word, \smt can greatly simplify understanding, testing, analyzing, and 
-verification of multithreaded programs, so that these programs can be much 
+word, by greatly reducing the number of possible schedules for all inputs, \smt 
+addresses the challenges on understanding, testing, analyzing, and verification 
+of multithreaded programs at once and makes these programs much 
 easier to get right. Actually, \smt is complementary to \dmt, and a 
 multithreading system can be both stable and deterministic. To fully understand 
 the advantages of \smt, Chapter~\ref{sec:smt-motivation} will discuss in 
@@ -65,8 +66,7 @@ multithreading, the \dmt, and the \smt.
 
 %% P: intro to the systems we built: with each addressing different challenges.
 To make \smt real, I have worked with Columbia and CMU researchers to build
-three \smt systems, \tern (Chapter~\ref{sec:tern}), \peregrine 
-(Chapter~\ref{sec:peregrine}), and \parrot (Chapter~\ref{sec:parrot}), with 
+three \smt systems, \tern, \peregrine, and \parrot, with 
 each addressing a distinct research challenge. We identify and address these 
 three challenges as follows.
 
@@ -121,15 +121,15 @@ sites such as \acmtechnews, \tgdaily, and \physorg.
 
 \para{Challenge 3: how to make \smt simple, fast, and deployable?} In the last
 five years, \smt has achieved promising advances and attracted the research
-community's interests. Numerous notable \smt systems~\cite{determinator:osdi10,
+community's interests. Several notable \smt systems~\cite{determinator:osdi10,
 cui:tern:osdi10, peregrine:sosp11, dthreads:sosp11, bergan:oopsla13} have been
 built, including our \tern and \peregrine systems. However, it remains an open
 challenge that whether \smt can be made simple, fast, and deployable. Existing 
-\smt systems either run into slow schedules that \emph{serialize} parallel
-computation (\eg, we observed 30$\times$ slowdown when evaluating a notable 
-system~\cite{dthreads:sosp11} in Chapter~\ref{sec:parrot}), or are fairly hard 
-to deploy due to their high complexity (\eg, \tern and \peregrine require 
-sophisticated program analysis).
+\smt systems are either fairly hard to deploy due to their high complexity 
+(\eg, \tern and \peregrine require sophisticated program analysis), or run into 
+slow schedules that \emph{serialize} parallel computation (\eg, we observed 
+30$\times$ slowdown when evaluating a notable system~\cite{dthreads:sosp11} in 
+Chapter~\ref{sec:parrot}).
 
 To address this challenge, our third \smt system, \parrot 
 (Chapter~\ref{sec:parrot}), presents a simple, deployable runtime that enforces 
