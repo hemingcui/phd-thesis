@@ -47,7 +47,7 @@ Typical \smt or \dmt systems have considered two types of schedules: (1) a
 deterministic order of shared memory
 accesses~\cite{dmp:asplos09,coredet:asplos10} and (2) a synchronization
 order (\ie, a total order of synchronization operations)~\cite{kendo:asplos09}. 
-The first type of schedules are truly deterministic even if there are races, but
+The first type of schedules are fully deterministic even if there are races, but
 they are costly to enforce on commodity hardware (\eg, up to 10 times
 overhead~\cite{coredet:asplos10}).  The second type can be efficiently enforced
 (\eg, 16\% overhead~\cite{kendo:asplos09}) because most code is not

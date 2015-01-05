@@ -4,10 +4,10 @@
 This chapter first points out a root cause that makes multithreading
 difficult to get right (\S\ref{sec:smt-why}), and then introduces 
 \smt, our radical approach to address this root cause 
-(\S\ref{sec:smt-potential}). \smt is not the only approach that aims to address 
-this root cause, and previously researchers have proposed a 
-complementary approach called \dmt, so this 
-chapter also compares \smt with \dmt (\S\ref{sec:smt-dmt}).
+(\S\ref{sec:smt-potential}). \smt is not the only approach that aims to make 
+multithreading easier to get right, and previously researchers have proposed a 
+complementary approach called \dmt, so this chapter also clarifies the 
+differences between \smt and \dmt (\S\ref{sec:smt-dmt}).
 
 \section{Why is Multithreading So Hard to Get Right?}
 \label{sec:smt-why}
@@ -430,10 +430,12 @@ analyzing, and verification of multithreaded programs at once, making these
 programs much easier to get right.
 
 \smt is not the only technique that aims to reduce the number of possible 
-schedules, and another technique called \dmt has already been proposed to 
+schedules, and previously a technique called \dmt has been proposed to 
 reduce the number of schedules on each input. However, although \dmt is useful, 
 we have explained that it is not as useful as commonly perceived, and that \smt 
 is better for reliability. \smt is complementary to \dmt, and a multithreading 
-system can be both stable and deterministic. Chapter~\ref{sec:tern} 
-to~\ref{sec:parrot} will present our three multithreading systems that are both 
-stable and deterministic.
+system can be both stable and deterministic.
+%  Chapter~\ref{sec:tern} 
+% to~\ref{sec:parrot} will present our three multithreading systems that are 
+% both 
+% stable and deterministic.

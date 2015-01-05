@@ -1,11 +1,11 @@
-The last chapter presents \tern, the first multithreading system that is both 
-stable and deterministic. However, \tern enforces best-effort determinism, and 
-its executions may deviate from the memoized schedules when data races exist. 
-Thus, a second challenge on building \smt arises: how to efficiently make 
-executions follow schedules and do not deviate? This challenge also exists in 
-the area of deterministic execution and replay for decades. To address this 
-challenge, this chapter presents \peregrine, our second \smt (and also \dmt) 
-with a new technique called \emph{schedule relaxation}.
+The last chapter presents \tern, the first multithreading system that is 
+efficient, stable, and deterministic. However, \tern enforces 
+best-effort determinism, and its executions may deviate from the memoized 
+schedules when data races exist. Thus, a second challenge on building \smt 
+arises: how to efficiently enforce schedules without deviation? This challenge 
+also exists in the area of deterministic execution and replay for decades. To 
+address this challenge, this chapter presents \peregrine, our second \smt (and 
+also \dmt) system with a new technique called \emph{schedule relaxation}.
 
 \section{Introduction} \label{sec:peregrine-intro}
 
@@ -26,49 +26,19 @@ failures and vulnerabilities.
 
 To reduce the number of possible schedules and make multithreading easier to get
 right, two complementary techniques have been invented by researchers recently.
-\smt~\cite{determinator:osdi10, cui:tern:osdi10}, 
-which is created by my collaborators and me, aims to reduce the number possibles
-schedules on all inputs. 
-\dmt~\cite{dmp:asplos09,kendo:asplos09,coredet:asplos10,
+\smt~\cite{determinator:osdi10, cui:tern:osdi10}, which is created by my 
+collaborators and me, aims to reduce the number possibles schedules on all 
+inputs. \dmt~\cite{dmp:asplos09,kendo:asplos09,coredet:asplos10,
 dos:osdi10,grace:oopsla09} addresses the nondeterminism problem, and it focuses
 on reducing the number of possible schedules on each input down to one. Notably,
 our \tern system described in Chapter~\ref{sec:tern} is the first 
 multithreading system that is both stable and deterministic. Unfortunately, 
 despite these effort, an open challenge~\cite{wodet11}
-well recognized by the research community remains: how to build \emph{both
-deterministic and efficient} \dmt systems for general multithreaded programs on
-commodity multiprocessors.  Existing \dmt systems either incur prohibitive
-overhead, or are not fully deterministic if there are data races.
-
-%% Why hard. Introduce two forms of schedules
-%%(1) sync schedule can be made efficient, but not fully determnistic.
-%%(2) Mem schedule can be made fully determinsitic, but not efficient.
-
-%% Our core technique. Schedule relaxation.
-%%And why it can be stable, deterministic, and efficient.
-
-
-% Different runs of a multithreaded program may show different behaviors,
-% depending on how the threads interleave.  This \emph{nondeterminism} makes
-% it difficult to write, test, and debug multithreaded programs.  For
-% instance, testing becomes less assuring because the schedules tested may
-% not be the ones run in the field.  Similarly, debugging can be a nightmare
-% because developers may have to reproduce the exact buggy schedules.  These
-% difficulties have resulted in many ``heisenbugs'' in widespread
-% multithreaded programs~\cite{lu:concurrency-bugs}.
-
-% Recently, researchers have pioneered a technique called
-% \emph{Deterministic Multithreading (\dmt)}
-% \cite{cui:tern:osdi10,dmp:asplos09,kendo:asplos09,coredet:asplos10,
-% dos:osdi10,grace:oopsla09}.
-% DMT systems ensure that the same input
-% is always processed with the same deterministic schedule, thus eliminating
-% heisenbugs and problems due to nondeterminism.  Unfortunately,
-% despite these efforts, an open challenge~\cite{wodet11} well recognized by
-% the DMT community remains: how to build \emph{both deterministic
-%   and efficient} DMT systems for general multithreaded programs on
-% commodity multiprocessors.  Existing DMT systems either incur prohibitive
-% overhead, or are not fully deterministic if there are data races.
+well recognized by the research community remains: how to efficiently enforce 
+schedules without deviation for general multithreaded programs on
+commodity multiprocessors. When running with existing \dmt systems, programs' 
+executions either incur prohibitive overhead, or may show deviate behaviors if 
+there are data races (\ie, these executions are not \emph{fully deterministic}).
 
 Specifically, existing DMT systems enforce two forms of schedules: (1) a
 \emph{mem-schedule} is a deterministic schedule of shared memory
@@ -76,7 +46,7 @@ accesses~\cite{dmp:asplos09,coredet:asplos10,dos:osdi10}, such as
 \vv{load/store} instructions, and (2) a \emph{sync-schedule} is a
 deterministic order of synchronization
 operations~\cite{kendo:asplos09,cui:tern:osdi10}, such as
-\vv{lock()/unlock()}.  Enforcing a mem-schedule is truly deterministic even
+\vv{lock()/unlock()}.  Enforcing a mem-schedule is fully deterministic even
 for programs with data races, but may incur prohibitive overhead (\eg,
 roughly 1.2\X-6\X~\cite{coredet:asplos10}).  Enforcing a sync-schedule is
 efficient (\eg, average 16\% slowdown~\cite{kendo:asplos09}) because
@@ -84,7 +54,7 @@ most code does not control synchronization and can still run in
 parallel, but a sync-schedule is only deterministic for race-free
 programs, when, in fact, most real programs have races, harmful or
 benign~\cite{lu:concurrency-bugs,syncfinder:osdi10}.  The dilemma is,
-then, to pick either determinism or efficiency but not both.
+then, to pick either fully determinism or efficiency, but not both.
 
 Our key insight is that although most programs have races, these races
 tend to occur only within minor portions of an execution, and the majority

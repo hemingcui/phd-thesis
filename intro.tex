@@ -70,7 +70,7 @@ three \smt systems, \tern (Chapter~\ref{sec:tern}), \peregrine
 each addressing a distinct research challenge. We identify and address these 
 three challenges as follows.
 
-\para{Challenge 1: How to compute highly reusable schedules for different
+\para{Challenge 1: how to compute highly reusable schedules for different
 inputs?} The more reusable a schedule is, the fewer schedules are needed for 
 all inputs.
 However, finding highly reusable schedules is hard with existing static or
@@ -92,8 +92,8 @@ a wide range of inputs. For instance, just 100 schedules for the \apache web
 server can process 90.3\% of a 4-day trace (122K requests) from the Columbia CS 
 website.
 
-\para{Challenge 2: How to efficiently make executions follow schedules and do
-not deviate?} This challenge also exists in the area of deterministic
+\para{Challenge 2: how to efficiently enforce schedules without deviation?} This 
+challenge also exists in the area of deterministic
 execution and replay for decades. Existing work typically enforces two types of
 schedules: a total order of shared memory accesses (for short, \memsched), and a
 total order of synchronization operations (for short, \syncsched). The
@@ -119,7 +119,7 @@ that \peregrine is deterministic and efficient, and can frequently reuse
 schedules for half of the evaluated programs. \peregrine has been featured in
 sites such as \acmtechnews, \tgdaily, and \physorg.
 
-\para{Challenge 3: How to make \smt simple, fast, and deployable?} In the last
+\para{Challenge 3: how to make \smt simple, fast, and deployable?} In the last
 five years, \smt has achieved promising advances and attracted the research
 community's interests. Numerous notable \smt systems~\cite{determinator:osdi10,
 cui:tern:osdi10, peregrine:sosp11, dthreads:sosp11, bergan:oopsla13} have been
