@@ -19,7 +19,7 @@ program crashes, security breaches, and so on. Our research reveals that a root
 cause of this difficulty is that multithreaded programs have too many
 possible thread interleavings (or \emph{schedules}) at runtime. Even running on 
 the same input, the concurrently running threads of a program may interleave in 
-too many different ways, depending on such factors as hardware timing and OS
+too many different ways, depending on factors such as hardware timing and OS
 scheduling. Considering all inputs, the number of possible schedules is even
 greater. Chapter~\ref{sec:smt-motivation} will quantify the number of
 possible schedules in multithreaded programs running in a traditional
@@ -92,13 +92,13 @@ a wide range of inputs. For instance, just 100 schedules for the \apache web
 server can process 90.3\% of a 4-day trace (122K requests) from the Columbia CS 
 website.
 
-\para{Challenge 2: how to efficiently enforce schedules without deviation?} This 
-challenge also exists in the area of deterministic
+\para{Challenge 2: how to efficiently enforce schedules without deviation?} 
+This challenge also exists in the area of deterministic
 execution and replay for decades. Existing work typically enforces two types of
 schedules: a total order of shared memory accesses (for short, \memsched), and a
-total order of synchronization operations (for short, \syncsched). The
-\memscheds are fully deterministic even with data races, but they are several
-times slower than traditional multithreading. The \syncscheds incur only modest
+total order of synchronization operations (for short, \syncsched). \Memscheds 
+are fully deterministic even with data races, but they are several
+times slower than traditional multithreading. \Syncscheds incur only modest
 overhead because most code is not synchronization and thus can still run in
 parallel, but these schedules may deviate if there are data races. Overall,
 despite much research effort, people can only choose either full determinism 

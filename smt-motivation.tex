@@ -3,7 +3,7 @@
 
 This chapter first points out a root cause that makes multithreading
 difficult to get right (\S\ref{sec:smt-why}), and then introduces 
-\smt, our radical approach to address this root cause 
+\smt, our radical approach to address the root cause 
 (\S\ref{sec:smt-potential}). \smt is not the only approach that aims to make 
 multithreading easier to get right, and previously researchers have proposed a 
 complementary approach called \dmt, so this chapter also clarifies the 
@@ -97,20 +97,20 @@ exponential in both $m$ and $k$. Aggregated over all inputs, the number of
 schedules is even greater. Figure~\ref{fig:nondet} depicts the traditional
 multithreading approach. Conceptually, traditional multithreading approaches
 (\eg, the \pthread runtime) maintain a many-to-many mapping from inputs to 
-schedules, where one input may execute under many schedules depending on such 
-factors as hardware timing and OS scheduling, and many inputs may execute 
+schedules, where one input may execute under many schedules depending on 
+factors such as hardware timing and OS scheduling, and many inputs may execute 
 under one schedule because a schedule fixes the order of the communication 
 operations but allows the local computations to operate on any input data.
 
 Finding a few buggy schedules in these exponentially many schedules raises
 a series of ``needle-in-a-haystack" challenges on understanding, testing,
 analyzing, and verification of multithreaded programs. For
-instance, when facing these excessive schedules, developers' understanding are 
-prone to mistakes, and we have seen tons of concurrency bug reports sent to the 
-developers' email lists. Various forms of testing tools suffer, too.  Stress 
-testing is a common method for (indirectly) testing schedules, but it often 
-redundantly tests the same schedules while missing others. To mitigate 
-redundant testing effort, recent advanced testing tools 
+instance, when facing these excessive number of schedules, developers' 
+understanding is prone to mistakes, and we have seen tons of concurrency bug 
+reports sent to the developers' email lists. Various forms of testing tools 
+suffer, too.  Stress testing is a common method for (indirectly) testing 
+schedules, but it often redundantly tests the same schedules while missing 
+the others. To mitigate redundant testing effort, recent advanced testing tools 
 (\eg,~\cite{musuvathi:chess:osdi08, modist:nsdi09, dbug:ssv10, demeter:sosp11}) 
 can systematically test schedules, and these tools have included several 
 remarkable reduction algorithms (\eg,~\cite{flanagan:dynamicpo, 
@@ -311,10 +311,10 @@ using annotations.
 
 A multithreaded program is \emph{nondeterministic} because even with the same
 program and input, different executions may still run into different schedules
-and trigger different behaviors, depending on such factors as hardware timing
+and trigger different behaviors, depending on factors such as hardware timing
 and OS scheduling. For instance, the two toy programs in \S\ref{sec:smt-why}
 do not always run into the bugs.  Except for the schedules described, the
-other schedules lead to correct executions. This nondeterminism raises many
+other schedules lead to correct executions. Nondeterminism raises many
 challenges, especially in testing and debugging.  Suppose an input can execute
 under $n$ schedules. Testing $n-1$ schedules is not enough for complete
 reliability because the single untested schedule may still be buggy.  An
@@ -328,7 +328,7 @@ much effort and built several \dmt systems
 that force a multithreaded program to always run the same schedule on the same
 input.  This determinism does have value for reliability.  For instance, one
 testing execution now validates all future executions on the same input, and 
-reproducing a concurrency error now requires only the input.
+reproducing a concurrency error now requires only the exact input.
 
 However, \dmt only focuses on reducing the number schedules on each input, and
 it does not help much on reducing the excessive number of schedules for all 
@@ -389,7 +389,7 @@ is a binary property: if an input maps to $n > 1$ schedules, executions on this
 input may be nondeterministic, however small $n$ is.  Yet, a nondeterministic
 system with a small set of total schedules can be made reliable easily. 
 Consider an extreme case, the nondeterministic system depicted in
-Figure~\ref{fig:smtn} which maps all inputs to at most two schedules.  In this
+Figure~\ref{fig:smtn}, which maps all inputs to at most two schedules.  In this
 system, the challenges caused by nondeterminism are
 easy to solve.  For instance, to reproduce a field failure given an input,
 developers can easily afford to search for one out of only two schedules.
