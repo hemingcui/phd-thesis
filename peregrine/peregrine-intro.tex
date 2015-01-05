@@ -36,9 +36,10 @@ multithreading system that is both stable and deterministic. Unfortunately,
 despite these effort, an open challenge~\cite{wodet11}
 well recognized by the research community remains: how to efficiently enforce 
 schedules without deviation for general multithreaded programs on
-commodity multiprocessors. When running with existing \dmt systems, programs' 
-executions either incur prohibitive overhead, or may show deviate behaviors if 
-there are data races (\ie, these executions are not \emph{fully deterministic}).
+commodity multiprocessors? When enforcing existing \dmt systems' schedules, 
+program executions either incur prohibitive overhead, or may deviate from the 
+schedules if there are data races (\ie, these executions are not \emph{fully 
+deterministic}).
 
 Specifically, existing DMT systems enforce two forms of schedules: (1) a
 \emph{mem-schedule} is a deterministic schedule of shared memory
