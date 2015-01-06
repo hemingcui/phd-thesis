@@ -2,7 +2,7 @@
 \label{sec:smt-motivation}
 
 This chapter first points out a root cause that makes multithreading
-difficult to get right (\S\ref{sec:smt-why}), and then introduces 
+so difficult to get right (\S\ref{sec:smt-why}), and then introduces 
 \smt, our radical approach to address the root cause 
 (\S\ref{sec:smt-potential}). \smt is not the only approach that aims to make 
 multithreading easier to get right, and previously researchers have proposed a 
@@ -108,9 +108,9 @@ analyzing, and verification of multithreaded programs. For
 instance, when facing these excessive number of schedules, developers' 
 understanding is prone to mistakes, and we have seen tons of concurrency bug 
 reports sent to the developers' email lists. Various forms of testing tools 
-suffer, too.  Stress testing is a common method for (indirectly) testing 
+also suffer.  Stress testing is a common method for (indirectly) testing 
 schedules, but it often redundantly tests the same schedules while missing 
-the others. To mitigate redundant testing effort, recent advanced testing tools 
+others. To mitigate redundant testing effort, recent advanced testing tools 
 (\eg,~\cite{musuvathi:chess:osdi08, modist:nsdi09, dbug:ssv10, demeter:sosp11}) 
 can systematically test schedules, and these tools have included several 
 remarkable reduction algorithms (\eg,~\cite{flanagan:dynamicpo, 
@@ -120,10 +120,10 @@ coverage. Recent advanced program analysis and verification tools
 of checked schedules based on these reduction algorithms. These systematic 
 testing, analysis, and verification tools have effectively found new harmful 
 concurrency bugs in real-world software. Unfortunately, despite these great
-effort, these tools still can not cover more than a tiny fraction of all
+effort, these tools still can not cover more than a tiny fraction of all the
 exponentially many schedules, and concurrency bugs within an unchecked schedule
 can show up in production runs and lead to severe failures and vulnerabilities. 
-In a word, the exponentially many schedules for all inputs is a 
+In short, the exponentially many schedules for all inputs is a 
 root cause that makes a multithreaded program extremely difficult to get right.
 
 
@@ -177,7 +177,7 @@ To reduce the number of schedules and make multithreading easier to get right,
 we investigated a central research question: \emph{are all the exponentially
 many schedules necessary}?  A schedule is necessary if it is the only one
 that can (1) process specific inputs or (2) yield good performance under
-specific scenarios. Removing unnecessary schedules from the haystack would
+specific scenarios. Removing unnecessary schedules from the haystack can
 make the needles easier to find.
 
 We investigated this question on a diverse set of popular multithreaded
@@ -197,7 +197,7 @@ metadata to have certain values, but it allows the computational data to vary.
 That is, it can process any input that has the same metadata.  For instance,
 consider the aforementioned \pbzip which splits an input file
 among multiple threads, each compressing one file block.  The
-communication, \ie, which thread gets which file block, is independent of
+communication (\ie, which thread gets which file block) is independent of
 the thread-local compression. Under a typical setup (\eg, no \vv{read}
 failures or signals), for each different number of threads set by a user, \pbzip
 can use two schedules (one if the file can be evenly divided by the number of
@@ -225,7 +225,7 @@ overhead enforcing schedules on different inputs for most evaluated programs.
 Relevant systems (\eg,~\cite{kendo:asplos09, determinator:osdi10}) also show
 that
 carefully enforcing schedules can achieve only moderate overhead. After all,
-considering the reliability benefits introduced by \smt, We believe
+considering the reliability benefits introduced by \smt, we believe that
 this moderate overhead is worthwhile.
 
 Leveraging these two insights, we have invented \smt,
@@ -242,10 +242,9 @@ By vastly reducing the set of schedules, \smt brings numerous reliability
 benefits to multithreading.  We describe several:
 
 \para{Understanding.} Developers now only need to focus on understanding a much
-smaller set of schedules and make sure that they are free of concurrency bugs, 
-which
-can greatly reduce their burden. For instance, because \smt stabilizes program
-behaviors on a set of inputs that can share the same schedule, then
+smaller set of schedules to ensure that they are free of concurrency bugs, 
+which can greatly reduce their burden. For instance, because \smt stabilizes 
+program behaviors on a set of inputs that can share the same schedule, then
 after developers check that the program behavior on one input is correct, they
 are sure that all the other inputs within this set (\eg, inputs that control
 only thread-local computation) will run the same schedule and thus have the same
@@ -270,12 +269,12 @@ as long as the original and the altered inputs map to the same schedule.
 Users may remove private
 information such as credit card numbers from their bug reports. Developers
 may reproduce the bugs in different environments or add \vv{printf}
-statements. We will describe this benefit in more details in
+statements. We will describe this benefit in detail in
 Chapter~\ref{sec:tern} and Chapter~\ref{sec:peregrine}.
 
 \para{Avoiding errors at runtime.}  Programs can also adaptively learn correct
 schedules in the field, then reuse them on future inputs to avoid unknown,
-potentially buggy schedules.  We will describe this benefit in details in
+potentially buggy schedules.  We will describe this benefit in detail in
 Chapter~\ref{sec:tern}.
 
 \para{Analyzing and verifying programs.} Static analysis can now focus
@@ -289,14 +288,14 @@ number of programs that \dbug can exhaust searching schedules under our
 evaluation settings. More details will be given in Chapter~\ref{sec:parrot}.
 Interactive theorem proving becomes much easier, too, because verifiers
 need to prove theorems only on the set of schedules enforced in the field.  We
-will describe these benefits in details in Chapter~\ref{sec:peregrine}.
+will describe these benefits in detail in Chapter~\ref{sec:peregrine}.
 
 
 \subsection{Caveats}
 
 \smt is certainly not for every multithreaded program.  It works well with
-programs whose schedules are loosely coupled with inputs, but there are also
-other programs.  For instance, a program may decide to spawn
+programs whose schedules are loosely coupled with inputs, but there are
+other types of programs.  For instance, a program may decide to spawn
 threads or invoke synchronizations based on intricate conditions involving many
 bits in the input. The parallel \vv{grep}-like utility \pfscan is an example. 
 It
@@ -319,7 +318,7 @@ challenges, especially in testing and debugging.  Suppose an input can execute
 under $n$ schedules. Testing $n-1$ schedules is not enough for complete
 reliability because the single untested schedule may still be buggy.  An
 execution in the field may hit this untested schedule and fail.  Debugging is
-challenging, too. To reproduce a field failure for diagnosis, the exact input
+challenging as well. To reproduce a field failure for diagnosis, the exact input
 alone is not enough. Developers must also manage to reconstruct the buggy
 schedule out of $n$ possibilities.
 
@@ -350,7 +349,7 @@ determinism does not provide this stability and, if na\"{i}vely implemented,
 even undermines it.
 
 To illustrate, consider the system depicted in
-Figure~\ref{fig:dmt} which maps each input to an arbitrary schedule. This
+Figure~\ref{fig:dmt} that maps each input to an arbitrary schedule. This
 mapping is perfectly deterministic, but it destabilizes program
 behaviors on multiple inputs.  A single bit flip may force a program to
 discard a correct schedule and adventure into a vastly different, buggy
@@ -360,17 +359,17 @@ inputs, despite that the differences in input do not invalidate the tested
 schedule. Debugging now requires every bit of the bug-inducing input, including
 not only the data a user typed, but also environment variables, shared
 libraries, \etc. A different user name?  Error report doesn't include credit
-card numbers? The bug may never be reproduced, regardless of how many times
-developers retry, because the schedule chosen by the deterministic system for
+card numbers? The bug may never be reproduced regardless of how many times
+developers retry because the schedule chosen by the deterministic system for
 the altered input happens to be correct. Besides inputs, na\"{i}vely implemented
 determinism can destabilize program behaviors on minor code changes, so adding a
 debug \vv{printf} causes the bug to deterministically disappear.
 Chapter~\ref{sec:tern} will analyze why this instability problem is
 inherent in existing \dmt systems and present our evaluation results
 that confirms this problem. Because of this problem, when running with
-\dmt, the number of possible schedules for all inputs remains enormous, so a
-multithreaded program remains extremely difficult to understand, test, analyze,
-or verify.
+\dmt, the number of possible schedules for all inputs remains enormous; 
+therefore, a multithreaded program remains extremely difficult to understand, 
+test, analyze, or verify.
 
 In practice, to mitigate these problems, researchers have to augment
 determinism with other techniques.  To support debug \vv{printf}, some
@@ -388,8 +387,8 @@ experiments in Chapter~\ref{sec:tern}.
 is a binary property: if an input maps to $n > 1$ schedules, executions on this
 input may be nondeterministic, however small $n$ is.  Yet, a nondeterministic
 system with a small set of total schedules can be made reliable easily. 
-Consider an extreme case, the nondeterministic system depicted in
-Figure~\ref{fig:smtn}, which maps all inputs to at most two schedules.  In this
+Consider an extreme case: the nondeterministic system depicted in
+Figure~\ref{fig:smtn} that maps all inputs to at most two schedules.  In this
 system, the challenges caused by nondeterminism are
 easy to solve.  For instance, to reproduce a field failure given an input,
 developers can easily afford to search for one out of only two schedules.
@@ -419,8 +418,9 @@ built.
 A root cause that makes multithreading difficult to get right is that a 
 program may run into exponentially many possible schedules for all inputs 
 at runtime. This excessive number of possible schedules brings a series of 
-``needle-in-a-haystack" challenges on reliability and security, including 
-understanding, testing, analyzing, and verification of multithreaded programs. 
+``needle-in-a-haystack" challenges for reliability and security, including 
+the understanding, testing, analyzing, and verification of multithreaded 
+programs. 
 
 To address these challenges, we have proposed \smt, a new approach that reuses 
 each schedule on a wide range of inputs, greatly reducing the number of 
@@ -431,7 +431,7 @@ programs much easier to get right.
 
 \smt is not the only technique that aims to reduce the number of possible 
 schedules, and previously a technique called \dmt has been proposed to 
-reduce the number of schedules on each input. However, although \dmt is useful, 
+reduce the number of schedules on each input. Although \dmt is useful, 
 we have explained that it is not as useful as commonly perceived, and that \smt 
 is better for reliability. \smt is complementary to \dmt, and a multithreading 
 system can be both stable and deterministic.

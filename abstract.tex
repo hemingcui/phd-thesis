@@ -1,5 +1,5 @@
-Multithreaded programs have become pervasive and critical due to the rise of the
-multi-core hardware and the accelerating computational demand.
+Multithreaded programs have become pervasive and critical due to the rise of
+multi-core hardware and accelerating computational demands.
 Unfortunately, despite decades of research and engineering effort, these
 programs remain notoriously difficult to get right, and they are plagued with
 harmful concurrency bugs that can cause wrong outputs, program crashes, security
@@ -11,12 +11,12 @@ that multithreaded programs have too many possible thread interleavings (or
 into a great number of schedules, depending on factors such as hardware timing 
 and OS scheduling. Considering all inputs, the number of schedules is even much 
 greater. It is extremely challenging to understand, test, analyze, or verify 
-this huge number of schedules for a multithreaded program and make sure that 
+this huge number of schedules for a multithreaded program and ensure that 
 all these schedules are free of concurrency bugs. Thus, multithreaded programs 
 are extremely difficult to get right.
 
 To reduce the number of possible schedules for all inputs, we looked into the 
-relation between inputs and schedules of real-world programs, and made an 
+relation between inputs and schedules of real-world programs and made an 
 exciting discovery: many programs need only a small set of schedules to 
 efficiently process a wide range of inputs! Leveraging this discovery, we have 
 proposed a new idea called \emph{Stable Multithreading} (or \emph{\smt}) that 
@@ -27,8 +27,8 @@ analyzing, and verification of multithreaded programs much easier.
 
 To realize \smt, we have built three \smt systems, \tern, \peregrine, and 
 \parrot, with each addressing a distinct research challenge. Evaluation on a 
-wide range of 108 popular multithreaded programs with our latest \smt system, 
-\parrot, shows that \smt is simple, fast, and deployable. All \parrot's source 
+wide range of 108 popular multithreaded programs with \parrot, our latest \smt 
+system, shows that \smt is simple, fast, and deployable. \parrot's source 
 code, entire benchmarks, and raw evaluation results are available at \github.
 
 To encourage deployment, we have applied \smt to improve several reliability 

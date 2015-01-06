@@ -41,10 +41,10 @@ program executions either incur prohibitive overhead, or may deviate from the
 schedules if there are data races (\ie, these executions are not \emph{fully 
 deterministic}).
 
-Specifically, existing DMT systems enforce two forms of schedules: (1) a
-\emph{mem-schedule} is a deterministic schedule of shared memory
-accesses~\cite{dmp:asplos09,coredet:asplos10,dos:osdi10}, such as
-\vv{load/store} instructions, and (2) a \emph{sync-schedule} is a
+As mentioned in Chapter~\ref{sec:intro}, existing DMT systems specifically
+enforce two forms of schedules: (1) a mem-schedule is a deterministic schedule 
+of shared memory accesses~\cite{dmp:asplos09,coredet:asplos10,dos:osdi10}, such as
+\vv{load/store} instructions, and (2) a sync-schedule is a
 deterministic order of synchronization
 operations~\cite{kendo:asplos09,cui:tern:osdi10}, such as
 \vv{lock()/unlock()}.  Enforcing a mem-schedule is fully deterministic even
@@ -157,7 +157,7 @@ We have built a prototype of \peregrine that runs in user-space.
 It automatically tracks \vv{main()}
 arguments, data read from files and sockets, and values
 returned by \vv{random()}-variants as input.  It handles long-running servers by
-splitting their executions into \emph{windows} and
+splitting their executions into windows and
 reusing schedules across windows~\cite{cui:tern:osdi10}.
 The hybrid schedules it computes are fully deterministic for programs that
 (1) have no nondeterminism sources beyond thread scheduling, data races, and

@@ -2,9 +2,9 @@ This chapter describes \tern, our first \smt system that
 addresses the first challenge on building \smt: how to compute highly reusable
 schedules for different inputs? The more reusable a schedule is, the fewer
 schedules are needed for all inputs. We also aim to build \tern as a \dmt 
-system, because determinism is especially useful in testing and debugging 
+system because determinism is especially useful in testing and debugging 
 multithreaded programs. Building a multithreading system that is both stable 
-and deterministic is another significant challenge, because as we describe in 
+and deterministic is another significant challenge: as we describe in 
 Chapter~\ref{sec:smt-motivation}, the instability problem in existing \dmt 
 systems destabilizes program behaviors on input perturbations,
 defeating the stability benefit brought by \smt. \tern addresses these two 
@@ -40,9 +40,9 @@ system~\cite{coredet:asplos10}. In fact, even with the same
 input, existing \dmt systems may still force a program into different schedules 
 for minor changes in the execution environment such as processor type and 
 shared library.  Thus, developers may no longer be able to reproduce bugs by 
-running their program on the bug-inducing input, because their machine may 
+running their program on the bug-inducing input because their machine may 
 differ from the machine where the bug occurred. \S\ref{sec:dmt-background} will 
-analyze in details why this instability problem is inherent in existing \dmt 
+analyze in detail why this instability problem is inherent in existing \dmt 
 systems.
 
 This chapter presents \tern, a schedule-centric, stateful multithreading system 
