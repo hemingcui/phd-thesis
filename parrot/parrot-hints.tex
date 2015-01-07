@@ -19,7 +19,7 @@ schedules that avoid serializing parallel computations.  The interface is
 \noindent
 One thread calls \v{soba\_init(N, key, timeout)} to initialize the barrier
 named \v{key}, logically indicating that a group of \v{N} threads will
-be spawned.  Subsequently, any thread which calls \v{soba\_wait(key)}
+be spawned.  Subsequently, any thread calling \v{soba\_wait(key)}
 will block until either (1) \v{N}-1 other threads have also called
 \v{soba\_wait(key)} or (2) \v{timeout} time has elapsed since the first
 thread arrived at the barrier.  This timeout is made deterministic by \parrot

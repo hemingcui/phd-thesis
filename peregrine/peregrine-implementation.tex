@@ -68,7 +68,7 @@ by annotating the return of \vv{cache\_find()} as input.
 
 One limitation of applying our \peregrine prototype to server programs is that our current
 implementation of schedule-guided simplification does not work well with
-thread pooling.  To give each thread a copy of the corresponding thread
+thread pooling.  To give each thread a distinct thread
 function, \peregrine identifies \vv{pthread\_create(...,func,...)} operations in
 a program and clones function \vv{func}.  Server programs that use
 thread pooling tend to create worker threads to run generic thread
